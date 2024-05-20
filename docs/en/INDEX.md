@@ -1,3 +1,0 @@
-# providers
-
--   https://pushover.net/
