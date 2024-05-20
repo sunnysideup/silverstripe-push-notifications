@@ -9,7 +9,7 @@ SilverStripe\Core\Injector\Injector:
         - Sunnysideup\PushNotifications\Api\Providers\PushNotificationVapid
   Sunnysideup\PushNotifications\Forms\PushProviderField:
     properties:
-      registry: %$Sunnysideup\PushNotifications\Api\PushProvidersRegistry
+      registry: '%$Sunnysideup\PushNotifications\Api\PushProvidersRegistry'
 
 SilverStripe\Admin\LeftAndMain:
   extra_requirements_css:

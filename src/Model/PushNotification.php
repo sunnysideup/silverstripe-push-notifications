@@ -2,13 +2,18 @@
 
 namespace Sunnysideup\PushNotifications\Model;
 
+use Exception;
 use SilverStripe\Forms\CheckboxSetField;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\RequiredFields;
 use SilverStripe\Forms\TreeMultiselectField;
+use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\ValidationResult;
+use SilverStripe\Security\Group;
 use SilverStripe\Security\Member;
+use Sunnysideup\PushNotifications\Api\PushNotificationProvider;
+use Sunnysideup\PushNotifications\ErrorHandling\PushException;
 use Sunnysideup\PushNotifications\Forms\PushProviderField;
 use Sunnysideup\PushNotifications\Jobs\SendPushNotificationsJob;
 
@@ -17,6 +22,8 @@ use Sunnysideup\PushNotifications\Jobs\SendPushNotificationsJob;
  */
 class PushNotification extends DataObject
 {
+    private static $table_name = 'PushNotification';
+
     private static $db = array(
         'Title'            => 'Varchar(100)',
         'Content'          => 'Text',
@@ -28,8 +35,8 @@ class PushNotification extends DataObject
     );
 
     private static $many_many = array(
-        'RecipientMembers' => 'Member',
-        'RecipientGroups'  => 'Group'
+        'RecipientMembers' => Member::class,
+        'RecipientGroups'  => Group::class,
     );
 
     private static $summary_fields = array(

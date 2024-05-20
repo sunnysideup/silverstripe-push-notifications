@@ -2,6 +2,8 @@
 
 namespace Sunnysideup\PushNotifications\Jobs;
 
+use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
+
 /**
  * @package silverstripe-push
  */

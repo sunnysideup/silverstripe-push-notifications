@@ -9,6 +9,8 @@ use SilverStripe\ORM\DataObject;
  */
 class Subscriber extends DataObject
 {
+    private static $table_name = 'Subscriber';
+
     private static $db = array(
         'Title'            => 'Text',
     );
