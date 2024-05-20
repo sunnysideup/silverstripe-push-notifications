@@ -1,6 +1,7 @@
 <?php
 
-namespace Sunnysideup\PushNotifications\Subscriber;
+namespace Sunnysideup\PushNotifications\Controllers;
+
 use Sunnysideup\PushNotifications\Model\Subscriber;
 
 /**
@@ -10,8 +11,7 @@ class Subscriber extends Controller
 {
 
     private static $allowed_actions = array(
-        'subscribe',
-        'push',
+        'subscribe' => true,
     );
 
     public function subscribe($request)

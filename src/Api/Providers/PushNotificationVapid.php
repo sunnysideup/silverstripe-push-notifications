@@ -1,6 +1,6 @@
 <?php
 
-namespace Sunnysideup\PushNotifications\Api;
+namespace Sunnysideup\PushNotifications\Providers\Api;
 
 use Minishlink\WebPush\WebPush;
 use Minishlink\WebPush\Subscription;
