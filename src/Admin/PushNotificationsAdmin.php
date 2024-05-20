@@ -2,6 +2,10 @@
 
 namespace Sunnysideup\PushNotifications\Admin;
 
+use SilverStripe\Admin\ModelAdmin;
+use SilverStripe\Forms\FormAction;
+use SilverStripe\View\Requirements;
+
 /**
  * @package silverstripe-push
  */
@@ -21,7 +25,7 @@ class PushNotificationsAdmin extends ModelAdmin
     public function init()
     {
         parent::init();
-        Requirements::javascript('client/javascript/PushNotificationsAdmin.js');
+        Requirements::javascript('sunnysideup/push-notifications: client/dist/javascript/PushNotificationsAdmin.js');
     }
 
     public function getEditForm($id = null, $fields = null)

@@ -4,6 +4,10 @@ namespace Sunnysideup\PushNotifications\Providers\Api;
 
 use Minishlink\WebPush\WebPush;
 use Minishlink\WebPush\Subscription;
+use SilverStripe\Core\Environment;
+use Sunnysideup\PushNotifications\Api\PushNotificationProvider;
+use Sunnysideup\PushNotifications\Model\PushNotification;
+use Sunnysideup\PushNotifications\Model\Subscriber;
 
 /**
  * A simple email push provider which sends an email to all users.

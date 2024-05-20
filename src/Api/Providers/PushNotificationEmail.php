@@ -2,6 +2,12 @@
 
 namespace Sunnysideup\PushNotifications\Api\Providers;
 
+use SilverStripe\Control\Email\Email;
+use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\TextField;
+use Sunnysideup\PushNotifications\Api\PushNotificationProvider;
+use Sunnysideup\PushNotifications\Model\PushNotification;
+
 /**
  * A simple email push provider which sends an email to all users.
  *
@@ -56,10 +62,13 @@ class PushNotificationEmail extends PushNotificationProvider
         $result = parent::validateSettings();
 
         if (!$this->getSetting('Subject')) {
-            $result->error(_t(
-                'Push.EMAILSUBJECTREQUIRED',
-                'An email subject is required'
-            ));
+            $result->addFieldMessage(
+                'Subject',
+                _t(
+                    'Push.EMAILSUBJECTREQUIRED',
+                    'An email subject is required'
+                )
+            );
         }
 
         return $result;

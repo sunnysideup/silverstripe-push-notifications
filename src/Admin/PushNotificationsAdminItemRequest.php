@@ -2,6 +2,11 @@
 
 namespace Sunnysideup\PushNotifications\Admin;
 
+use Exception;
+use SilverStripe\Control\HTTPResponse;
+use SilverStripe\Forms\GridField\GridFieldDetailForm_ItemRequest;
+use Sunnysideup\PushNotifications\ErrorHandling\PushException;
+
 /**
  * Handles sending push notifications.
  */
@@ -11,15 +16,15 @@ class PushNotificationsAdminItemRequest extends GridFieldDetailForm_ItemRequest
     {
         try {
             $this->record->doSend();
-        } catch (PushException $ex) {
-            return new SS_HTTPResponse(
+        } catch (Exception $e) {
+            return new HTTPResponse(
                 $this->ItemEditForm()->forAjaxTemplate(),
                 400,
-                $ex->getMessage()
+                $e->getMessage()
             );
         }
 
-        $response = new SS_HTTPResponse($this->ItemEditForm()->forAjaxTemplate());
+        $response = new HTTPResponse($this->ItemEditForm()->forAjaxTemplate());
         $response->setStatusDescription(_t(
             'Push.PUSHSENT',
             'The push notification has been sent'

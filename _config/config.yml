@@ -1,28 +1,16 @@
 ---
 Name: push_config
 ---
-Injector:
-  PushProvidersRegistry:
+SilverStripe\Core\Injector\Injector:
+  Sunnysideup\PushNotifications\Api\PushProvidersRegistry:
     properties:
       providers:
-        - EmailPushProvider
-  PushProviderField:
-    properties: 
-      registry: %$PushProvidersRegistry
+        - Sunnysideup\PushNotifications\Api\Providers\PushNotificationEmail
+        - Sunnysideup\PushNotifications\Api\Providers\PushNotificationVapid
+  Sunnysideup\PushNotifications\Forms\PushProviderField:
+    properties:
+      registry: %$Sunnysideup\PushNotifications\Api\PushProvidersRegistry
 
-LeftAndMain:
-  extra_requirements_css: 
-    - push/css/push.css
-    
-BetterButtonsActions:
-  edit:
-    BetterButton_Send: true
-    
----
-Name: push_config_queued
-Only:
-  moduleexists: queuedjobs
----
-PushNotification:
-  has_one:
-    SendJob: QueuedJobDescriptor
+SilverStripe\Admin\LeftAndMain:
+  extra_requirements_css:
+    - 'sunnysideup/push-notifications:client/dist/css/push.css'
