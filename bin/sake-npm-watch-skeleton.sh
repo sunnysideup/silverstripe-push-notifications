@@ -8,5 +8,5 @@ echo ' run build'
 echo '------------------------------'
 cd themes/sswebpack_engine_only/
 npm install
-npm run build --theme_dir=vendor/jq/client --include_jquery=no
+npm run build --theme_dir=vendor/push-notifications/client --include_jquery=no
 echo '------------------------------'
