@@ -8,13 +8,7 @@ namespace Sunnysideup\PushNotifications\Model;
 class Subscriber extends DataObject
 {
     private static $db = array(
-        'Title'            => 'Varchar(100)',
-        'Content'          => 'Text',
-        'ProviderClass'    => 'Varchar(50)',
-        'ProviderSettings' => 'Text',
-        'ScheduledAt'      => 'SS_Datetime',
-        'Sent'             => 'Boolean',
-        'SentAt'           => 'SS_Datetime'
+        'Title'            => 'Text',
     );
 
     private static $many_many = array(

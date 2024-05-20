@@ -1,6 +1,6 @@
 <?php
 
-namespace Sunnysideup\PushNotifications\Api\Providers;
+namespace Sunnysideup\PushNotifications\Api;
 
 /**
  * @package silverstripe-push

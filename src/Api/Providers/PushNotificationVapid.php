@@ -19,6 +19,32 @@ class PushNotificationVapid extends PushNotificationProvider
 
     public function sendPushNotification(PushNotification $notification)
     {
+        // Payload should be a string
+
+        $auth = [
+            'VAPID' => [
+                "subject" => Environment::getEnv('VAPID_SUBJECT'),
+                "publicKey" => Environment::getEnv('VAPID_PUBLIC_KEY'),
+                "privateKey" =>  Environment::getEnv('VAPID_PRIVATE_KEY')
+            ],
+        ];
+
+        $webPush = new WebPush($auth);
+
+        $payload = json_encode(['title' => 'Hello!', 'body' => 'Your first push notification']);
+        $subscribers = Subscriber::get();
+        foreach($subscribers as $key => $subscriber) {
+            $subscription = Subscription::create($subscriptionJson);
+            $outcome = $webPush->sendOneNotification($subscription, $payload);
+            if ($outcome->isSuccess()) {
+                $subscriptionJsons[$key]['success'] = true;
+                $subscriptionJsons[$key]['outcome'] = 'Success!';
+            } else {
+                $subscriptionJsons[$key]['success'] = false;
+                $subscriptionJsons[$key]['outcome'] = $outcome->getReason();
+            }
+        }
+        echo json_encode(['success' => true, 'error' => print_r($subscriptionJsons, 1)]);
 
         // Assuming you have a function to get the stored subscription data
         $subscriptionData = getSubscriptionsFromDatabase(); // Implement this
@@ -39,10 +65,10 @@ class PushNotificationVapid extends PushNotificationProvider
         foreach($subscriptionData as $subscription) {
             $subscription = Subscription::create($subscription);
             $outcome = $webPush->sendOneNotification($subscription, $payload);
-            if ($report->isSuccess()) {
+            if ($outcome->isSuccess()) {
                 echo 'Success!';
             } else {
-                echo 'Failure: ' . $report->getReason();
+                echo 'Failure: ' . $outcome->getReason();
             }
 
         }

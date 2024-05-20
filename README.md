@@ -4,15 +4,15 @@
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/sunnysideup/silverstripe-push-notifications/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/sunnysideup/silverstripe-push-notifications/?branch=master)
 [![codecov.io](https://codecov.io/github/sunnysideup/silverstripe-push-notifications/coverage.svg?branch=master)](https://codecov.io/github/sunnysideup/silverstripe-push-notifications?branch=master)
 
-[![Latest Stable Version](https://poser.pugx.org/jq/version)](https://packagist.org/packages/jq)
-[![License](https://poser.pugx.org/jq/license)](https://packagist.org/packages/jq)
-[![Monthly Downloads](https://poser.pugx.org/jq/d/monthly)](https://packagist.org/packages/jq)
+[![Latest Stable Version](https://poser.pugx.org/push-notifications/version)](https://packagist.org/packages/push-notifications)
+[![License](https://poser.pugx.org/push-notifications/license)](https://packagist.org/packages/push-notifications)
+[![Monthly Downloads](https://poser.pugx.org/push-notifications/d/monthly)](https://packagist.org/packages/push-notifications)
 
 ## Documentation
 
 -   [Developer Docs](docs/en/INDEX.md)
 -   [User Guide](docs/en/userguide.md)
--   [API Docs](http://docs.ssmods.com/jq/classes.xhtml)
+-   [API Docs](http://docs.ssmods.com/push-notifications/classes.xhtml)
 
 ## Requirements
 
@@ -25,7 +25,7 @@ See [composer.json](composer.json) for details.
 ## Installation
 
 ```shell
-composer require jq
+composer require push-notifications
 ```
 
 ### Configuration

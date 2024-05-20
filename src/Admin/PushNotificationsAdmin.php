@@ -1,4 +1,7 @@
 <?php
+
+namespace Sunnysideup\PushNotifications\Admin;
+
 /**
  * @package silverstripe-push
  */

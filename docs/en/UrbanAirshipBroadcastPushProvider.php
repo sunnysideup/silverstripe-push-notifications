@@ -1,4 +1,4 @@
-<!-- <?php
+<?php
 
 namespace Sunnysideup\PushNotifications\Api\Providers;
 
@@ -194,4 +194,4 @@ class UrbanAirshipBroadcastPushProvider extends PushNotificationProvider
 
         return $fields;
     }
-} -->
+}

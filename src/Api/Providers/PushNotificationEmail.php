@@ -1,12 +1,14 @@
 <?php
+
+namespace Sunnysideup\PushNotifications\Api\Providers;
+
 /**
  * A simple email push provider which sends an email to all users.
  *
  * @package silverstripe-push
  */
-class EmailPushProvider extends PushNotificationProvider
+class PushNotificationEmail extends PushNotificationProvider
 {
-
     public function getTitle()
     {
         return _t('Push.EMAIL', 'Email');
@@ -31,11 +33,13 @@ class EmailPushProvider extends PushNotificationProvider
             new TextField(
                 $this->getSettingFieldName('Subject'),
                 _t('Push.EMAILSUBJECT', 'Email Subject'),
-                $this->getSetting('Subject')),
+                $this->getSetting('Subject')
+            ),
             new TextField(
                 $this->getSettingFieldName('From'),
                 _t('Push.EMAILFROM', 'Email From Address'),
-                $this->getSetting('From'))
+                $this->getSetting('From')
+            )
         ));
     }
 
@@ -53,7 +57,8 @@ class EmailPushProvider extends PushNotificationProvider
 
         if (!$this->getSetting('Subject')) {
             $result->error(_t(
-                'Push.EMAILSUBJECTREQUIRED', 'An email subject is required'
+                'Push.EMAILSUBJECTREQUIRED',
+                'An email subject is required'
             ));
         }
 
