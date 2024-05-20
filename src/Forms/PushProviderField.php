@@ -2,6 +2,14 @@
 
 namespace Sunnysideup\PushNotifications\Forms;
 
+use SilverStripe\Core\Injector\Injector;
+use SilverStripe\Forms\DropdownField;
+use SilverStripe\Forms\FormField;
+use SilverStripe\ORM\DataObjectInterface;
+use SilverStripe\View\ArrayData;
+use SilverStripe\View\Requirements;
+use Sunnysideup\PushNotifications\Api\PushNotificationProvider;
+
 /**
  * Allows users to select and configure the push notification provider to use.
  *
@@ -80,7 +88,7 @@ class PushProviderField extends FormField
         return $field;
     }
 
-    public function setValue($value)
+    public function setValue($value, $data = null)
     {
         if ($value instanceof PushNotificationProvider) {
             $this->provider = $value;
@@ -100,6 +108,7 @@ class PushProviderField extends FormField
                 $this->provider = null;
             }
         }
+        return $this;
     }
 
     public function saveInto(DataObjectInterface $record)
@@ -109,8 +118,7 @@ class PushProviderField extends FormField
 
     public function FieldHolder($properties = array())
     {
-        Requirements::javascript(THIRDPARTY_DIR . '/jquery/jquery.js');
-        Requirements::javascript('push/javascript/PushProviderField.js');
+        Requirements::javascript('client/dist/javascript/PushProviderField.js');
 
         return $this->renderWith('PushProviderField');
     }

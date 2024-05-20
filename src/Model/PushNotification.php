@@ -2,6 +2,16 @@
 
 namespace Sunnysideup\PushNotifications\Model;
 
+use SilverStripe\Forms\CheckboxSetField;
+use SilverStripe\Forms\LiteralField;
+use SilverStripe\Forms\RequiredFields;
+use SilverStripe\Forms\TreeMultiselectField;
+use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\ValidationResult;
+use SilverStripe\Security\Member;
+use Sunnysideup\PushNotifications\Forms\PushProviderField;
+use Sunnysideup\PushNotifications\Jobs\SendPushNotificationsJob;
+
 /**
  * @package silverstripe-push
  */
@@ -51,12 +61,12 @@ class PushNotification extends DataObject
 
         if ($this->Sent) {
             $fields->insertBefore(
+                'Title',
                 new LiteralField('SentAsMessage', sprintf('<p class="message">%s</p>', _t(
                     'Push.SENTAT',
                     'This notification was sent at {at}',
                     array('at' => $this->obj('SentAt')->Nice())
                 ))),
-                'Title'
             );
         }
 
@@ -101,23 +111,44 @@ class PushNotification extends DataObject
         return new RequiredFields('Title');
     }
 
-    protected function validate()
+    /**
+     * Validate the current object.
+     *
+     * By default, there is no validation - objects are always valid!  However, you can overload this method in your
+     * DataObject sub-classes to specify custom validation, or use the hook through DataExtension.
+     *
+     * Invalid objects won't be able to be written - a warning will be thrown and no write will occur.  onBeforeWrite()
+     * and onAfterWrite() won't get called either.
+     *
+     * It is expected that you call validate() in your own application to test that an object is valid before
+     * attempting a write, and respond appropriately if it isn't.
+     *
+     * @see {@link ValidationResult}
+     * @return ValidationResult
+     */
+    public function validate(): ValidationResult
     {
         $result = parent::validate();
 
         if (!$this->Sent && $this->ScheduledAt) {
             if (strtotime($this->ScheduledAt) < time()) {
-                $result->error(_t(
-                    'Push.CANTSCHEDULEINPAST',
-                    'You cannot schedule notifications in the past'
-                ));
+                $result->addFieldError(
+                    'ScheduledAt',
+                    _t(
+                        'Push.CANTSCHEDULEINPAST',
+                        'You cannot schedule notifications in the past'
+                    )
+                );
             }
 
             if (!$this->getProvider()) {
-                $result->error(_t(
-                    'Push.CANTSCHEDULEWOPROVIDER',
-                    'You cannot schedule a notification without a valid provider configured'
-                ));
+                $result->addFieldError(
+                    'Provider',
+                    _t(
+                        'Push.CANTSCHEDULEWOPROVIDER',
+                        'You cannot schedule a notification without a valid provider configured'
+                    )
+                );
             }
         }
 

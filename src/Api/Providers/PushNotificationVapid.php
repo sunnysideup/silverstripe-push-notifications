@@ -40,7 +40,7 @@ class PushNotificationVapid extends PushNotificationProvider
         $payload = json_encode(['title' => 'Hello!', 'body' => 'Your first push notification']);
         $subscribers = Subscriber::get();
         foreach($subscribers as $key => $subscriber) {
-            $subscription = Subscription::create($subscriptionJson);
+            $subscription = Subscription::create($subscriber->Title);
             $outcome = $webPush->sendOneNotification($subscription, $payload);
             if ($outcome->isSuccess()) {
                 $subscriptionJsons[$key]['success'] = true;
@@ -111,10 +111,13 @@ class PushNotificationVapid extends PushNotificationProvider
         $result = parent::validateSettings();
 
         if (!$this->getSetting('Subject')) {
-            $result->error(_t(
-                'Push.EMAILSUBJECTREQUIRED',
-                'An email subject is required'
-            ));
+            $result->addFieldError(
+                'Subject',
+                _t(
+                    'Push.EMAILSUBJECTREQUIRED',
+                    'An email subject is required'
+                )
+            );
         }
 
         return $result;

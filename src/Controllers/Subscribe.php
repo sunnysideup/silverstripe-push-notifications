@@ -2,21 +2,22 @@
 
 namespace Sunnysideup\PushNotifications\Controllers;
 
+use Exception;
+use SilverStripe\Control\Controller;
 use Sunnysideup\PushNotifications\Model\Subscriber;
 
 /**
  * @package silverstripe-push
  */
-class Subscriber extends Controller
+class Subscribe extends Controller
 {
-
     private static $allowed_actions = array(
         'subscribe' => true,
     );
 
     public function subscribe($request)
     {
-        $subscription = json_encode($request->postVar('subscription');
+        $subscription = json_encode($request->postVar('subscription'));
 
         try {
 
@@ -31,12 +32,6 @@ class Subscriber extends Controller
         }
 
 
-        // Execute the query
-        if ($stmt->execute()) {
-            echo json_encode(['success' => true]);
-        } else {
-            echo json_encode(['success' => false, 'error' => $stmt->error]);
-        }
 
     }
 }
