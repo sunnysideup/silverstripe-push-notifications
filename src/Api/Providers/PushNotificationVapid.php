@@ -29,9 +29,9 @@ class PushNotificationVapid extends PushNotificationProvider
 
         $auth = [
             'VAPID' => [
-                "subject" => Environment::getEnv('VAPID_SUBJECT'),
-                "publicKey" => Environment::getEnv('VAPID_PUBLIC_KEY'),
-                "privateKey" =>  Environment::getEnv('VAPID_PRIVATE_KEY')
+                "subject" => Environment::getEnv('SS_VAPID_SUBJECT'),
+                "publicKey" => Environment::getEnv('SS_VAPID_PUBLIC_KEY'),
+                "privateKey" =>  Environment::getEnv('SS_VAPID_PRIVATE_KEY')
             ],
         ];
 
