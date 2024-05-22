@@ -5,6 +5,9 @@ namespace Sunnysideup\PushNotifications\Admin;
 use SilverStripe\Admin\ModelAdmin;
 use SilverStripe\Forms\FormAction;
 use SilverStripe\View\Requirements;
+use Sunnysideup\PushNotifications\Model\PushNotification;
+use SilverStripe\Forms\GridField\GridFieldDetailForm;
+use Sunnysideup\PushNotifications\Admin\PushNotificationsAdminItemRequest;
 
 /**
  * @package silverstripe-push
@@ -15,8 +18,8 @@ class PushNotificationsAdmin extends ModelAdmin
     private static $url_segment = 'push';
 
     private static $managed_models = array(
-        'PushNotification' => array(
-            'title'             => 'Push Notifications',
+        PushNotification::class => array(
+            'title' => 'Push Notifications',
         )
     );
 
@@ -35,8 +38,8 @@ class PushNotificationsAdmin extends ModelAdmin
         $name = $this->sanitiseClassName($this->modelClass);
         $conf = $form->Fields()->dataFieldByName($name)->getConfig();
 
-        $conf->getComponentByType('GridFieldDetailForm')
-            ->setItemRequestClass('PushNotificationsAdminItemRequest')
+        $conf->getComponentByType(GridFieldDetailForm::class)
+            ->setItemRequestClass(PushNotificationsAdminItemRequest::class)
             ->setItemEditFormCallback(function ($form, $component) {
                 $record = $form->getRecord();
 

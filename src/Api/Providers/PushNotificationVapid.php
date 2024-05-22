@@ -1,6 +1,6 @@
 <?php
 
-namespace Sunnysideup\PushNotifications\Providers\Api;
+namespace Sunnysideup\PushNotifications\Api\Providers;
 
 use Minishlink\WebPush\WebPush;
 use Minishlink\WebPush\Subscription;
@@ -20,7 +20,7 @@ class PushNotificationVapid extends PushNotificationProvider
 {
     public function getTitle()
     {
-        return _t('Push.EMAIL', 'Email');
+        return _t('Push.VAPID', 'Vapid');
     }
 
     public function sendPushNotification(PushNotification $notification)
