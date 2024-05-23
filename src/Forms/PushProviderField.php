@@ -72,8 +72,10 @@ class PushProviderField extends FormField
         if ($this->provider) {
             $result = $this->provider->validateSettings();
 
-            if (!$result->valid()) {
-                $validator->validationError($this->name, $result->message(), 'validation');
+            if (!$result->isValid()) {
+                // @TODO: handle multiple fields being returned
+                $messages = $result->getMessages();
+                $validator->validationError($this->name, $messages[0]['message'], 'validation');
                 return false;
             }
         }
@@ -96,8 +98,7 @@ class PushProviderField extends FormField
         } elseif (is_array($value)) {
             $class    = isset($value['Provider']) ? $value['Provider'] : null;
             $settings = isset($value['Settings']) ? $value['Settings'] : null;
-
-            if ($class && is_subclass_of($class, 'PushNotificationProvider')) {
+            if ($class && is_subclass_of($class, PushNotificationProvider::class)) {
                 $this->provider = new $class();
                 $this->provider->setFormField($this);
 
@@ -118,7 +119,7 @@ class PushProviderField extends FormField
 
     public function FieldHolder($properties = array())
     {
-        Requirements::javascript('client/dist/javascript/PushProviderField.js');
+        Requirements::javascript('sunnysideup/push-notifications: client/dist/javascript/PushProviderField.js');
 
         return $this->renderWith('PushProviderField');
     }

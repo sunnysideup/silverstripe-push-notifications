@@ -18,7 +18,17 @@ use Sunnysideup\PushNotifications\Forms\PushProviderField;
 use Sunnysideup\PushNotifications\Jobs\SendPushNotificationsJob;
 
 /**
- * @package silverstripe-push
+ * Class \Sunnysideup\PushNotifications\Model\PushNotification
+ *
+ * @property string $Title
+ * @property string $Content
+ * @property string $ProviderClass
+ * @property string $ProviderSettings
+ * @property string $ScheduledAt
+ * @property bool $Sent
+ * @property string $SentAt
+ * @method \SilverStripe\ORM\ManyManyList|\SilverStripe\Security\Member[] RecipientMembers()
+ * @method \SilverStripe\ORM\ManyManyList|\SilverStripe\Security\Group[] RecipientGroups()
  */
 class PushNotification extends DataObject
 {
@@ -27,7 +37,7 @@ class PushNotification extends DataObject
     private static $db = array(
         'Title'            => 'Varchar(100)',
         'Content'          => 'Text',
-        'ProviderClass'    => 'Varchar(50)',
+        'ProviderClass'    => 'Varchar(255)',
         'ProviderSettings' => 'Text',
         'ScheduledAt'      => 'Datetime',
         'Sent'             => 'Boolean',
@@ -98,7 +108,7 @@ class PushNotification extends DataObject
                 new TreeMultiselectField(
                     'RecipientGroups',
                     _t('Push.RECIPIENTGROUPS', 'Recipient Groups'),
-                    'Group'
+                    Group::class
                 )
             ));
         }
@@ -220,7 +230,7 @@ class PushNotification extends DataObject
         $settings = $this->ProviderSettings;
 
         if ($class) {
-            if (!is_subclass_of($class, 'PushNotificationProvider')) {
+            if (!is_subclass_of($class, PushNotificationProvider::class)) {
                 throw new Exception("An invalid provider class $class was encountered.");
             }
 
