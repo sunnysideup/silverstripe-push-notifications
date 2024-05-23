@@ -1,0 +1,6 @@
+---
+After: framework
+---
+SilverStripe\Control\Director:
+  rules:
+    'pushnotificationsubscription': '%$Sunnysideup\PushNotifications\Controllers\Subscription'

@@ -14,3 +14,10 @@ SilverStripe\Core\Injector\Injector:
 SilverStripe\Admin\LeftAndMain:
   extra_requirements_css:
     - 'sunnysideup/push-notifications:client/dist/css/push.css'
+
+---
+After: framework
+---
+SilverStripe\Control\Director:
+  rules:
+    'pushnotificationsubscribe': '%$Sunnysideup\PushNotifications\Controllers\Subscription'
