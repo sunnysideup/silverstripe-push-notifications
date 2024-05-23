@@ -7,7 +7,8 @@ use SilverStripe\Control\Controller;
 use Sunnysideup\PushNotifications\Model\Subscriber;
 
 /**
- * @package silverstripe-push
+ * Class \Sunnysideup\PushNotifications\Controllers\Subscribe
+ *
  */
 class Subscribe extends Controller
 {

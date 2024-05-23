@@ -1,5 +1,5 @@
 (function($) {
-	$(".push-provider .provider select").live("change", function() {
+	$(".push-provider .provider select").entwine("change", function() {
 		var field  = $(this).closest(".push-provider");
 		var fields = field.find(".provider-fields").empty();
 		var link   = field.attr("data-fields-link");

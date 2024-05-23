@@ -10,7 +10,8 @@ use SilverStripe\Forms\GridField\GridFieldDetailForm;
 use Sunnysideup\PushNotifications\Admin\PushNotificationsAdminItemRequest;
 
 /**
- * @package silverstripe-push
+ * Class \Sunnysideup\PushNotifications\Admin\PushNotificationsAdmin
+ *
  */
 class PushNotificationsAdmin extends ModelAdmin
 {

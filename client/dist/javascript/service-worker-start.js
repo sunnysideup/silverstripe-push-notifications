@@ -1,6 +1,6 @@
 if ('serviceWorker' in navigator && 'PushManager' in window) {
   navigator.serviceWorker
-    .register('service-worker.js')
+    .register('_resources/silverstripe-push-notifications/client/dist/javascript/service-worker.js')
     .then(function (swReg) {
       console.log('Service Worker is registered', swReg)
 
