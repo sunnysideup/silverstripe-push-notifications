@@ -5,6 +5,6 @@ self.addEventListener('push', function (event) {
     icon: 'images/icon.png',
     badge: 'images/badge.png'
   }
-
+  console.log('Push event', title, options);
   event.waitUntil(self.registration.showNotification(title, options))
 })

@@ -5,26 +5,38 @@ namespace Sunnysideup\PushNotifications\Controllers;
 use Exception;
 use SilverStripe\Control\Controller;
 use Sunnysideup\PushNotifications\Model\Subscriber;
+use SilverStripe\Security\Security;
 
 /**
  * Class \Sunnysideup\PushNotifications\Controllers\Subscribe
  *
  */
-class Subscribe extends Controller
+class Subscription extends Controller
 {
     private static $allowed_actions = array(
         'subscribe' => true,
     );
 
+    private static $url_handlers = array(
+        'pushsubscription/subscribe' => 'subscribe',
+    );
+
+
     public function subscribe($request)
     {
-        $subscription = json_encode($request->postVar('subscription'));
+        $subscription = $request->getBody();
 
         try {
 
-            $subscription = new Subscriber();
-            $subscription->Subscription = $subscription;
-            $subscription->write();
+            $subscriber = Subscriber::create();
+            $subscriber->Subscription = $subscription;
+
+            $member = Security::getCurrentUser();
+            if ($member) {
+                $subscriber->MemberID = $member->ID;
+            }
+
+            $subscriber->write();
 
             echo json_encode(['success' => true]);
 
