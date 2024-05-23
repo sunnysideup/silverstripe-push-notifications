@@ -5,7 +5,9 @@ namespace Sunnysideup\PushNotifications\Model;
 use SilverStripe\ORM\DataObject;
 
 /**
- * @package silverstripe-push
+ * Class \Sunnysideup\PushNotifications\Model\Subscriber
+ *
+ * @property string $Title
  */
 class Subscriber extends DataObject
 {

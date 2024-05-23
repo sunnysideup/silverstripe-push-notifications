@@ -12,7 +12,6 @@ use Sunnysideup\PushNotifications\Model\PushNotification;
 use Sunnysideup\PushNotifications\Model\Subscriber;
 
 /**
- * A simple email push provider which sends an email to all users.
  *
  * @package silverstripe-push
  */
@@ -25,21 +24,36 @@ class PushNotificationVapid extends PushNotificationProvider
 
     public function sendPushNotification(PushNotification $notification)
     {
-        // Payload should be a string
+        $subject = Environment::getEnv('SS_VAPID_SUBJECT');
+        if (!$subject) {
+            user_error('SS_VAPID_SUBJECT is not defined');
+        }
+
+        $publicKey = Environment::getEnv('SS_VAPID_PUBLIC_KEY');
+        if (!$publicKey) {
+            user_error('SS_VAPID_PUBLIC_KEY is not defined');
+        }
+
+        $privateKey = Environment::getEnv('SS_VAPID_PRIVATE_KEY');
+        if (!$privateKey) {
+            user_error('SS_VAPID_PRIVATE_KEY is not defined');
+        }
+
 
         $auth = [
             'VAPID' => [
-                "subject" => Environment::getEnv('SS_VAPID_SUBJECT'),
-                "publicKey" => Environment::getEnv('SS_VAPID_PUBLIC_KEY'),
-                "privateKey" =>  Environment::getEnv('SS_VAPID_PRIVATE_KEY')
+                "subject" => $subject,
+                "publicKey" => $publicKey,
+                "privateKey" => $privateKey,
             ],
         ];
 
         $webPush = new WebPush($auth);
 
-        $payload = json_encode(['title' => 'Hello!', 'body' => 'Your first push notification']);
+        $payload = json_encode(['title' => $notification->Title, 'body' => $notification->Content]);
         $subscribers = Subscriber::get();
         foreach($subscribers as $key => $subscriber) {
+            info($subscriber);
             $subscription = Subscription::create($subscriber->Title);
             $outcome = $webPush->sendOneNotification($subscription, $payload);
             if ($outcome->isSuccess()) {
@@ -82,6 +96,7 @@ class PushNotificationVapid extends PushNotificationProvider
 
     }
 
+/*
     public function getSettingsFields()
     {
         return new FieldList(array(
@@ -97,6 +112,7 @@ class PushNotificationVapid extends PushNotificationProvider
             )
         ));
     }
+
 
     public function setSettings(array $data)
     {
@@ -122,4 +138,7 @@ class PushNotificationVapid extends PushNotificationProvider
 
         return $result;
     }
+*/
+
+    
 }
