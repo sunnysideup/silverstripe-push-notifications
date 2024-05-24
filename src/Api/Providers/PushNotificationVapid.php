@@ -71,6 +71,7 @@ class PushNotificationVapid extends PushNotificationProvider
                 }
             }
         }
+     //   info($subscriptionJsons);
 
 
         return json_encode(['success' => true, 'results' => $subscriptionJsons]);
