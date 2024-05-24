@@ -12,6 +12,10 @@ use Sunnysideup\PushNotifications\ErrorHandling\PushException;
  */
 class PushNotificationsAdminItemRequest extends GridFieldDetailForm_ItemRequest
 {
+    private static $allowed_actions = array(
+        'doSend'
+    );
+    
     public function doSend($data, $form)
     {
         try {

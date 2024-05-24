@@ -51,47 +51,29 @@ class PushNotificationVapid extends PushNotificationProvider
         $webPush = new WebPush($auth);
 
         $payload = json_encode(['title' => $notification->Title, 'body' => $notification->Content]);
-        $subscribers = Subscriber::get();
-        foreach($subscribers as $key => $subscriber) {
-            info($subscriber);
-            $subscription = Subscription::create($subscriber->Title);
-            $outcome = $webPush->sendOneNotification($subscription, $payload);
-            if ($outcome->isSuccess()) {
-                $subscriptionJsons[$key]['success'] = true;
-                $subscriptionJsons[$key]['outcome'] = 'Success!';
-            } else {
-                $subscriptionJsons[$key]['success'] = false;
-                $subscriptionJsons[$key]['outcome'] = $outcome->getReason();
+
+        //$subscribers = Subscriber::get();
+        $subscriptionJsons = [];
+
+        foreach ($notification->getRecipients() as $recipient) {
+            $subscriptions = $recipient->PushNotificationSubscribers();
+            foreach ($subscriptions as $subscriber) {
+                $subscription = Subscription::create(json_decode($subscriber->Subscription, true));
+                
+                $outcome = $webPush->sendOneNotification($subscription, $payload);
+                
+                if ($outcome->isSuccess()) {
+                    $subscriptionJsons[$subscriber->ID]['success'] = true;
+                    $subscriptionJsons[$subscriber->ID]['outcome'] = 'Success!';
+                } else {
+                    $subscriptionJsons[$subscriber->ID]['success'] = false;
+                    $subscriptionJsons[$subscriber->ID]['outcome'] = $outcome->getReason();
+                }
             }
         }
-        echo json_encode(['success' => true, 'error' => print_r($subscriptionJsons, 1)]);
 
-        // Assuming you have a function to get the stored subscription data
-        $subscriptionData = getSubscriptionsFromDatabase(); // Implement this
 
-        // Payload should be a string
-        $payload = json_encode(['title' => 'Hello!', 'body' => 'Your first push notification']);
-
-        $auth = [
-            'VAPID' => [
-                "subject" => "",
-                "publicKey" => "",
-                "privateKey" =>  ""
-            ],
-        ];
-
-        $webPush = new WebPush($auth);
-
-        foreach($subscriptionData as $subscription) {
-            $subscription = Subscription::create($subscription);
-            $outcome = $webPush->sendOneNotification($subscription, $payload);
-            if ($outcome->isSuccess()) {
-                echo 'Success!';
-            } else {
-                echo 'Failure: ' . $outcome->getReason();
-            }
-
-        }
+        return json_encode(['success' => true, 'results' => $subscriptionJsons]);
 
 
     }

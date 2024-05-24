@@ -5,7 +5,9 @@
 		}
 	});
 
-	$("#right input[name=action_doSend]").live("click", function() {
+	$("#right input[name=action_doSend]").entwine("click", function() {
+		console.log('action_doSend clicked');
+		return;
 		var form    = $("#right form");
 		var action  = form.attr("action") + "?" + $(this).fieldSerialize();
 		var message = ss.i18n._t("Push.CONFIRMSEND", "Are you sure you want to send this push notification?");

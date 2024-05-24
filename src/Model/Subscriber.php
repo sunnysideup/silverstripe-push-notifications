@@ -3,14 +3,14 @@
 namespace Sunnysideup\PushNotifications\Model;
 
 use SilverStripe\ORM\DataObject;
-use SeaLogs\Security\Member;
+use SilverStripe\Security\Member;
 
 /**
  * Class \Sunnysideup\PushNotifications\Model\Subscriber
  *
  * @property string $Subscription
  * @property int $MemberID
- * @method \SeaLogs\Security\Member Member()
+ * @method \SilverStripe\Security\Member Member()
  */
 class Subscriber extends DataObject
 {
