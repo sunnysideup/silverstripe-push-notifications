@@ -15,6 +15,11 @@ SilverStripe\Admin\LeftAndMain:
   extra_requirements_css:
     - 'sunnysideup/push-notifications:client/dist/css/push.css'
 
+SilverStripe\Security\Member:
+  extensions:
+    - Sunnysideup\PushNotifications\Extensions\MemberExtension
+
+
 ---
 After: framework
 ---

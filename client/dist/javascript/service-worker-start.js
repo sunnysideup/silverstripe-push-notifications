@@ -53,7 +53,6 @@ function requestPushNotifications() {
               )
             })
             .then(function (subscription) {
-              console.log('User is subscribed:', subscription)
               fetch('pushnotificationsubscription/subscribe', {
                 method: 'POST',
                 headers: {
@@ -84,7 +83,6 @@ function requestPushNotifications() {
               console.log('Failed to subscribe the user: ', err)
             })
         }
-        console.log('d');
       })
     }
   })
