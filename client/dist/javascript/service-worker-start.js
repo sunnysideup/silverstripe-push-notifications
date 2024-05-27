@@ -61,7 +61,7 @@ function requestPushNotifications() {
                 body: JSON.stringify(subscription)
               })
                 .then(function (response) {
-                  if (!response.success) {
+                  if (!response.ok) {
                     throw new Error(
                       'Failed to send subscription object to server'
                     )
@@ -77,7 +77,6 @@ function requestPushNotifications() {
                 .catch(function (error) {
                   console.error(error)
                 })
-              // You might want to send the subscription object to your server here to save it
             })
             .catch(function (err) {
               console.log('Failed to subscribe the user: ', err)
