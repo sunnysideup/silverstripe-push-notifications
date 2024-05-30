@@ -31,8 +31,8 @@ self.addEventListener('push', function (event) {
 
 
 self.addEventListener('notificationclick', function (event) {
-  console.log(event.notification);
-  console.log(event.notification.data);
-  event.notification.close()
-  event.waitUntil(clients.openWindow('https://push.rakau.com'))
+  event.notification.close();
+  if (event.notification.data.url) {
+    event.waitUntil(clients.openWindow(event.notification.data.url));
+  }
 });
