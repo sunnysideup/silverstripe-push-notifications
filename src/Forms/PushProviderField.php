@@ -33,10 +33,8 @@ class PushProviderField extends FormField
     {
         $this->registry = $registry;
 
-        foreach ($this->registry->getProviders() as $class) {
-            $inst = Injector::inst()->get($class);
+        foreach ($this->registry->getProvidersAsEnabledObjects() as $inst) {
             $inst->setFormField($this);
-            $this->providers[$class] = $inst;
         }
     }
 

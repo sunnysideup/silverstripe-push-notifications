@@ -2,6 +2,8 @@
 
 namespace Sunnysideup\PushNotifications\Api;
 
+use SilverStripe\Core\Injector\Injector;
+
 /**
  * A registry of all provider classes that are available.
  *
@@ -9,7 +11,11 @@ namespace Sunnysideup\PushNotifications\Api;
  */
 class PushProvidersRegistry
 {
-    public $providers = array();
+    /**
+     * This has to be public!
+     */
+    public $providers = [];
+    protected $providersAsEnabledObjects = [];
 
     /**
      * @param  string $class
@@ -32,9 +38,25 @@ class PushProvidersRegistry
 
     /**
      * @return array
+     * This is set from the config file.
      */
     public function getProviders()
     {
         return $this->providers;
+    }
+
+    /**
+     * @return array
+     * This is set from the config file.
+     */
+    public function getProvidersAsEnabledObjects()
+    {
+        foreach($this->providers as $key => $provider) {
+            $obj = Injector::inst()->get($provider);
+            if($obj->isEnabled()) {
+                $this->providersAsEnabledObjects[$key] = $obj;
+            }
+        }
+        return $this->providersAsEnabledObjects;
     }
 }

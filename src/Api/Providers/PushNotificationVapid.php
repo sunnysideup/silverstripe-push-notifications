@@ -52,7 +52,7 @@ class PushNotificationVapid extends PushNotificationProvider
 
         $payload = json_encode(['title' => $notification->Title, 'body' => $notification->Content, 'url' => $notification->Link()]);
 
-        
+
 
         $subscriptionJsons = [];
 
@@ -60,9 +60,9 @@ class PushNotificationVapid extends PushNotificationProvider
             $subscriptions = $recipient->PushNotificationSubscribers();
             foreach ($subscriptions as $subscriber) {
                 $subscription = Subscription::create(json_decode($subscriber->Subscription, true));
-                
+
                 $outcome = $webPush->sendOneNotification($subscription, $payload);
-                
+
                 if ($outcome->isSuccess()) {
                     $subscriptionJsons[$subscriber->ID]['success'] = true;
                     $subscriptionJsons[$subscriber->ID]['outcome'] = 'Success!';
@@ -78,5 +78,13 @@ class PushNotificationVapid extends PushNotificationProvider
 
     }
 
-    
+    public function isEnabled(): bool
+    {
+        $subject = Environment::getEnv('SS_VAPID_SUBJECT');
+        $publicKey = Environment::getEnv('SS_VAPID_PUBLIC_KEY');
+        $privateKey = Environment::getEnv('SS_VAPID_PRIVATE_KEY');
+        return (bool) ($subject && $publicKey && $privateKey);
+    }
+
+
 }

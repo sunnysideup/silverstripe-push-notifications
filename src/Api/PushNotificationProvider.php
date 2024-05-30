@@ -102,4 +102,10 @@ abstract class PushNotificationProvider
     {
         return sprintf('%s[Settings][%s]', $this->field->getName(), $setting);
     }
+
+    public function isEnabled(): bool
+    {
+        return false;
+    }
+
 }

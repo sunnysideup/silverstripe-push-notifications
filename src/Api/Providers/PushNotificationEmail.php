@@ -73,4 +73,10 @@ class PushNotificationEmail extends PushNotificationProvider
 
         return $result;
     }
+
+
+    public function isEnabled(): bool
+    {
+        return true;
+    }
 }

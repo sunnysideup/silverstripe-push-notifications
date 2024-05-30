@@ -44,10 +44,10 @@ class PushNotificationsAdmin extends ModelAdmin
             ->setItemEditFormCallback(function ($form, $component) {
                 $record = $form->getRecord();
 
-                if ($record && $record->ID && !$record->Sent) {
+                if ($record && $record->ID && !$record->Sent && $record->canSend()) {
                     $form->Actions()->push(
                         FormAction::create('doSend', 'Send')
-                            ->addExtraClass('ss-ui-action')
+                            ->addExtraClass('ss-ui-action btn btn-primary font-icon-block-email action--new discard-confirmation')
                             ->setUseButtonTag(true)
                     );
                 }

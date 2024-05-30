@@ -3,8 +3,12 @@
 namespace Sunnysideup\PushNotifications\Model;
 
 use Exception;
+use Jose\Component\Encryption\Algorithm\KeyEncryption\Dir;
+use SilverStripe\Control\Director;
 use SilverStripe\Forms\CheckboxSetField;
+use SilverStripe\Forms\HeaderField;
 use SilverStripe\Forms\LiteralField;
+use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\Forms\RequiredFields;
 use SilverStripe\Forms\TreeMultiselectField;
 use SilverStripe\ORM\ArrayList;
@@ -19,6 +23,7 @@ use Sunnysideup\PushNotifications\Jobs\SendPushNotificationsJob;
 use Sunnysideup\PushNotifications\Model\PushNotificationPage;
 use SilverStripe\Security\Permission;
 use SilverStripe\Security\Security;
+use Symbiote\QueuedJobs\Services\QueuedJob;
 
 /**
  * Class \Sunnysideup\PushNotifications\Model\PushNotification
@@ -40,6 +45,7 @@ class PushNotification extends DataObject
     private static $db = array(
         'Title'            => 'Varchar(100)',
         'Content'          => 'Text',
+        'AdditionalInfo'   => 'HTMLText',
         'ProviderClass'    => 'Varchar(255)',
         'ProviderSettings' => 'Text',
         'ScheduledAt'      => 'Datetime',
@@ -61,6 +67,10 @@ class PushNotification extends DataObject
         'Title',
         'Content',
         'Sent'
+    );
+
+    private static $casting = array(
+        'RecipientsCount' => 'Int',
     );
 
     private static $default_sort = 'Created DESC';
@@ -89,20 +99,30 @@ class PushNotification extends DataObject
                 ))),
             );
         }
+        $fields->dataFieldByName('Title')->setDescription(_t(
+            'Push.USEDASTITLE',
+            '(Used as the title of the notification)'
+        ));
+        $fields->dataFieldByName('Content')->setRows(2);
+        $fields->dataFieldByName('AdditionalInfo')->setRows(4);
 
-        if ($this->Sent || !interface_exists('QueuedJob')) {
+        if ($this->Sent || !interface_exists(QueuedJob::class)) {
             $fields->removeByName('ScheduledAt');
-        } else {
-            $fields->dataFieldByName('ScheduledAt')->getDateField()->setConfig('showcalendar', true);
         }
 
         $fields->dataFieldByName('Content')->setDescription(_t(
             'Push.USEDMAINBODY',
             '(Used as the main body of the notification)'
         ));
-
+        $fields->addFieldsToTab('Root.Main', array(
+            PushProviderField::create(
+                'Provider',
+                _t('Push.PROVIDER', 'Provider')
+            )
+        ));
         if ($this->ID) {
             $fields->addFieldsToTab('Root.Main', array(
+                HeaderField::create('RecipientsHeader', _t('Push.RECIPIENTS', 'Recipients')),
                 new CheckboxSetField(
                     'RecipientMembers',
                     _t('Push.RECIPIENTMEMBERS', 'Recipient Members'),
@@ -112,17 +132,17 @@ class PushNotification extends DataObject
                     'RecipientGroups',
                     _t('Push.RECIPIENTGROUPS', 'Recipient Groups'),
                     Group::class
-                )
+                ),
+                ReadonlyField::create('RecipientsCount', _t('Push.RECIPIENTCOUNT', 'Recipient Count')),
             ));
         }
 
-        $fields->addFieldsToTab('Root.Main', array(
-            PushProviderField::create(
-                'Provider',
-                _t('Push.PROVIDER', 'Provider')
-            )
-        ));
 
+        $fields->addFieldsToTab('Root.Main', [
+            HeaderField::create('Editing History', _t('Push.EDITING_HISTORY', 'Editing History')),
+            ReadonlyField::create('Created', _t('Push.CREATED', 'Created')),
+            ReadonlyField::create('LastEdited', _t('Push.LASTEDITED', 'Last Edited')),
+        ]);
         return $fields;
     }
 
@@ -136,26 +156,35 @@ class PushNotification extends DataObject
             return true;
         }
 
-        if ($this->RecipientMembers()->filter('ID', $member->ID)->count() > 0) {
+        if ($this->RecipientMembers()->filter('ID', $member->ID)->exists()) {
             return true;
         }
-        
+
         $recipientGroups = $this->RecipientGroups()->column('ID');
-        $memberGroups = $member->Groups();
+        $memberGroups = $member->Groups()->columnUnique('ID');
 
-        foreach ($memberGroups as $group) {
-            if (in_array($group->ID, $recipientGroups)) {
-                return true;
-            }
-        }
+        return (bool) count(array_intersect($recipientGroups, $memberGroups)) > 0;
+    }
 
-        return false;
+    public function canSend($member = null)
+    {
+        return !$this->Sent && $this->canEdit($member) && $this->getProvider() && $this->HasRecipients();
+    }
+
+    public function HasRecipients(): bool
+    {
+        return $this->RecipientsCount() > 0;
+    }
+
+    public function RecipientsCount(): int
+    {
+        return $this->getRecipients()->count();
     }
 
 
     public function getValidator()
     {
-        return new RequiredFields('Title');
+        return new RequiredFields(['Title', 'ProviderClass']);
     }
 
     /**
@@ -188,17 +217,17 @@ class PushNotification extends DataObject
                 );
             }
 
-            if (!$this->getProvider()) {
-                $result->addFieldError(
-                    'Provider',
-                    _t(
-                        'Push.CANTSCHEDULEWOPROVIDER',
-                        'You cannot schedule a notification without a valid provider configured'
-                    )
-                );
-            }
-        }
 
+        }
+        if (!$this->getProvider()) {
+            $result->addFieldError(
+                'Provider',
+                _t(
+                    'Push.CANTSCHEDULEWOPROVIDER',
+                    'You cannot schedule a notification without a valid provider configured'
+                )
+            );
+        }
         return $result;
     }
 
@@ -248,7 +277,7 @@ class PushNotification extends DataObject
     }
 
     /**
-     * @return PushNotificationProvider
+     * @return PushNotificationProvider|null
      */
     public function getProvider()
     {
@@ -271,9 +300,10 @@ class PushNotification extends DataObject
 
             return $this->providerInst;
         }
+        return null;
     }
 
-    public function setProvider(PushNotificationProvider $provider)
+    public function setProvider(?PushNotificationProvider $provider = null)
     {
         if ($provider) {
             $this->providerInst     = $provider;
@@ -296,6 +326,7 @@ class PushNotification extends DataObject
         $set = new ArrayList();
         $set->merge($this->RecipientMembers());
 
+        /** @var Group $group */
         foreach ($this->RecipientGroups() as $group) {
             $set->merge($group->Members());
         }
@@ -329,8 +360,14 @@ class PushNotification extends DataObject
         $this->write();
     }
 
-    public function Link() {
-        $page = PushNotificationPage::get()->first();
-        return $page ? $page->Link() : null;
+    public function Link()
+    {
+        $link = PushNotificationPage::get()->first()?->Link() ?: '/';
+        return Director::absoluteURL($link);
+    }
+
+    public function getCMSValidator()
+    {
+        return RequiredFields::create('Title', 'ProviderClass');
     }
 }
