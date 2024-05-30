@@ -1,4 +1,3 @@
-asdf
 <% loop PushNotifications %>
 <div class='row'>
   <h2>$Title</h2>

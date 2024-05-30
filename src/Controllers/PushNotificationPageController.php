@@ -7,11 +7,6 @@ use SilverStripe\CMS\Controllers\ContentController;
 use Sunnysideup\PushNotifications\Model\PushNotification;
 
 
-
-/**
- * Class \Sunnysideup\PushNotifications\Controllers\PushNotificationPageController
- *
- */
 class PushNotificationPageController extends ContentController
 {
     public function getPushNotifications() {
