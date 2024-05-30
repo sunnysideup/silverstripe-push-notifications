@@ -10,6 +10,7 @@ use SilverStripe\Forms\TextField;
 use Sunnysideup\PushNotifications\Api\PushNotificationProvider;
 use Sunnysideup\PushNotifications\Model\PushNotification;
 use Sunnysideup\PushNotifications\Model\Subscriber;
+use Sunnysideup\PushNotifications\Model\SubscriberMessage;
 
 /**
  *
@@ -59,6 +60,7 @@ class PushNotificationVapid extends PushNotificationProvider
         foreach ($notification->getRecipients() as $recipient) {
             $subscriptions = $recipient->PushNotificationSubscribers();
             foreach ($subscriptions as $subscriber) {
+                $log = SubscriberMessage::create_new($subscriber, $notification);
                 $subscription = Subscription::create(json_decode($subscriber->Subscription, true));
 
                 $outcome = $webPush->sendOneNotification($subscription, $payload);
@@ -66,10 +68,13 @@ class PushNotificationVapid extends PushNotificationProvider
                 if ($outcome->isSuccess()) {
                     $subscriptionJsons[$subscriber->ID]['success'] = true;
                     $subscriptionJsons[$subscriber->ID]['outcome'] = 'Success!';
+                    $log->Success = true;
                 } else {
                     $subscriptionJsons[$subscriber->ID]['success'] = false;
                     $subscriptionJsons[$subscriber->ID]['outcome'] = $outcome->getReason();
+                    $log->Success = false;
                 }
+                $log->write();
             }
         }
 

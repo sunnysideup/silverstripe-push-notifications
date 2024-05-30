@@ -24,6 +24,7 @@ use Sunnysideup\PushNotifications\Model\PushNotificationPage;
 use SilverStripe\Security\Permission;
 use SilverStripe\Security\Security;
 use Symbiote\QueuedJobs\Services\QueuedJob;
+use Symbiote\QueuedJobs\Services\QueuedJobService;
 
 /**
  * Class \Sunnysideup\PushNotifications\Model\PushNotification
@@ -238,7 +239,7 @@ class PushNotification extends DataObject
     {
         parent::onBeforeWrite();
 
-        if (!interface_exists('QueuedJob')) {
+        if (!interface_exists(QueuedJob::class)) {
             return;
         }
 
@@ -251,7 +252,7 @@ class PushNotification extends DataObject
                     $job->StartAfter = $this->ScheduledAt;
                     $job->write();
                 } else {
-                    $this->SendJobID = singleton('QueuedJobService')->queueJob(
+                    $this->SendJobID = singleton(QueuedJobService::class)->queueJob(
                         new SendPushNotificationsJob($this),
                         $this->ScheduledAt
                     );
