@@ -23,4 +23,21 @@ class Subscriber extends DataObject
     private static $has_one = array(
         'Member' => Member::class,
     );
+
+    /**
+     * DataObject create permissions
+     * @param Member $member
+     * @param array $context Additional context-specific data which might
+     * affect whether (or where) this object could be created.
+     * @return boolean
+     */
+    public function canCreate($member = null, $context = [])
+    {
+        return false;
+    }
+
+    public function canEdit($member = null)
+    {
+        return false;
+    }
 }
