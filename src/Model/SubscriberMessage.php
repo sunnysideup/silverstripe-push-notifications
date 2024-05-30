@@ -2,8 +2,12 @@
 
 namespace Sunnysideup\PushNotifications\Model;
 
+use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Security\Member;
+use SilverStripe\Security\Permission;
+use SilverStripe\Security\Security;
 
 /**
  * Class \Sunnysideup\PushNotifications\Model\Subscriber
@@ -14,31 +18,39 @@ use SilverStripe\Security\Member;
  */
 class SubscriberMessage extends DataObject
 {
-    public static function create_new(Subscriber $subscriber, PushNotification $pushNotification)
+    public static function create_new(Member $member, PushNotification $pushNotification, ?Subscriber $subscriber = null)
     {
         $obj = self::create();
-        $obj->SubscriberID = $subscriber->ID;
+        $obj->MemberID = $member->ID;
         $obj->PushNotificationID = $pushNotification->ID;
-        $obj->Title =
-            (string) ($pushNotification->Title) .
-            '--- TO: ' .
-            (string) ($subscriber?->Member()?->Email)
-            .'--- ON: '.
-            date('Y-m-d H:i:s');
+        if($subscriber) {
+            $obj->SubscriberID = $subscriber->ID;
+        }
         $obj->write();
         return $obj;
     }
     private static $table_name = 'SubscriberMessage';
 
     private static $db = array(
-        'Title' => 'Text',
         'Success' => 'Boolean',
+        'ErrorMessage' => 'Text',
     );
 
     private static $has_one = array(
         'Subscriber' => Subscriber::class,
         'PushNotification' => PushNotification::class,
+        'Member' => Member::class,
     );
+
+
+    private static $summary_fields = [
+        'Created.Nice' => 'When',
+        'Member.Email' => 'To',
+        'Subscription.ID' => 'Subscription ID',
+        'PushNotification.Title' => 'Message',
+        'Success.Nice' => 'Success',
+        'ErrorMessage.Summary' => 'Error',
+    ];
 
     /**
      * DataObject create permissions
@@ -62,6 +74,20 @@ class SubscriberMessage extends DataObject
         return false;
     }
 
+    public function canView($member = null)
+    {
+        if(Permission::check('ADMIN')) {
+            return true;
+        }
+        if(! $member) {
+            $member = Security::getCurrentUser();
+        }
+        if($member) {
+            return $member->ID === $this->MemberID;
+        }
+        return false;
+    }
+
     /**
      * Event handler called before writing to the database.
      *
@@ -76,6 +102,24 @@ class SubscriberMessage extends DataObject
             (string) ($this->Subscriber()?->Member()?->Email)
             .'--- ON: '.
             $this->Created;
+    }
+
+    /**
+     * CMS Fields
+     * @return FieldList
+     */
+    public function getCMSFields()
+    {
+        $fields = parent::getCMSFields();
+        $fields->removeByName('Success');
+        $fields->addFieldsToTab(
+            'Root.Main',
+            [
+                ReadonlyField::create('SuccessNice', 'Success', $this->dbObject('Success')->Nice()),
+                ReadonlyField::create('Created', 'When'),
+            ]
+        );
+        return $fields;
     }
 
 }

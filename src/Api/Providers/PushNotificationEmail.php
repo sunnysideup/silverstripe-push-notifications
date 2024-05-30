@@ -7,6 +7,7 @@ use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\TextField;
 use Sunnysideup\PushNotifications\Api\PushNotificationProvider;
 use Sunnysideup\PushNotifications\Model\PushNotification;
+use Sunnysideup\PushNotifications\Model\SubscriberMessage;
 
 /**
  * A simple email push provider which sends an email to all users.
@@ -28,11 +29,23 @@ class PushNotificationEmail extends PushNotificationProvider
         $email->setBody($notification->Content);
 
         foreach ($notification->getRecipients() as $recipient) {
+            $log = SubscriberMessage::create_new($recipient, $notification);
             if(!$this->isValidEmail($recipient->Email)) {
+                $log->Success = false;
+                $log->ErrorMessage = 'Not a valid email address';
+                $log->write();
                 continue;
             }
             $email->setTo($recipient->Email);
-            $email->send();
+            try {
+                $email->send();
+                $log->Success = true;
+            } catch (\Exception $e) {
+                // log error
+                $log->ErrorMessage = $e->getMessage();
+                $log->Success = false;
+            }
+            $log->write();
         }
     }
 
