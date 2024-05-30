@@ -28,9 +28,17 @@ class PushNotificationEmail extends PushNotificationProvider
         $email->setBody($notification->Content);
 
         foreach ($notification->getRecipients() as $recipient) {
+            if(!$this->isValidEmail($recipient->Email)) {
+                continue;
+            }
             $email->setTo($recipient->Email);
             $email->send();
         }
+    }
+
+    protected function isValidEmail(string $email): bool
+    {
+        return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
     }
 
     public function getSettingsFields()

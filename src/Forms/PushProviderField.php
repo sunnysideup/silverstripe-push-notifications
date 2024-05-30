@@ -32,8 +32,8 @@ class PushProviderField extends FormField
     public function setRegistry($registry)
     {
         $this->registry = $registry;
-
-        foreach ($this->registry->getProvidersAsEnabledObjects() as $inst) {
+        foreach ($this->registry->getProvidersAsEnabledObjects() as $className => $inst) {
+            $this->providers[get_class($inst)] = $inst;
             $inst->setFormField($this);
         }
     }

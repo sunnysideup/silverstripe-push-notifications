@@ -60,7 +60,8 @@ class PushNotification extends DataObject
 
     private static $summary_fields = array(
         'Title',
-        'SentAt'
+        'SentAt',
+        'RecipientsCount',
     );
 
     private static $searchable_fields = array(
@@ -173,10 +174,10 @@ class PushNotification extends DataObject
 
     public function HasRecipients(): bool
     {
-        return $this->RecipientsCount() > 0;
+        return $this->getRecipientsCount() > 0;
     }
 
-    public function RecipientsCount(): int
+    public function getRecipientsCount(): int
     {
         return $this->getRecipients()->count();
     }
