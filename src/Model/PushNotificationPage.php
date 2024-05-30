@@ -17,7 +17,7 @@ use Sunnysideup\PushNotifications\Controllers\PushNotificationPageController;
  */
 class PushNotificationPage extends Page
 {
-    private $controller_class = PushNotificationPageController::class;
+    private static $controller_name = PushNotificationPageController::class;
 
 
 }

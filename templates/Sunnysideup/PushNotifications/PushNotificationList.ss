@@ -1,3 +1,4 @@
+asdf
 <% loop PushNotifications %>
 <div class='row'>
   <h2>$Title</h2>
@@ -6,4 +7,5 @@
     $Content
   </p>
 </div>
+<hr />
 <% end_loop %>
