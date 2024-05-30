@@ -17,6 +17,8 @@ use Sunnysideup\PushNotifications\ErrorHandling\PushException;
 use Sunnysideup\PushNotifications\Forms\PushProviderField;
 use Sunnysideup\PushNotifications\Jobs\SendPushNotificationsJob;
 use Sunnysideup\PushNotifications\Model\PushNotificationPage;
+use SilverStripe\Security\Permission;
+use SilverStripe\Security\Security;
 
 /**
  * Class \Sunnysideup\PushNotifications\Model\PushNotification
@@ -123,6 +125,33 @@ class PushNotification extends DataObject
 
         return $fields;
     }
+
+    public function canView($member = null)
+    {
+        if (!$member) {
+            $member = Security::getCurrentUser();
+        }
+
+        if (Permission::checkMember($member, 'ADMIN')) {
+            return true;
+        }
+
+        if ($this->RecipientMembers()->filter('ID', $member->ID)->count() > 0) {
+            return true;
+        }
+        
+        $recipientGroups = $this->RecipientGroups()->column('ID');
+        $memberGroups = $member->Groups();
+
+        foreach ($memberGroups as $group) {
+            if (in_array($group->ID, $recipientGroups)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 
     public function getValidator()
     {
@@ -297,7 +326,7 @@ class PushNotification extends DataObject
 
         $this->Sent   = true;
         $this->SentAt = date('Y-m-d H:i:s');
-    //    $this->write();
+        $this->write();
     }
 
     public function Link() {
