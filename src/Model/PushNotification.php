@@ -54,6 +54,9 @@ class PushNotification extends DataObject
         'SentAt'           => 'Datetime'
     );
 
+    private static $has_many = array(
+        'SubscriberMessages' => SubscriberMessage::class,
+    );
     private static $many_many = array(
         'RecipientMembers' => Member::class,
         'RecipientGroups'  => Group::class,

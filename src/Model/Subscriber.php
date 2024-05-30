@@ -24,6 +24,10 @@ class Subscriber extends DataObject
         'Member' => Member::class,
     );
 
+    private static $has_many = array(
+        'SubscriberMessages' => SubscriberMessage::class,
+    );
+
     /**
      * DataObject create permissions
      * @param Member $member
