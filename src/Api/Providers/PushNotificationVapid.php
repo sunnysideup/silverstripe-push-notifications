@@ -50,9 +50,10 @@ class PushNotificationVapid extends PushNotificationProvider
 
         $webPush = new WebPush($auth);
 
-        $payload = json_encode(['title' => $notification->Title, 'body' => $notification->Content]);
+        $payload = json_encode(['title' => $notification->Title, 'body' => $notification->Content, 'url' => $notification->Link()]);
 
-        //$subscribers = Subscriber::get();
+        
+
         $subscriptionJsons = [];
 
         foreach ($notification->getRecipients() as $recipient) {
@@ -71,57 +72,11 @@ class PushNotificationVapid extends PushNotificationProvider
                 }
             }
         }
-     //   info($subscriptionJsons);
-
 
         return json_encode(['success' => true, 'results' => $subscriptionJsons]);
 
 
     }
-
-/*
-    public function getSettingsFields()
-    {
-        return new FieldList(array(
-            new TextField(
-                $this->getSettingFieldName('Subject'),
-                _t('Push.EMAILSUBJECT', 'Email Subject'),
-                $this->getSetting('Subject')
-            ),
-            new TextField(
-                $this->getSettingFieldName('From'),
-                _t('Push.EMAILFROM', 'Email From Address'),
-                $this->getSetting('From')
-            )
-        ));
-    }
-
-
-    public function setSettings(array $data)
-    {
-        parent::setSettings($data);
-
-        $this->setSetting('Subject', isset($data['Subject']) ? (string) $data['Subject'] : null);
-        $this->setSetting('From', isset($data['From']) ? (string) $data['From'] : null);
-    }
-
-    public function validateSettings()
-    {
-        $result = parent::validateSettings();
-
-        if (!$this->getSetting('Subject')) {
-            $result->addFieldError(
-                'Subject',
-                _t(
-                    'Push.EMAILSUBJECTREQUIRED',
-                    'An email subject is required'
-                )
-            );
-        }
-
-        return $result;
-    }
-*/
 
     
 }

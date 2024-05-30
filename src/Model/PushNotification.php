@@ -16,6 +16,7 @@ use Sunnysideup\PushNotifications\Api\PushNotificationProvider;
 use Sunnysideup\PushNotifications\ErrorHandling\PushException;
 use Sunnysideup\PushNotifications\Forms\PushProviderField;
 use Sunnysideup\PushNotifications\Jobs\SendPushNotificationsJob;
+use Sunnysideup\PushNotifications\Model\PushNotificationPage;
 
 /**
  * Class \Sunnysideup\PushNotifications\Model\PushNotification
@@ -296,6 +297,11 @@ class PushNotification extends DataObject
 
         $this->Sent   = true;
         $this->SentAt = date('Y-m-d H:i:s');
-        $this->write();
+    //    $this->write();
+    }
+
+    public function Link() {
+        $page = PushNotificationPage::get()->first();
+        return $page ? $page->Link() : null;
     }
 }
