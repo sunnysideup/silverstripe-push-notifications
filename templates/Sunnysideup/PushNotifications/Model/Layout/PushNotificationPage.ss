@@ -19,9 +19,11 @@
         </p>
         <% end_with %>
     </div>
+
     <h2>Subscribe Now</h2>
     <% include Sunnysideup\\PushNotifications\\SubscribeButton %>
 
+    <h2>Previous Messages</h2>
     <% include Sunnysideup\\PushNotifications\\PushNotificationList %>
 
 
