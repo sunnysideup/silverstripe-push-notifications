@@ -8,6 +8,7 @@ use SilverStripe\Forms\GridField\GridFieldConfig_RecordEditor;
 use SilverStripe\Forms\GridField\GridFieldConfig_RecordViewer;
 use SilverStripe\ORM\DataExtension;
 use Sunnysideup\PushNotifications\Model\Subscriber;
+use Sunnysideup\PushNotifications\Model\SubscriberMessage;
 
 /**
  * Class \Sunnysideup\PushNotifications\Extensions\MemberExtension
@@ -19,9 +20,12 @@ class MemberExtension extends DataExtension
 {
     private static $has_many = [
       'PushNotificationSubscribers' => Subscriber::class,
+      'SubscriberMessages' => SubscriberMessage::class,
     ];
+
     private static $field_labels = [
       'PushNotificationSubscribers' => 'Push Subscriptions',
+      'SubscriberMessages' => 'Push Messages Sent',
     ];
 
     public function onBeforeDelete()
