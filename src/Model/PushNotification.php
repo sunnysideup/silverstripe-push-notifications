@@ -31,11 +31,13 @@ use Symbiote\QueuedJobs\Services\QueuedJobService;
  *
  * @property string $Title
  * @property string $Content
+ * @property string $AdditionalInfo
  * @property string $ProviderClass
  * @property string $ProviderSettings
  * @property string $ScheduledAt
  * @property bool $Sent
  * @property string $SentAt
+ * @method \SilverStripe\ORM\DataList|\Sunnysideup\PushNotifications\Model\SubscriberMessage[] SubscriberMessages()
  * @method \SilverStripe\ORM\ManyManyList|\SilverStripe\Security\Member[] RecipientMembers()
  * @method \SilverStripe\ORM\ManyManyList|\SilverStripe\Security\Group[] RecipientGroups()
  */

@@ -7,6 +7,13 @@ use SilverStripe\CMS\Controllers\ContentController;
 use Sunnysideup\PushNotifications\Model\PushNotification;
 use SilverStripe\ORM\ArrayList;
 
+/**
+ * Class \Sunnysideup\PushNotifications\Controllers\PushNotificationPageController
+ *
+ * @property \Sunnysideup\PushNotifications\Model\PushNotificationPage $dataRecord
+ * @method \Sunnysideup\PushNotifications\Model\PushNotificationPage data()
+ * @mixin \Sunnysideup\PushNotifications\Model\PushNotificationPage
+ */
 class PushNotificationPageController extends ContentController
 {
     public function getPushNotifications() {

@@ -11,6 +11,7 @@ use SilverStripe\Security\Member;
  * @property string $Subscription
  * @property int $MemberID
  * @method \SilverStripe\Security\Member Member()
+ * @method \SilverStripe\ORM\DataList|\Sunnysideup\PushNotifications\Model\SubscriberMessage[] SubscriberMessages()
  */
 class Subscriber extends DataObject
 {
