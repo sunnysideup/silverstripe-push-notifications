@@ -46,7 +46,7 @@ class SubscriberMessage extends DataObject
     private static $summary_fields = [
         'Created.Nice' => 'When',
         'Member.Email' => 'To',
-        'Subscription.ID' => 'Subscription ID',
+        'Subscriber.ID' => 'Subscription ID',
         'PushNotification.Title' => 'Message',
         'Success.Nice' => 'Success',
         'ErrorMessage.Summary' => 'Error',
