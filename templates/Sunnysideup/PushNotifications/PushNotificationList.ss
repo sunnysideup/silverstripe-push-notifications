@@ -6,4 +6,5 @@
     $Content
   </p>
 </div>
+<hr />
 <% end_loop %>
