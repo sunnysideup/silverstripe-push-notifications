@@ -4,6 +4,7 @@ namespace Sunnysideup\PushNotifications\Extensions;
 
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\GridField\GridField;
+use SilverStripe\Forms\GridField\GridFieldConfig_RecordEditor;
 use SilverStripe\Forms\GridField\GridFieldConfig_RecordViewer;
 use SilverStripe\ORM\DataExtension;
 use Sunnysideup\PushNotifications\Model\Subscriber;
@@ -46,7 +47,7 @@ class MemberExtension extends DataExtension
                 'PushNotificationSubscribers',
                 'Push Subscriptions',
                 $owner->PushNotificationSubscribers(),
-                GridFieldConfig_RecordViewer::create()
+                GridFieldConfig_RecordEditor::create()
             )
         );
         return $fields;

@@ -40,4 +40,9 @@ class Subscriber extends DataObject
     {
         return false;
     }
+
+    public function canDelete($member = null)
+    {
+        return true;
+    }
 }
