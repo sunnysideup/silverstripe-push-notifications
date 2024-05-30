@@ -3,7 +3,7 @@
 <div class="push-rows">
 <% loop $PushNotifications %>
     <div class='row'>
-    <h2>$Title</h2>
+    <h3>$Title</h3>
     <div class="time"><time class='notification-date'>$SentAt.Nice</time></div>
     <p>
         $Content
