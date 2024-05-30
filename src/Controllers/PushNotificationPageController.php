@@ -12,5 +12,7 @@ use SilverStripe\CMS\Controllers\ContentController;
  */
 class PushNotificationPageController extends ContentController
 {
-    
+    public function PushNotifications() {
+        return PushNotification::get()->filter('Sent', 1)->sort('SentAt', 'DESC');
+    }
 }
