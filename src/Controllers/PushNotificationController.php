@@ -11,14 +11,14 @@ use SilverStripe\Security\Security;
  * Class \Sunnysideup\PushNotifications\Controllers\Subscribe
  *
  */
-class Subscription extends Controller
+class PushNotificationController extends Controller
 {
     private static $allowed_actions = array(
         'subscribe' => true,
     );
 
     private static $url_handlers = array(
-        'pushsubscription/subscribe' => 'subscribe',
+        'subscribe' => 'subscribe',
     );
 
 

@@ -11,6 +11,7 @@ self.addEventListener('push', function (event) {
   
   const title = obj.title || "Fallback title";
   const body = obj.body || "Fallback message";
+  const url = obj.url || false;
 
 
  // const title = 'Push Timeline Update 1'
@@ -20,6 +21,9 @@ self.addEventListener('push', function (event) {
     icon: 'https://push.rakau.com/512.png',
     badge: 'https://push.rakau.com/512.png',
     action: 'open',
+    data: {
+      url: url
+    }
   }
   
   event.waitUntil(self.registration.showNotification(title, options))
@@ -27,6 +31,8 @@ self.addEventListener('push', function (event) {
 
 
 self.addEventListener('notificationclick', function (event) {
+  console.log(event.notification);
+  console.log(event.notification.data);
   event.notification.close()
   event.waitUntil(clients.openWindow('https://push.rakau.com'))
 });
