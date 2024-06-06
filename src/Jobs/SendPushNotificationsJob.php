@@ -9,7 +9,7 @@ use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
  */
 class SendPushNotificationsJob extends AbstractQueuedJob
 {
-    public function __construct($notification)
+    public function __construct($notification = null)
     {
         if ($notification) {
             $this->setObject($notification);
