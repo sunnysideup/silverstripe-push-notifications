@@ -25,6 +25,7 @@ use SilverStripe\Security\Permission;
 use SilverStripe\Security\Security;
 use Symbiote\QueuedJobs\Services\QueuedJob;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
+use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 
 /**
  * Class \Sunnysideup\PushNotifications\Model\PushNotification
@@ -37,6 +38,8 @@ use Symbiote\QueuedJobs\Services\QueuedJobService;
  * @property string $ScheduledAt
  * @property bool $Sent
  * @property string $SentAt
+ * @property int $SendJobID
+ * @method \Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor SendJob()
  * @method \SilverStripe\ORM\DataList|\Sunnysideup\PushNotifications\Model\SubscriberMessage[] SubscriberMessages()
  * @method \SilverStripe\ORM\ManyManyList|\SilverStripe\Security\Member[] RecipientMembers()
  * @method \SilverStripe\ORM\ManyManyList|\SilverStripe\Security\Group[] RecipientGroups()
@@ -56,6 +59,9 @@ class PushNotification extends DataObject
         'SentAt'           => 'Datetime'
     );
 
+    private static $has_one = array(
+        'SendJob' => QueuedJobDescriptor::class,
+    );
     private static $has_many = array(
         'SubscriberMessages' => SubscriberMessage::class,
     );
