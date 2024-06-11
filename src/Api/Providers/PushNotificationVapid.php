@@ -11,6 +11,8 @@ use Sunnysideup\PushNotifications\Api\PushNotificationProvider;
 use Sunnysideup\PushNotifications\Model\PushNotification;
 use Sunnysideup\PushNotifications\Model\Subscriber;
 use Sunnysideup\PushNotifications\Model\SubscriberMessage;
+use SilverStripe\Control\Director;
+use SilverStripe\Core\Config\Configurable;
 
 /**
  *
@@ -18,6 +20,13 @@ use Sunnysideup\PushNotifications\Model\SubscriberMessage;
  */
 class PushNotificationVapid extends PushNotificationProvider
 {
+    use Configurable;
+
+    private static $notification_icon = false;
+    private static $notification_badge = false;
+
+
+
     public function getTitle()
     {
         return _t('Push.VAPID', 'Vapid');
@@ -49,9 +58,30 @@ class PushNotificationVapid extends PushNotificationProvider
             ],
         ];
 
+
+
+
+
+        $icon = static::config()->get('notification_icon');
+        if (!is_null($icon) && !isset(parse_url($icon)['host'])) {
+            $icon = Director::absoluteURL($icon);
+        }
+
+        $badge = static::config()->get('notification_badge');
+        if (!is_null($badge) && !isset(parse_url($badge)['host'])) {
+            $badge = Director::absoluteURL($badge);
+        }
+
+
         $webPush = new WebPush($auth);
 
-        $payload = json_encode(['title' => $notification->Title, 'body' => $notification->Content, 'url' => $notification->Link()]);
+        $payload = json_encode([
+            'title' => $notification->Title, 
+            'body' => $notification->Content, 
+            'url' => $notification->Link(),
+            'icon' => $icon,
+            'badge' => $badge,
+        ]);
 
 
 

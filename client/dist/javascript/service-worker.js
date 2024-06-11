@@ -12,14 +12,16 @@ self.addEventListener('push', function (event) {
   const title = obj.title || "Fallback title";
   const body = obj.body || "Fallback message";
   const url = obj.url || false;
+  const icon = obj.icon || false;
+  const badge = obj.badge || false;
 
 
  // const title = 'Push Timeline Update 1'
 
   const options = {
     body: body,
-    icon: 'https://push.rakau.com/512.png',
-    badge: 'https://push.rakau.com/512.png',
+    icon: icon,
+    badge: badge,    // 96x96
     action: 'open',
     data: {
       url: url

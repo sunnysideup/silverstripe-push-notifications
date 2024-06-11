@@ -75,9 +75,8 @@ let pushNotifications = {
 }
 
 
-
 if ('serviceWorker' in navigator && 'PushManager' in window) {
-  console.log('a');
+
   navigator.serviceWorker
     .register(
       '_resources/vendor/sunnysideup/push-notifications/client/dist/javascript/service-worker.js'
