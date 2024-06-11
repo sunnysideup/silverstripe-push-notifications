@@ -1,37 +1,8 @@
-let swRegistration = null
 
-if ('serviceWorker' in navigator && 'PushManager' in window) {
-  navigator.serviceWorker
-    .register(
-      '_resources/vendor/sunnysideup/push-notifications/client/dist/javascript/service-worker.js'
-    )
-    .then(function (swReg) {
-      console.log('Service Worker is registered', swReg)
-      swRegistration = swReg
-    })
-    .catch(function (error) {
-      console.error('Service Worker Error', error)
-    })
-} else {
-  console.warn('Push messaging is not supported')
-}
-
-// Utility function for VAPID keys
-function urlBase64ToUint8Array (base64String) {
-  const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
-  const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/')
-
-  const rawData = window.atob(base64)
-  const outputArray = new Uint8Array(rawData.length)
-
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i)
-  }
-  return outputArray
-}
-
-function requestPushNotifications () {
-  swRegistration.pushManager.getSubscription().then(function (subscription) {
+let pushNotifications = {
+  swRegistration: null,
+  requestPushNotifications: function() {
+  pushNotifications.swRegistration.pushManager.getSubscription().then(function (subscription) {
     const isSubscribed = !(subscription === null)
 
     if (isSubscribed) {
@@ -41,10 +12,9 @@ function requestPushNotifications () {
       // Ask the user for permission to send push notifications
       Notification.requestPermission().then(function (permission) {
         if (permission === 'granted') {
-          swRegistration.pushManager
-            .subscribe({
+          pushNotifications.swRegistration.pushManager.subscribe({
               userVisibleOnly: true,
-              applicationServerKey: urlBase64ToUint8Array(vapid_public_key)
+              applicationServerKey: pushNotifications.urlBase64ToUint8Array(vapid_public_key)
             })
             .then(function (subscription) {
               fetch('pushnotificationsubscription/subscribe', {
@@ -82,8 +52,78 @@ function requestPushNotifications () {
               console.log('Failed to subscribe the user: ', error)
               alert('Sorry, we could not subscribe you - ERROR 3:'.error)
             })
-        }
-      })
+          }
+        })
+      }
+    })
+  },
+
+  // Utility function for VAPID keys
+  urlBase64ToUint8Array: function(base64String) {
+    const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
+    const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/')
+
+    const rawData = window.atob(base64)
+    const outputArray = new Uint8Array(rawData.length)
+
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i)
     }
-  })
+    return outputArray
+  }
+
+}
+
+
+
+if ('serviceWorker' in navigator && 'PushManager' in window) {
+  console.log('a');
+  navigator.serviceWorker
+    .register(
+      '_resources/vendor/sunnysideup/push-notifications/client/dist/javascript/service-worker.js'
+    )
+    .then(function (swReg) {
+      console.log('Service Worker is registered', swReg)
+      pushNotifications.swRegistration = swReg
+    })
+    .catch(function (error) {
+      console.error('Service Worker Error', error)
+    })
+} else {
+  console.warn('Push messaging is not supported')
+}
+
+
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+    deferredPrompt = e;
+});
+
+const installAppButton = document.getElementById('install-button');
+if (installAppButton) {
+  installAppButton.addEventListener('click', async () => {
+    if (typeof deferredPrompt !== 'undefined') {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+          deferredPrompt = null;
+      }
+    }
+  });
+}
+
+
+
+const installAndSubscribeButton = document.getElementById('install-and-subscribe');
+if (installAndSubscribeButton) {
+  installAndSubscribeButton.addEventListener('click', async () => {
+    if (typeof deferredPrompt !== 'undefined') {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        deferredPrompt = null;
+        pushNotifications.requestPushNotifications();
+      }
+    }
+  });
 }
