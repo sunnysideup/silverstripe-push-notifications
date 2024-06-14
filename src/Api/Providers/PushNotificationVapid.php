@@ -22,8 +22,20 @@ class PushNotificationVapid extends PushNotificationProvider
 {
     use Configurable;
 
-    private static $notification_icon = false;
-    private static $notification_badge = false;
+    /**
+     * e.g. https://mysite.com/icon.png OR icon.png
+     *
+     * @var string
+     */
+    private static $notification_icon = null;
+
+
+    /**
+     * e.g. https://mysite.com/icon.png OR icon.png
+     *
+     * @var string
+     */
+    private static $notification_badge = null;
 
 
 
@@ -76,8 +88,8 @@ class PushNotificationVapid extends PushNotificationProvider
         $webPush = new WebPush($auth);
 
         $payload = json_encode([
-            'title' => $notification->Title, 
-            'body' => $notification->Content, 
+            'title' => $notification->Title,
+            'body' => $notification->Content,
             'url' => $notification->Link(),
             'icon' => $icon,
             'badge' => $badge,
