@@ -1,6 +1,6 @@
 {
     "name": "sunnysideup/push-notifications",
-    "description": "Allows you to send basic push notifications to phones and desktops after users sign up",
+    "description": "Allows you to send basic push notifications to phones and desktops after users sign up. Based on symbiote-library/silverstripe-push",
     "type": "silverstripe-vendormodule",
     "keywords": [
         "push",
@@ -10,7 +10,7 @@
     ],
     "license": "BSD-3-Clause",
     "require": {
-        "silverstripe/framework": "^5",
+        "silverstripe/framework": "^4 || ^5",
         "silverstripe/admin": "^2",
         "minishlink/web-push": "^8",
         "symbiote/silverstripe-queuedjobs": "^5"
@@ -38,6 +38,10 @@
             "name": "Nicolaas Thiemen Francken",
             "email": "modules@sunnysideup.co.nz",
             "role": "lead developer"
+        },
+        {
+            "name": "symbiote-library/silverstripe-push",
+            "role": "inspiration - THANK YOU"
         }
     ],
     "minimum-stability": "dev",
