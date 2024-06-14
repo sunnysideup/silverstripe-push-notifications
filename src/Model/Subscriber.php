@@ -17,17 +17,17 @@ class Subscriber extends DataObject
 {
     private static $table_name = 'Subscriber';
 
-    private static $db = array(
+    private static $db = [
         'Subscription' => 'Text',
-    );
+    ];
 
-    private static $has_one = array(
+    private static $has_one = [
         'Member' => Member::class,
-    );
+    ];
 
-    private static $has_many = array(
+    private static $has_many = [
         'SubscriberMessages' => SubscriberMessage::class,
-    );
+    ];
 
     /**
      * DataObject create permissions

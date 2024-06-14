@@ -30,7 +30,7 @@ class PushNotificationEmail extends PushNotificationProvider
 
         foreach ($notification->getRecipients() as $recipient) {
             $log = SubscriberMessage::create_new($recipient, $notification);
-            if(!$this->isValidEmail($recipient->Email)) {
+            if (! $this->isValidEmail($recipient->Email)) {
                 $log->Success = false;
                 $log->ErrorMessage = 'Not a valid email address';
                 $log->write();
@@ -56,7 +56,7 @@ class PushNotificationEmail extends PushNotificationProvider
 
     public function getSettingsFields()
     {
-        return new FieldList(array(
+        return new FieldList([
             new TextField(
                 $this->getSettingFieldName('Subject'),
                 _t('Push.EMAILSUBJECT', 'Email Subject'),
@@ -66,8 +66,8 @@ class PushNotificationEmail extends PushNotificationProvider
                 $this->getSettingFieldName('From'),
                 _t('Push.EMAILFROM', 'Email From Address'),
                 $this->getSetting('From')
-            )
-        ));
+            ),
+        ]);
     }
 
     public function setSettings(array $data)
@@ -82,7 +82,7 @@ class PushNotificationEmail extends PushNotificationProvider
     {
         $result = parent::validateSettings();
 
-        if (!$this->getSetting('Subject')) {
+        if (! $this->getSetting('Subject')) {
             $result->addFieldMessage(
                 'Subject',
                 _t(
@@ -94,7 +94,6 @@ class PushNotificationEmail extends PushNotificationProvider
 
         return $result;
     }
-
 
     public function isEnabled(): bool
     {

@@ -3,7 +3,6 @@
 namespace Sunnysideup\PushNotifications\Model;
 
 use Exception;
-use Jose\Component\Encryption\Algorithm\KeyEncryption\Dir;
 use SilverStripe\Control\Director;
 use SilverStripe\Forms\CheckboxSetField;
 use SilverStripe\Forms\HeaderField;
@@ -16,16 +15,15 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\ValidationResult;
 use SilverStripe\Security\Group;
 use SilverStripe\Security\Member;
+use SilverStripe\Security\Permission;
+use SilverStripe\Security\Security;
 use Sunnysideup\PushNotifications\Api\PushNotificationProvider;
 use Sunnysideup\PushNotifications\ErrorHandling\PushException;
 use Sunnysideup\PushNotifications\Forms\PushProviderField;
 use Sunnysideup\PushNotifications\Jobs\SendPushNotificationsJob;
-use Sunnysideup\PushNotifications\Model\PushNotificationPage;
-use SilverStripe\Security\Permission;
-use SilverStripe\Security\Security;
+use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 use Symbiote\QueuedJobs\Services\QueuedJob;
 use Symbiote\QueuedJobs\Services\QueuedJobService;
-use Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor;
 
 /**
  * Class \Sunnysideup\PushNotifications\Model\PushNotification
@@ -48,43 +46,45 @@ class PushNotification extends DataObject
 {
     private static $table_name = 'PushNotification';
 
-    private static $db = array(
-        'Title'            => 'Varchar(100)',
-        'Content'          => 'Text',
-        'AdditionalInfo'   => 'HTMLText',
-        'ProviderClass'    => 'Varchar(255)',
+    private static $db = [
+        'Title' => 'Varchar(100)',
+        'Content' => 'Text',
+        'AdditionalInfo' => 'HTMLText',
+        'ProviderClass' => 'Varchar(255)',
         'ProviderSettings' => 'Text',
-        'ScheduledAt'      => 'Datetime',
-        'Sent'             => 'Boolean',
-        'SentAt'           => 'Datetime'
-    );
+        'ScheduledAt' => 'Datetime',
+        'Sent' => 'Boolean',
+        'SentAt' => 'Datetime',
+    ];
 
-    private static $has_one = array(
+    private static $has_one = [
         'SendJob' => QueuedJobDescriptor::class,
-    );
-    private static $has_many = array(
-        'SubscriberMessages' => SubscriberMessage::class,
-    );
-    private static $many_many = array(
-        'RecipientMembers' => Member::class,
-        'RecipientGroups'  => Group::class,
-    );
+    ];
 
-    private static $summary_fields = array(
+    private static $has_many = [
+        'SubscriberMessages' => SubscriberMessage::class,
+    ];
+
+    private static $many_many = [
+        'RecipientMembers' => Member::class,
+        'RecipientGroups' => Group::class,
+    ];
+
+    private static $summary_fields = [
         'Title',
         'SentAt',
         'RecipientsCount',
-    );
+    ];
 
-    private static $searchable_fields = array(
+    private static $searchable_fields = [
         'Title',
         'Content',
-        'Sent'
-    );
+        'Sent',
+    ];
 
-    private static $casting = array(
+    private static $casting = [
         'RecipientsCount' => 'Int',
-    );
+    ];
 
     private static $default_sort = 'Created DESC';
 
@@ -108,7 +108,7 @@ class PushNotification extends DataObject
                 new LiteralField('SentAsMessage', sprintf('<p class="message">%s</p>', _t(
                     'Push.SENTAT',
                     'This notification was sent at {at}',
-                    array('at' => $this->obj('SentAt')->Nice())
+                    ['at' => $this->obj('SentAt')->Nice()]
                 ))),
             );
         }
@@ -119,7 +119,7 @@ class PushNotification extends DataObject
         $fields->dataFieldByName('Content')->setRows(2);
         $fields->dataFieldByName('AdditionalInfo')->setRows(4);
 
-        if ($this->Sent || !interface_exists(QueuedJob::class)) {
+        if ($this->Sent || ! interface_exists(QueuedJob::class)) {
             $fields->removeByName('ScheduledAt');
         }
 
@@ -127,14 +127,14 @@ class PushNotification extends DataObject
             'Push.USEDMAINBODY',
             '(Used as the main body of the notification)'
         ));
-        $fields->addFieldsToTab('Root.Main', array(
+        $fields->addFieldsToTab('Root.Main', [
             PushProviderField::create(
                 'Provider',
                 _t('Push.PROVIDER', 'Provider')
-            )
-        ));
+            ),
+        ]);
         if ($this->ID) {
-            $fields->addFieldsToTab('Root.Main', array(
+            $fields->addFieldsToTab('Root.Main', [
                 HeaderField::create('RecipientsHeader', _t('Push.RECIPIENTS', 'Recipients')),
                 new CheckboxSetField(
                     'RecipientMembers',
@@ -147,9 +147,8 @@ class PushNotification extends DataObject
                     Group::class
                 ),
                 ReadonlyField::create('RecipientsCount', _t('Push.RECIPIENTCOUNT', 'Recipient Count')),
-            ));
+            ]);
         }
-
 
         $fields->addFieldsToTab('Root.Main', [
             HeaderField::create('Editing History', _t('Push.EDITING_HISTORY', 'Editing History')),
@@ -161,7 +160,7 @@ class PushNotification extends DataObject
 
     public function canView($member = null)
     {
-        if (!$member) {
+        if (! $member) {
             $member = Security::getCurrentUser();
         }
 
@@ -181,7 +180,7 @@ class PushNotification extends DataObject
 
     public function canSend($member = null)
     {
-        return !$this->Sent && $this->canEdit($member) && $this->getProvider() && $this->HasRecipients();
+        return ! $this->Sent && $this->canEdit($member) && $this->getProvider() && $this->HasRecipients();
     }
 
     public function HasRecipients(): bool
@@ -193,7 +192,6 @@ class PushNotification extends DataObject
     {
         return $this->getRecipients()->count();
     }
-
 
     public function getValidator()
     {
@@ -213,26 +211,21 @@ class PushNotification extends DataObject
      * attempting a write, and respond appropriately if it isn't.
      *
      * @see {@link ValidationResult}
-     * @return ValidationResult
      */
     public function validate(): ValidationResult
     {
         $result = parent::validate();
 
-        if (!$this->Sent && $this->ScheduledAt) {
-            if (strtotime($this->ScheduledAt) < time()) {
-                $result->addFieldError(
-                    'ScheduledAt',
-                    _t(
-                        'Push.CANTSCHEDULEINPAST',
-                        'You cannot schedule notifications in the past'
-                    )
-                );
-            }
-
-
+        if (! $this->Sent && $this->ScheduledAt && strtotime($this->ScheduledAt) < time()) {
+            $result->addFieldError(
+                'ScheduledAt',
+                _t(
+                    'Push.CANTSCHEDULEINPAST',
+                    'You cannot schedule notifications in the past'
+                )
+            );
         }
-        if (!$this->getProvider()) {
+        if (! $this->getProvider()) {
             $result->addFieldError(
                 'Provider',
                 _t(
@@ -250,29 +243,25 @@ class PushNotification extends DataObject
     {
         parent::onBeforeWrite();
 
-        if (!interface_exists(QueuedJob::class)) {
+        if (! interface_exists(QueuedJob::class)) {
             return;
         }
 
         if ($this->ScheduledAt) {
-            if (!$this->ID) {
+            if (! $this->ID) {
                 $this->resave = true;
+            } elseif ($this->SendJobID) {
+                $job = $this->SendJob();
+                $job->StartAfter = $this->ScheduledAt;
+                $job->write();
             } else {
-                if ($this->SendJobID) {
-                    $job = $this->SendJob();
-                    $job->StartAfter = $this->ScheduledAt;
-                    $job->write();
-                } else {
-                    $this->SendJobID = singleton(QueuedJobService::class)->queueJob(
-                        new SendPushNotificationsJob($this),
-                        $this->ScheduledAt
-                    );
-                }
+                $this->SendJobID = singleton(QueuedJobService::class)->queueJob(
+                    new SendPushNotificationsJob($this),
+                    $this->ScheduledAt
+                );
             }
-        } else {
-            if ($this->SendJobID) {
-                $this->SendJob()->delete();
-            }
+        } elseif ($this->SendJobID) {
+            $this->SendJob()->delete();
         }
     }
 
@@ -286,7 +275,7 @@ class PushNotification extends DataObject
 
     public function canEdit($member = null)
     {
-        return !$this->Sent && parent::canEdit($member);
+        return ! $this->Sent && parent::canEdit($member);
     }
 
     /**
@@ -298,11 +287,11 @@ class PushNotification extends DataObject
             return $this->providerInst;
         }
 
-        $class    = $this->ProviderClass;
+        $class = $this->ProviderClass;
         $settings = $this->ProviderSettings;
 
         if ($class) {
-            if (!is_subclass_of($class, PushNotificationProvider::class)) {
+            if (! is_subclass_of($class, PushNotificationProvider::class)) {
                 throw new Exception("An invalid provider class $class was encountered.");
             }
 
@@ -318,13 +307,13 @@ class PushNotification extends DataObject
 
     public function setProvider(?PushNotificationProvider $provider = null)
     {
-        if ($provider) {
-            $this->providerInst     = $provider;
-            $this->ProviderClass    = get_class($provider);
+        if ($provider instanceof \Sunnysideup\PushNotifications\Api\PushNotificationProvider) {
+            $this->providerInst = $provider;
+            $this->ProviderClass = get_class($provider);
             $this->ProviderSettings = serialize($provider->getSettings());
         } else {
-            $this->providerInst     = null;
-            $this->ProviderClass    = null;
+            $this->providerInst = null;
+            $this->ProviderClass = null;
             $this->ProviderSettings = null;
         }
     }
@@ -362,13 +351,13 @@ class PushNotification extends DataObject
             throw new PushException('This notification has already been sent.');
         }
 
-        if (!$provider) {
+        if (! $provider) {
             throw new PushException('No push notification provider has been set.');
         }
 
         $provider->sendPushNotification($this);
 
-        $this->Sent   = true;
+        $this->Sent = true;
         $this->SentAt = date('Y-m-d H:i:s');
         $this->write();
     }

@@ -28,25 +28,25 @@ class SubscriberMessage extends DataObject
         $obj = self::create();
         $obj->MemberID = $member->ID;
         $obj->PushNotificationID = $pushNotification->ID;
-        if($subscriber) {
+        if ($subscriber instanceof \Sunnysideup\PushNotifications\Model\Subscriber) {
             $obj->SubscriberID = $subscriber->ID;
         }
         $obj->write();
         return $obj;
     }
+
     private static $table_name = 'SubscriberMessage';
 
-    private static $db = array(
+    private static $db = [
         'Success' => 'Boolean',
         'ErrorMessage' => 'Text',
-    );
+    ];
 
-    private static $has_one = array(
+    private static $has_one = [
         'Subscriber' => Subscriber::class,
         'PushNotification' => PushNotification::class,
         'Member' => Member::class,
-    );
-
+    ];
 
     private static $summary_fields = [
         'Created.Nice' => 'When',
@@ -81,13 +81,13 @@ class SubscriberMessage extends DataObject
 
     public function canView($member = null)
     {
-        if(Permission::check('ADMIN')) {
+        if (Permission::check('ADMIN')) {
             return true;
         }
-        if(! $member) {
+        if (! $member) {
             $member = Security::getCurrentUser();
         }
-        if($member) {
+        if ($member) {
             return $member->ID === $this->MemberID;
         }
         return false;
@@ -102,10 +102,10 @@ class SubscriberMessage extends DataObject
     {
         parent::onBeforeWrite();
         $this->Title =
-            (string) ($this->PushNotification()?->Title) .
+            $this->PushNotification()?->Title .
             '--- TO: ' .
-            (string) ($this->Subscriber()?->Member()?->Email)
-            .'--- ON: '.
+            $this->Subscriber()?->Member()?->Email
+            . '--- ON: ' .
             $this->Created;
     }
 
@@ -126,5 +126,4 @@ class SubscriberMessage extends DataObject
         );
         return $fields;
     }
-
 }

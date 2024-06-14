@@ -3,29 +3,21 @@
 namespace Sunnysideup\PushNotifications\Model;
 
 use Exception;
-use SilverStripe\Control\Controller;
-use Sunnysideup\PushNotifications\Model\Subscriber;
-use SilverStripe\Security\Security;
 use Page;
-use SilverStripe\Control\Director;
+use SilverStripe\Control\Controller;
 use SilverStripe\SiteConfig\SiteConfig;
 use Sunnysideup\PushNotifications\Controllers\PushNotificationPageController;
 
-/**
- * Class \Sunnysideup\PushNotifications\Model\PushNotificationPage
- *
- */
 class PushNotificationPage extends Page
 {
     private static $table_name = 'PushNotificationPage';
 
     private static $controller_name = PushNotificationPageController::class;
 
-
     protected function modifyJsonValue(string $filePath, string $key, $newValue): void
     {
         // Check if the file exists
-        if (!file_exists($filePath)) {
+        if (! file_exists($filePath)) {
             throw new Exception('File not found.');
         }
 
@@ -70,6 +62,4 @@ class PushNotificationPage extends Page
     {
         return Controller::join_links(BASE_PATH, 'public', 'manifest.json');
     }
-
-
 }

@@ -15,6 +15,7 @@ class PushProvidersRegistry
      * This has to be public!
      */
     public $providers = [];
+
     protected $providersAsEnabledObjects = [];
 
     /**
@@ -51,9 +52,9 @@ class PushProvidersRegistry
      */
     public function getProvidersAsEnabledObjects()
     {
-        foreach($this->providers as $key => $provider) {
+        foreach ($this->providers as $key => $provider) {
             $obj = Injector::inst()->get($provider);
-            if($obj->isEnabled()) {
+            if ($obj->isEnabled()) {
                 $this->providersAsEnabledObjects[$key] = $obj;
             }
         }

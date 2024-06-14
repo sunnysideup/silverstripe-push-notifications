@@ -12,7 +12,8 @@ use Sunnysideup\PushNotifications\Model\PushNotification;
  */
 abstract class PushNotificationProvider
 {
-    protected $settings = array();
+    protected $settings = [];
+
     protected $field;
 
     /**
@@ -37,8 +38,6 @@ abstract class PushNotificationProvider
     /**
      * Populates this provider's settings from an array of data, usually
      * received in a request.
-     *
-     * @param array $data
      */
     public function setSettings(array $data)
     {
@@ -49,6 +48,7 @@ abstract class PushNotificationProvider
         if (array_key_exists($key, $this->settings)) {
             return $this->settings[$key];
         }
+        return null;
     }
 
     /**
@@ -63,7 +63,6 @@ abstract class PushNotificationProvider
     /**
      * Returns a list of form fields used for populating the custom settings.
      *
-     * @param  PushProviderField $field
      * @return FieldList
      */
     public function getSettingsFields()
@@ -107,5 +106,4 @@ abstract class PushNotificationProvider
     {
         return false;
     }
-
 }

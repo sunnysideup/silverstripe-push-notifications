@@ -2,20 +2,16 @@
 
 namespace Sunnysideup\PushNotifications\Api\Providers;
 
-use Minishlink\WebPush\WebPush;
 use Minishlink\WebPush\Subscription;
-use SilverStripe\Core\Environment;
-use SilverStripe\Forms\FieldList;
-use SilverStripe\Forms\TextField;
-use Sunnysideup\PushNotifications\Api\PushNotificationProvider;
-use Sunnysideup\PushNotifications\Model\PushNotification;
-use Sunnysideup\PushNotifications\Model\Subscriber;
-use Sunnysideup\PushNotifications\Model\SubscriberMessage;
+use Minishlink\WebPush\WebPush;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Config\Configurable;
+use SilverStripe\Core\Environment;
+use Sunnysideup\PushNotifications\Api\PushNotificationProvider;
+use Sunnysideup\PushNotifications\Model\PushNotification;
+use Sunnysideup\PushNotifications\Model\SubscriberMessage;
 
 /**
- *
  * @package silverstripe-push
  */
 class PushNotificationVapid extends PushNotificationProvider
@@ -27,17 +23,14 @@ class PushNotificationVapid extends PushNotificationProvider
      *
      * @var string
      */
-    private static $notification_icon = null;
-
+    private static $notification_icon;
 
     /**
      * e.g. https://mysite.com/icon.png OR icon.png
      *
      * @var string
      */
-    private static $notification_badge = null;
-
-
+    private static $notification_badge;
 
     public function getTitle()
     {
@@ -47,43 +40,37 @@ class PushNotificationVapid extends PushNotificationProvider
     public function sendPushNotification(PushNotification $notification)
     {
         $subject = Environment::getEnv('SS_VAPID_SUBJECT');
-        if (!$subject) {
+        if (! $subject) {
             user_error('SS_VAPID_SUBJECT is not defined');
         }
 
         $publicKey = Environment::getEnv('SS_VAPID_PUBLIC_KEY');
-        if (!$publicKey) {
+        if (! $publicKey) {
             user_error('SS_VAPID_PUBLIC_KEY is not defined');
         }
 
         $privateKey = Environment::getEnv('SS_VAPID_PRIVATE_KEY');
-        if (!$privateKey) {
+        if (! $privateKey) {
             user_error('SS_VAPID_PRIVATE_KEY is not defined');
         }
 
-
         $auth = [
             'VAPID' => [
-                "subject" => $subject,
-                "publicKey" => $publicKey,
-                "privateKey" => $privateKey,
+                'subject' => $subject,
+                'publicKey' => $publicKey,
+                'privateKey' => $privateKey,
             ],
         ];
 
-
-
-
-
         $icon = static::config()->get('notification_icon');
-        if (!is_null($icon) && !isset(parse_url($icon)['host'])) {
+        if (! is_null($icon) && ! isset(parse_url($icon)['host'])) {
             $icon = Director::absoluteURL($icon);
         }
 
         $badge = static::config()->get('notification_badge');
-        if (!is_null($badge) && !isset(parse_url($badge)['host'])) {
+        if (! is_null($badge) && ! isset(parse_url($badge)['host'])) {
             $badge = Director::absoluteURL($badge);
         }
-
 
         $webPush = new WebPush($auth);
 
@@ -94,8 +81,6 @@ class PushNotificationVapid extends PushNotificationProvider
             'icon' => $icon,
             'badge' => $badge,
         ]);
-
-
 
         $subscriptionJsons = [];
 
@@ -122,8 +107,6 @@ class PushNotificationVapid extends PushNotificationProvider
         }
 
         return json_encode(['success' => true, 'results' => $subscriptionJsons]);
-
-
     }
 
     public function isEnabled(): bool
@@ -131,8 +114,6 @@ class PushNotificationVapid extends PushNotificationProvider
         $subject = Environment::getEnv('SS_VAPID_SUBJECT');
         $publicKey = Environment::getEnv('SS_VAPID_PUBLIC_KEY');
         $privateKey = Environment::getEnv('SS_VAPID_PRIVATE_KEY');
-        return (bool) ($subject && $publicKey && $privateKey);
+        return $subject && $publicKey && $privateKey;
     }
-
-
 }

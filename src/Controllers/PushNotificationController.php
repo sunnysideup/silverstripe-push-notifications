@@ -4,30 +4,24 @@ namespace Sunnysideup\PushNotifications\Controllers;
 
 use Exception;
 use SilverStripe\Control\Controller;
-use Sunnysideup\PushNotifications\Model\Subscriber;
 use SilverStripe\Security\Security;
+use Sunnysideup\PushNotifications\Model\Subscriber;
 
-/**
- * Class \Sunnysideup\PushNotifications\Controllers\Subscribe
- *
- */
 class PushNotificationController extends Controller
 {
-    private static $allowed_actions = array(
+    private static $allowed_actions = [
         'subscribe' => true,
-    );
+    ];
 
-    private static $url_handlers = array(
+    private static $url_handlers = [
         'subscribe' => 'subscribe',
-    );
-
+    ];
 
     public function subscribe($request)
     {
         $subscription = $request->getBody();
 
         try {
-
             $subscriber = Subscriber::create();
             $subscriber->Subscription = $subscription;
 
@@ -39,12 +33,8 @@ class PushNotificationController extends Controller
             $subscriber->write();
 
             echo json_encode(['success' => true]);
-
         } catch (Exception $e) {
             echo json_encode(['success' => false, 'error' => $e->getMessage()]);
         }
-
-
-
     }
 }

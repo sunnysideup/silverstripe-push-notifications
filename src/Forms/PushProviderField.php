@@ -2,7 +2,6 @@
 
 namespace Sunnysideup\PushNotifications\Forms;
 
-use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\FormField;
 use SilverStripe\ORM\DataObjectInterface;
@@ -17,22 +16,24 @@ use Sunnysideup\PushNotifications\Api\PushNotificationProvider;
  */
 class PushProviderField extends FormField
 {
-    private static $url_handlers = array(
-        'fields/$Class!' => 'fields'
-    );
+    private static $url_handlers = [
+        'fields/$Class!' => 'fields',
+    ];
 
-    private static $allowed_actions = array(
-        'fields'
-    );
+    private static $allowed_actions = [
+        'fields',
+    ];
 
     protected $registry;
+
     protected $provider;
-    protected $providers = array();
+
+    protected $providers = [];
 
     public function setRegistry($registry)
     {
         $this->registry = $registry;
-        foreach ($this->registry->getProvidersAsEnabledObjects() as $className => $inst) {
+        foreach ($this->registry->getProvidersAsEnabledObjects() as $inst) {
             $this->providers[get_class($inst)] = $inst;
             $inst->setFormField($this);
         }
@@ -42,7 +43,7 @@ class PushProviderField extends FormField
     {
         $class = $request->param('Class');
 
-        if (!$this->registry->has($class)) {
+        if (! $this->registry->has($class)) {
             $this->httpError(404);
         }
 
@@ -53,15 +54,11 @@ class PushProviderField extends FormField
             $inst->setFormField($this);
         }
 
-        if ($this->isReadonly()) {
-            $fields = $inst->getSettingsFields()->makeReadonly();
-        } else {
-            $fields = $inst->getSettingsFields();
-        }
+        $fields = $this->isReadonly() ? $inst->getSettingsFields()->makeReadonly() : $inst->getSettingsFields();
 
-        $data = new ArrayData(array(
-            'SettingsFields' => $fields
-        ));
+        $data = new ArrayData([
+            'SettingsFields' => $fields,
+        ]);
         return $data->renderWith('PushProviderField_ProviderFields');
     }
 
@@ -70,7 +67,7 @@ class PushProviderField extends FormField
         if ($this->provider) {
             $result = $this->provider->validateSettings();
 
-            if (!$result->isValid()) {
+            if (! $result->isValid()) {
                 // @TODO: handle multiple fields being returned
                 $messages = $result->getMessages();
                 $validator->validationError($this->name, $messages[0]['message'], 'validation');
@@ -94,7 +91,7 @@ class PushProviderField extends FormField
             $this->provider = $value;
             $this->provider->setFormField($this);
         } elseif (is_array($value)) {
-            $class    = isset($value['Provider']) ? $value['Provider'] : null;
+            $class = isset($value['Provider']) ? $value['Provider'] : null;
             $settings = isset($value['Settings']) ? $value['Settings'] : null;
             if ($class && is_subclass_of($class, PushNotificationProvider::class)) {
                 $this->provider = new $class();
@@ -115,7 +112,7 @@ class PushProviderField extends FormField
         $record->{$this->name} = $this->provider;
     }
 
-    public function FieldHolder($properties = array())
+    public function FieldHolder($properties = [])
     {
         Requirements::javascript('sunnysideup/push-notifications: client/dist/javascript/PushProviderField.js');
 
@@ -124,7 +121,7 @@ class PushProviderField extends FormField
 
     public function ProviderField()
     {
-        $values = array();
+        $values = [];
 
         foreach ($this->providers as $class => $inst) {
             $values[$class] = $inst->getTitle();
@@ -154,5 +151,6 @@ class PushProviderField extends FormField
                 return $fields;
             }
         }
+        return null;
     }
 }

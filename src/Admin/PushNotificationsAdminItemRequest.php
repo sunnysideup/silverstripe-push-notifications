@@ -5,17 +5,16 @@ namespace Sunnysideup\PushNotifications\Admin;
 use Exception;
 use SilverStripe\Control\HTTPResponse;
 use SilverStripe\Forms\GridField\GridFieldDetailForm_ItemRequest;
-use Sunnysideup\PushNotifications\ErrorHandling\PushException;
 
 /**
  * Handles sending push notifications.
  */
 class PushNotificationsAdminItemRequest extends GridFieldDetailForm_ItemRequest
 {
-    private static $allowed_actions = array(
-        'doSend'
-    );
-    
+    private static $allowed_actions = [
+        'doSend',
+    ];
+
     public function doSend($data, $form)
     {
         try {

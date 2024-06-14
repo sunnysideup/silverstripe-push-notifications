@@ -2,10 +2,9 @@
 
 namespace Sunnysideup\PushNotifications\Controllers;
 
-use Exception;
 use SilverStripe\CMS\Controllers\ContentController;
-use Sunnysideup\PushNotifications\Model\PushNotification;
 use SilverStripe\ORM\ArrayList;
+use Sunnysideup\PushNotifications\Model\PushNotification;
 
 /**
  * Class \Sunnysideup\PushNotifications\Controllers\PushNotificationPageController
@@ -16,7 +15,8 @@ use SilverStripe\ORM\ArrayList;
  */
 class PushNotificationPageController extends ContentController
 {
-    public function getPushNotifications() {
+    public function getPushNotifications()
+    {
         $notifications = PushNotification::get()->filter('Sent', 1)->sort('SentAt', 'DESC');
         $output = ArrayList::create();
 
@@ -25,7 +25,6 @@ class PushNotificationPageController extends ContentController
                 $output->push($notification);
             }
         }
-
 
         return $output;
     }
