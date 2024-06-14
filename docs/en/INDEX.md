@@ -10,6 +10,8 @@ SilverStripe\Core\Injector\Injector:
                 - Sunnysideup\PushNotifications\Api\Providers\PushNotificationVapid
 ```
 
+Also see </_config/push-notifications.yml.example>
+
 # use vapid
 
 Please go to <https://vapidkeys.com/> to generate your vapid keys.
