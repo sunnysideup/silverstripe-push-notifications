@@ -7,3 +7,11 @@
 	height: 16px;
 	margin-top: 6px;
 }
+
+.subscribe-now:not(:has(button:not([disabled]))) {
+	display: none;
+}
+
+.subscribe-now button:disabled {
+	display: none;
+}
