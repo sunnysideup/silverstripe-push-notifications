@@ -26,3 +26,11 @@ After: framework
 SilverStripe\Control\Director:
   rules:
     'notifications/$Action': '%$Sunnysideup\PushNotifications\Controllers\PushNotificationController'
+
+PageController:
+  extensions:
+    - Sunnysideup\PushNotifications\Extensions\ScriptIncludeExtension
+
+Sunnysideup\PushNotifications\Controllers\PushNotificationPageController:
+  extensions:
+    - Sunnysideup\PushNotifications\Extensions\ScriptIncludeExtension

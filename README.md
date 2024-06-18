@@ -28,7 +28,7 @@ See [composer.json](composer.json) for details.
 composer require push-notifications
 ```
 
-Add a manifest.json file to your main web directory! See manifest.json.example as an example.
+Add a manifest.json file to your main web directory! See manifest.json.example as an example. Details will overwrite automatically, but the file must exist.
 
 ### Configuration
 
