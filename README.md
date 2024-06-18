@@ -28,6 +28,8 @@ See [composer.json](composer.json) for details.
 composer require push-notifications
 ```
 
+Add a manifest.json file to your main web directory! See manifest.json.example as an example.
+
 ### Configuration
 
 In the `_config` folder you will find the `push-notifications.yml.example`
