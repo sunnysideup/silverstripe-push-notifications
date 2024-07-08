@@ -5,6 +5,8 @@ namespace Sunnysideup\PushNotifications\Model;
 use Exception;
 use Page;
 use SilverStripe\Control\Controller;
+use SilverStripe\Forms\CheckboxField;
+use SilverStripe\Forms\TextField;
 use SilverStripe\SiteConfig\SiteConfig;
 use Sunnysideup\PushNotifications\Controllers\PushNotificationPageController;
 
@@ -13,6 +15,11 @@ class PushNotificationPage extends Page
     private static $table_name = 'PushNotificationPage';
 
     private static $controller_name = PushNotificationPageController::class;
+
+    private static $db = [
+        'UseOneSignal' => 'Boolean',
+        'OneSignalKey' => 'Varchar(65)',
+    ];
 
     protected function modifyJsonValue(string $filePath, string $key, $newValue): void
     {
@@ -54,12 +61,32 @@ class PushNotificationPage extends Page
         parent::onBeforeWrite();
 
         // Modify the JSON value
-        $this->modifyJsonValue($this->getManifestPath(), 'name', SiteConfig::current_site_config()->Title . ' - ' . $this->Title);
-        $this->modifyJsonValue($this->getManifestPath(), 'start_url', $this->Link());
+        $this->modifyJsonValue($this->getManifestPath(), '$schema', "https://json.schemastore.org/web-manifest-combined.json");
+        $this->modifyJsonValue($this->getManifestPath(), 'name', SiteConfig::current_site_config()->Title);
+        $this->modifyJsonValue($this->getManifestPath(), 'short_name', SiteConfig::current_site_config()->Title);
+        $this->modifyJsonValue($this->getManifestPath(), 'start_url', '/');
+        $this->modifyJsonValue($this->getManifestPath(), 'display', 'standalone');
+
     }
 
     protected function getManifestPath(): string
     {
         return Controller::join_links(BASE_PATH, 'public', 'manifest.json');
+    }
+
+    public function getCMSFields()
+    {
+        $fields = parent::getCMSFields();
+
+        $fields->addFieldsToTab(
+            'Root.PushNotifications',
+            [
+                CheckboxField::create('UseOneSignal', 'Use OneSignal'),
+                TextField::create('OneSignalKey', 'One Signal Key'),
+
+            ]
+        );
+
+        return $fields;
     }
 }

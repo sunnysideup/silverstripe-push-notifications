@@ -10,9 +10,9 @@
 
 ## Documentation
 
--   [Developer Docs](docs/en/INDEX.md)
--   [User Guide](docs/en/userguide.md)
--   [API Docs](http://docs.ssmods.com/push-notifications/classes.xhtml)
+- [Developer Docs](docs/en/INDEX.md)
+- [User Guide](docs/en/userguide.md)
+- [API Docs](http://docs.ssmods.com/push-notifications/classes.xhtml)
 
 ## Requirements
 
@@ -56,7 +56,7 @@ For example, we can write tests for this module.
 
 ## Author
 
-Sunny Side Up Ltd.
+Sunny Side Up Ltd. based on an existing module from [Symbiote](https://github.com/symbiote-library/silverstripe-push)
 
 ## Looking for Silverstripe Modules?
 

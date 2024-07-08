@@ -109,6 +109,8 @@ class PushNotificationVapid extends PushNotificationProvider
         return json_encode(['success' => true, 'results' => $subscriptionJsons]);
     }
 
+
+
     public function isEnabled(): bool
     {
         $subject = Environment::getEnv('SS_VAPID_SUBJECT');

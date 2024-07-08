@@ -4,6 +4,7 @@ namespace Sunnysideup\PushNotifications\Controllers;
 
 use SilverStripe\CMS\Controllers\ContentController;
 use SilverStripe\ORM\ArrayList;
+use SilverStripe\View\Requirements;
 use Sunnysideup\PushNotifications\Model\PushNotification;
 
 /**
@@ -28,4 +29,5 @@ class PushNotificationPageController extends ContentController
 
         return $output;
     }
+
 }

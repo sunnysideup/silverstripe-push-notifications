@@ -1,3 +1,9 @@
+<% if $UseOneSignal %>
+
+<div class='onesignal-customlink-container'></div>
+
+<% else %>
+
 <button id='subscribe-button' onClick="pushNotifications.requestPushNotifications();return false;">Click to subscribe to push notifications</button>
 
 
@@ -10,3 +16,5 @@
     const vapid_public_key = 'abcd';
 </script>
 --%>
+
+<% end_if %>
