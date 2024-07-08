@@ -8,6 +8,7 @@ use SilverStripe\Control\Controller;
 use SilverStripe\Forms\CheckboxField;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridFieldConfig_RecordEditor;
+use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\TextField;
 use SilverStripe\SiteConfig\SiteConfig;
 use Sunnysideup\PushNotifications\Controllers\PushNotificationPageController;
@@ -16,7 +17,7 @@ class PushNotificationPage extends Page
 {
     private static $table_name = 'PushNotificationPage';
 
-    private static $icon = 'font-icon-fast-forward';
+    private static $icon_class = 'font-icon-fast-forward';
 
     private static $controller_name = PushNotificationPageController::class;
 
@@ -63,12 +64,13 @@ class PushNotificationPage extends Page
     protected function onBeforeWrite()
     {
         parent::onBeforeWrite();
-
+        $this->URLSegment = 'push-notifications';
+        $this->ParentID = 0;
         // Modify the JSON value
         $this->modifyJsonValue($this->getManifestPath(), '$schema', "https://json.schemastore.org/web-manifest-combined.json");
         $this->modifyJsonValue($this->getManifestPath(), 'name', SiteConfig::current_site_config()->Title);
         $this->modifyJsonValue($this->getManifestPath(), 'short_name', SiteConfig::current_site_config()->Title);
-        $this->modifyJsonValue($this->getManifestPath(), 'start_url', '/');
+        $this->modifyJsonValue($this->getManifestPath(), 'start_url', '/push-notifications');
         $this->modifyJsonValue($this->getManifestPath(), 'display', 'standalone');
 
     }
@@ -90,7 +92,45 @@ class PushNotificationPage extends Page
 
             ]
         );
-        if(! $this->UseOneSignal) {
+        if($this->UseOneSignal && !$this->OneSignalKey) {
+            // $fields->removeByName('PushNotifications');
+            $fields->addFieldsToTab(
+                'Root.Manage',
+                [
+                    LiteralField::create(
+                        'OneSignalInfo',
+                        '<h2>One Signal</h2>
+                        <p>
+                            Please access one signal to manage your push notifications:
+                            <br />
+                            <a href="https://app.onesignal.com/apps/new" target="_blank">Create a new app</a>
+                            </p>
+                        '
+                    ),
+                ]
+            );
+        } elseif($this->UseOneSignal && $this->OneSignalKey) {
+            $fields->removeByName('PushNotifications');
+            $fields->addFieldsToTab(
+                'Root.Manage',
+                [
+                    LiteralField::create(
+                        'OneSignalInfo',
+                        '<h2>One Signal</h2>
+                        <p>
+                            Please access one signal to manage your push notifications:
+                            <br />
+                            <a href="https://dashboard.onesignal.com/apps/'.$this->OneSignalKey.'/settings/webpush/configure" targget="_blank" rel="noopener noreferrer">Configure (with care!)</a>
+                            <br />
+                            <a href="https://dashboard.onesignal.com/apps/'.$this->OneSignalKey.'/campaigns" rel="noopener noreferrer">Send Push Notification</a>
+                            <br />
+                            <a href="https://dashboard.onesignal.com/apps/'.$this->OneSignalKey.'/notifications" targget="_blank" rel="noopener noreferrer">Review sent messages</a>
+                        </p>
+                        '
+                    ),
+                ]
+            );
+        } else {
             $fields->removeByName('OneSignalKey');
             $fields->addFieldsToTab(
                 'Root.PushNotifications',
