@@ -1,4 +1,34 @@
 
+
+<% if $UseOneSignal %>
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "$OneSignalKey",
+    });
+  });
+</script>
+
+<div class="content-container unit size3of4 lastUnit">
+  <article>
+    <h1>$Title</h1>
+    <div class="content">$Content</div>
+
+    <div class="subscribe-now">
+        <hr />
+        <h2>$FirstName, manage your subscription to notifications:</h2>
+        <% include Sunnysideup\\PushNotifications\\SubscribeButton %>
+    </div>
+
+
+  </article>
+</div>
+
+<% else %>
+
+
 <div class="content-container unit size3of4 lastUnit">
   <article>
     <h1>$Title</h1>
@@ -35,14 +65,4 @@
   </article>
 </div>
 
-<% if $UseOneSignal %>
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-<script>
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(async function(OneSignal) {
-    await OneSignal.init({
-      appId: "$OneSignalKey",
-    });
-  });
-</script>
 <% end_if %>

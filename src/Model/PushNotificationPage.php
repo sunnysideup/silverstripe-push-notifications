@@ -6,6 +6,8 @@ use Exception;
 use Page;
 use SilverStripe\Control\Controller;
 use SilverStripe\Forms\CheckboxField;
+use SilverStripe\Forms\GridField\GridField;
+use SilverStripe\Forms\GridField\GridFieldConfig_RecordEditor;
 use SilverStripe\Forms\TextField;
 use SilverStripe\SiteConfig\SiteConfig;
 use Sunnysideup\PushNotifications\Controllers\PushNotificationPageController;
@@ -13,6 +15,8 @@ use Sunnysideup\PushNotifications\Controllers\PushNotificationPageController;
 class PushNotificationPage extends Page
 {
     private static $table_name = 'PushNotificationPage';
+
+    private static $icon = 'font-icon-fast-forward';
 
     private static $controller_name = PushNotificationPageController::class;
 
@@ -86,7 +90,31 @@ class PushNotificationPage extends Page
 
             ]
         );
-
+        if(! $this->UseOneSignal) {
+            $fields->removeByName('OneSignalKey');
+            $fields->addFieldsToTab(
+                'Root.PushNotifications',
+                [
+                    GridField::create(
+                        'PushNotifications',
+                        'Push Notifications',
+                        $this->PushNotifications(),
+                        $config = GridFieldConfig_RecordEditor::create()
+                    )
+                ]
+            );
+            $fields->addFieldsToTab(
+                'Root.Subscribers',
+                [
+                    GridField::create(
+                        'PushNotifications',
+                        'Push Notifications',
+                        $this->PushNotifications(),
+                        $config = GridFieldConfig_RecordEditor::create()
+                    )
+                ]
+            );
+        }
         return $fields;
     }
 }

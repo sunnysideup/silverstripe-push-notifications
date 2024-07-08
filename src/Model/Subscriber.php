@@ -25,6 +25,12 @@ class Subscriber extends DataObject
         'Member' => Member::class,
     ];
 
+    private static $summary_fields = [
+        'Member.Title' => 'Who',
+        'SubscriptionDetails' => 'Details',
+        'SubscriberMessages.Count' => 'Messages',
+    ];
+
     private static $has_many = [
         'SubscriberMessages' => SubscriberMessage::class,
     ];
