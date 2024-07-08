@@ -1,7 +1,4 @@
 
-
-
-
 <div class="content-container unit size3of4 lastUnit">
   <article>
     <h1>$Title</h1>
@@ -37,7 +34,6 @@
 
   </article>
 </div>
-
 
 <% if $UseOneSignal %>
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
