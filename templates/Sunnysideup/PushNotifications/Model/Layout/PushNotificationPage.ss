@@ -18,7 +18,7 @@
 
     <div class="subscribe-now">
         <hr />
-        <h2>$FirstName, manage your subscription to notifications:</h2>
+        <h2>Welcome back $CurrentUser.FirstName, manage your notifications:</h2>
         <% include Sunnysideup\\PushNotifications\\SubscribeButton %>
     </div>
 
