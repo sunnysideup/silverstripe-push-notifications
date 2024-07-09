@@ -133,11 +133,11 @@ class PushNotificationPage extends Page
                             <p>
                                 Please access one signal to manage your push notifications:
                                 <br />
-                                <a href="https://dashboard.onesignal.com/apps/'.$this->OneSignalKey.'/settings/webpush/configure" targget="_blank" rel="noopener noreferrer">Configure (with care!)</a>
+                                <a href="https://dashboard.onesignal.com/apps/'.$this->OneSignalKey.'/settings/webpush/configure" target="_blank" rel="noopener noreferrer">Configure (with care!)</a>
                                 <br />
-                                <a href="https://dashboard.onesignal.com/apps/'.$this->OneSignalKey.'/campaigns" rel="noopener noreferrer">Send Push Notification</a>
+                                <a href="https://dashboard.onesignal.com/apps/'.$this->OneSignalKey.'/campaigns" target="_blank"  rel="noopener noreferrer">Send Push Notification</a>
                                 <br />
-                                <a href="https://dashboard.onesignal.com/apps/'.$this->OneSignalKey.'/notifications" targget="_blank" rel="noopener noreferrer">Review sent messages</a>
+                                <a href="https://dashboard.onesignal.com/apps/'.$this->OneSignalKey.'/notifications" target="_blank" rel="noopener noreferrer">Review sent messages</a>
                             </p>
                             '
                         ),
