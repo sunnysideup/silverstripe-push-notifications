@@ -151,7 +151,7 @@ class PushNotificationPage extends Page
                     GridField::create(
                         'PushNotifications',
                         'Push Notifications',
-                        $this->PushNotifications(),
+                        PushNotification::get(),
                         $config = GridFieldConfig_RecordEditor::create()
                     )
                 ]
@@ -160,25 +160,28 @@ class PushNotificationPage extends Page
                 'Root.Subscribers',
                 [
                     GridField::create(
-                        'PushNotifications',
-                        'Push Notifications',
-                        $this->PushNotifications(),
+                        'Subscribers',
+                        'Subscribers',
+                        Subscriber::get(),
                         $config = GridFieldConfig_RecordEditor::create()
                     )
                 ]
             );
         }
-        $fields->push(
-            LiteralField::create(
-                'PushNotificationsInfo',
-                '
-                <p class="message warning">
-                    Please make sure to review your <a href="/manifest.json">manifest.json</a> file and adjust as required.
-                    This page may write to this file. This file currently is '.($this->canAccessOrCreateFile() ? '' : 'not').'
-                    writeable.
-                    You will not be able to publis this page if the file is not writeable.
-                </p>'
-            )
+        $fields->addFieldsToTab(
+            'Root.Main',
+            [
+                LiteralField::create(
+                    'PushNotificationsInfo',
+                    '
+                    <p class="message warning">
+                        Please make sure to review your <a href="/manifest.json">manifest.json</a> file and adjust as required.
+                        This page may write to this file. This file currently is '.($this->canAccessOrCreateFile() ? '' : 'not').'
+                        writeable.
+                        '.($this->canAccessOrCreateFile() ? '' : 'Only once the file is writeable you can publish this page. ').'
+                    </p>'
+                )
+            ]
         );
         return $fields;
     }
