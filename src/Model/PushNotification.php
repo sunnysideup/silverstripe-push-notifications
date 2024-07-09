@@ -3,6 +3,7 @@
 namespace Sunnysideup\PushNotifications\Model;
 
 use Exception;
+use LeKoala\CmsActions\CustomAction;
 use SilverStripe\Control\Director;
 use SilverStripe\Forms\CheckboxSetField;
 use SilverStripe\Forms\HeaderField;
@@ -371,5 +372,29 @@ class PushNotification extends DataObject
     public function getCMSValidator()
     {
         return RequiredFields::create('Title', 'ProviderClass');
+    }
+
+    public function getCMSActions()
+    {
+        $actions = parent::getCMSActions();
+        if($this->canSend()) {
+            $actions->push($action = new CustomAction("doSendCMSAction", "Send"));
+            $action
+                ->addExtraClass('ss-ui-action btn btn-primary font-icon-block-email action--new discard-confirmation')
+                ->setUseButtonTag(true)
+                ->setShouldRefresh(true);
+        }
+
+        return $actions;
+    }
+
+    public function doSendCMSAction()
+    {
+        if($this->canSend()) {
+            $this->doSend();
+            return 'Sent!';
+        } else {
+            return 'Cannot send';
+        }
     }
 }
