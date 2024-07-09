@@ -11,6 +11,7 @@ use SilverStripe\Forms\GridField\GridFieldConfig_RecordEditor;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\TextField;
 use SilverStripe\SiteConfig\SiteConfig;
+use stdClass;
 use Sunnysideup\PushNotifications\Controllers\PushNotificationPageController;
 
 class PushNotificationPage extends Page
@@ -55,10 +56,12 @@ class PushNotificationPage extends Page
         }
 
         // Save the modified JSON data back to the file
-        $result = file_put_contents($filePath, $newJsonContent);
-        if ($result === false) {
-            throw new Exception('Failed to write to the file.');
+        try {
+            file_put_contents($filePath, $newJsonContent);
+        } catch (Exception $e) {
+            throw $e;
         }
+
     }
 
     protected function onBeforeWrite()
@@ -67,12 +70,22 @@ class PushNotificationPage extends Page
         $this->URLSegment = 'push-notifications';
         $this->ParentID = 0;
         // Modify the JSON value
-        $this->modifyJsonValue($this->getManifestPath(), '$schema', "https://json.schemastore.org/web-manifest-combined.json");
-        $this->modifyJsonValue($this->getManifestPath(), 'name', SiteConfig::current_site_config()->Title);
-        $this->modifyJsonValue($this->getManifestPath(), 'short_name', SiteConfig::current_site_config()->Title);
-        $this->modifyJsonValue($this->getManifestPath(), 'start_url', '/push-notifications');
-        $this->modifyJsonValue($this->getManifestPath(), 'display', 'standalone');
+        if($this->canAccessOrCreateFile()) {
+            $this->modifyJsonValue($this->getManifestPath(), '$schema', "https://json.schemastore.org/web-manifest-combined.json");
+            $this->modifyJsonValue($this->getManifestPath(), 'name', SiteConfig::current_site_config()->Title);
+            $this->modifyJsonValue($this->getManifestPath(), 'short_name', SiteConfig::current_site_config()->Title);
+            $this->modifyJsonValue($this->getManifestPath(), 'start_url', '/push-notifications');
+            $this->modifyJsonValue($this->getManifestPath(), 'display', 'standalone');
+        }
 
+    }
+
+    public function canPublish($member = null)
+    {
+        if($this->canAccessOrCreateFile()) {
+            return parent::canPublish($member);
+        }
+        return false;
     }
 
     protected function getManifestPath(): string
@@ -155,6 +168,39 @@ class PushNotificationPage extends Page
                 ]
             );
         }
+        $fields->push(
+            LiteralField::create(
+                'PushNotificationsInfo',
+                '
+                <p class="message warning">
+                    Please make sure to review your <a href="/manifest.json">manifest.json</a> file and adjust as required.
+                    This page may write to this file. This file currently is '.($this->canAccessOrCreateFile() ? '' : 'not').'
+                    writeable.
+                    You will not be able to publis this page if the file is not writeable.
+                </p>'
+            )
+        );
         return $fields;
+    }
+
+    public function canAccessOrCreateFile(?string $filePath = ''): bool
+    {
+        if(! $filePath) {
+            $filePath = $this->getManifestPath();
+        }
+        if (file_exists($filePath)) {
+            return is_writable($filePath);
+        } else {
+            $dir = dirname($filePath);
+            if (is_writable($dir)) {
+                $fileHandle = fopen($filePath, 'w');
+                if ($fileHandle) {
+                    fwrite($fileHandle, json_encode(new stdClass()));
+                    fclose($fileHandle);
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
