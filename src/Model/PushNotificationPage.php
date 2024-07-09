@@ -105,46 +105,46 @@ class PushNotificationPage extends Page
 
             ]
         );
-        if($this->UseOneSignal && !$this->OneSignalKey) {
-            // $fields->removeByName('PushNotifications');
-            $fields->addFieldsToTab(
-                'Root.Manage',
-                [
-                    LiteralField::create(
-                        'OneSignalInfo',
-                        '<h2>One Signal</h2>
-                        <p>
-                            Please access one signal to manage your push notifications:
-                            <br />
-                            <a href="https://app.onesignal.com/apps/new" target="_blank">Create a new app</a>
+        if($this->UseOneSignal) {
+            if(!$this->OneSignalKey) {
+                // $fields->removeByName('PushNotifications');
+                $fields->addFieldsToTab(
+                    'Root.Manage',
+                    [
+                        LiteralField::create(
+                            'OneSignalInfo',
+                            '<h2>One Signal</h2>
+                            <p>
+                                Please access one signal to manage your push notifications:
+                                <br />
+                                <a href="https://app.onesignal.com/apps/new" target="_blank">Create a new app</a>
+                                </p>
+                            '
+                        ),
+                    ]
+                );
+            } else {
+                $fields->addFieldsToTab(
+                    'Root.Manage',
+                    [
+                        LiteralField::create(
+                            'OneSignalInfo',
+                            '<h2>One Signal</h2>
+                            <p>
+                                Please access one signal to manage your push notifications:
+                                <br />
+                                <a href="https://dashboard.onesignal.com/apps/'.$this->OneSignalKey.'/settings/webpush/configure" targget="_blank" rel="noopener noreferrer">Configure (with care!)</a>
+                                <br />
+                                <a href="https://dashboard.onesignal.com/apps/'.$this->OneSignalKey.'/campaigns" rel="noopener noreferrer">Send Push Notification</a>
+                                <br />
+                                <a href="https://dashboard.onesignal.com/apps/'.$this->OneSignalKey.'/notifications" targget="_blank" rel="noopener noreferrer">Review sent messages</a>
                             </p>
-                        '
-                    ),
-                ]
-            );
-        } elseif($this->UseOneSignal && $this->OneSignalKey) {
-            $fields->removeByName('PushNotifications');
-            $fields->addFieldsToTab(
-                'Root.Manage',
-                [
-                    LiteralField::create(
-                        'OneSignalInfo',
-                        '<h2>One Signal</h2>
-                        <p>
-                            Please access one signal to manage your push notifications:
-                            <br />
-                            <a href="https://dashboard.onesignal.com/apps/'.$this->OneSignalKey.'/settings/webpush/configure" targget="_blank" rel="noopener noreferrer">Configure (with care!)</a>
-                            <br />
-                            <a href="https://dashboard.onesignal.com/apps/'.$this->OneSignalKey.'/campaigns" rel="noopener noreferrer">Send Push Notification</a>
-                            <br />
-                            <a href="https://dashboard.onesignal.com/apps/'.$this->OneSignalKey.'/notifications" targget="_blank" rel="noopener noreferrer">Review sent messages</a>
-                        </p>
-                        '
-                    ),
-                ]
-            );
+                            '
+                        ),
+                    ]
+                );
+            }
         } else {
-            $fields->removeByName('OneSignalKey');
             $fields->addFieldsToTab(
                 'Root.PushNotifications',
                 [
