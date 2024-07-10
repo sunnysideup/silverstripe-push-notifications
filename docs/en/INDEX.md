@@ -11,16 +11,27 @@ It also
 
 Here is how you set up the basic configuration to use Vapid (see below for more details!).
 
+_Firstly_, you have to make sure that the `PushProvidersRegistry` is configured correctly.
+
 ```yml
 SilverStripe\Core\Injector\Injector:
     Sunnysideup\PushNotifications\Api\PushProvidersRegistry:
         properties:
             providers:
-                # - Sunnysideup\PushNotifications\Api\Providers\PushNotificationEmail
                 - Sunnysideup\PushNotifications\Api\Providers\PushNotificationVapid
+                # - Sunnysideup\PushNotifications\Api\Providers\PushNotificationEmail
 ```
 
 Also see </_config/push-notifications.yml.example>
+
+**_Secondly_, you have to make sure to link to `manifest.json` in your `Page.ss` file.**
+
+```html
+<link rel="manifest" href="manifest.json">
+```
+
+_Thirdly_, you may opt to add more details to your `manifest.json` file.  
+Do that carefully so that you make it work with the features in the CMS.
 
 ## CMS Configuration
 
@@ -100,7 +111,7 @@ To remove yourself from the `added to home screen` functionality. You need to re
 
 To remove yourself from notification, in chrome, you can click on the lock icon in the address bar and remove the notifications from there.
 
-You may also remove yourself from the CMS list of recipients. 
+You may also remove yourself from the CMS list of recipients.
 
 # more reading
 
