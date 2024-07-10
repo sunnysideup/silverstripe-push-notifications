@@ -174,6 +174,30 @@ class PushNotification extends DataObject
         return $fields;
     }
 
+    public function getCMSActions()
+    {
+        $actions = parent::getCMSActions();
+        if($this->canSend()) {
+            $actions->push($action = new CustomAction("doSendCMSAction", "Send"));
+            $action
+                ->addExtraClass('ss-ui-action btn btn-primary font-icon-block-email action--new discard-confirmation')
+                ->setUseButtonTag(true)
+                ->setShouldRefresh(true);
+        }
+
+        return $actions;
+    }
+
+    public function doSendCMSAction()
+    {
+        if($this->canSend()) {
+            $this->doSend();
+            return 'Sent!';
+        } else {
+            return 'Cannot send';
+        }
+    }
+
     public function canView($member = null)
     {
         if (! $member) {
@@ -213,9 +237,9 @@ class PushNotification extends DataObject
     public function getValidator()
     {
         if($this->HasExternalProvider()) {
-            return RequiredFields::create(['Title']);
+            return RequiredFields::create(['Title','Content']);
         } else {
-            return RequiredFields::create(['Title', 'ProviderClass']);
+            return RequiredFields::create(['Title', 'Content', 'ProviderClass']);
         }
     }
 
@@ -252,6 +276,15 @@ class PushNotification extends DataObject
                 _t(
                     'Push.CANTSCHEDULEWOPROVIDER',
                     'You cannot schedule a notification without a valid provider configured'
+                )
+            );
+        }
+        if(! $this->Content) {
+            $result->addFieldError(
+                'Content',
+                _t(
+                    'Push.CANTBEBLANK',
+                    'This field cannot be blank'
                 )
             );
         }
@@ -396,29 +429,6 @@ class PushNotification extends DataObject
         return RequiredFields::create('Title', 'ProviderClass');
     }
 
-    public function getCMSActions()
-    {
-        $actions = parent::getCMSActions();
-        if($this->canSend()) {
-            $actions->push($action = new CustomAction("doSendCMSAction", "Send"));
-            $action
-                ->addExtraClass('ss-ui-action btn btn-primary font-icon-block-email action--new discard-confirmation')
-                ->setUseButtonTag(true)
-                ->setShouldRefresh(true);
-        }
-
-        return $actions;
-    }
-
-    public function doSendCMSAction()
-    {
-        if($this->canSend()) {
-            $this->doSend();
-            return 'Sent!';
-        } else {
-            return 'Cannot send';
-        }
-    }
 
     public function HasExternalProvider(): bool
     {

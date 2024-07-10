@@ -282,7 +282,7 @@ class PushNotificationPage extends Page
                         'Subscribers',
                         'Subscribers',
                         Subscriber::get(),
-                        GridFieldConfig_RecordViewer::create()
+                        GridFieldConfig_RecordEditor::create()
                     )
                 ]
             );
