@@ -74,9 +74,9 @@ class PushNotification extends DataObject
     ];
 
     private static $summary_fields = [
-        'Title',
-        'SentAt',
-        'RecipientsCount',
+        'Title' => 'Title',
+        'SentAt' => 'Sent',
+        'RecipientsCount' => 'Number of Recipients',
     ];
 
     private static $searchable_fields = [
