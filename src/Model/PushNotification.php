@@ -149,7 +149,7 @@ class PushNotification extends DataObject
             );
         }
         if ($this->ID && ! $this->HasExternalProvider()) {
-            $possibleRecipientsIds = Subscriber::get()->columnUnique('MemberID');
+            $possibleRecipientsIds = Subscriber::get()->columnUnique('MemberID') + [-1 => -1];
             $fields->addFieldsToTab(
                 'Root.Main',
                 [
