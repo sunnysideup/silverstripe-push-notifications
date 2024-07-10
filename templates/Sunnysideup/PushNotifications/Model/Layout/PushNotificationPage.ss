@@ -1,18 +1,19 @@
-
-
-<% if $UseOneSignal %>
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-<script>
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(async function(OneSignal) {
-    await OneSignal.init({
-      appId: "$OneSignalKey",
-    });
-  });
-</script>
-
 <div class="content-container unit size3of4 lastUnit">
   <article>
+
+<% if $UseOneSignal %>
+
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({
+        appId: "$OneSignalKey",
+        });
+    });
+    </script>
+
+
     <h1>$Title</h1>
     <div class="content">$Content</div>
 
@@ -22,15 +23,9 @@
         <% include Sunnysideup\\PushNotifications\\SubscribeButton %>
     </div>
 
-
-  </article>
-</div>
-
 <% else %>
 
 
-<div class="content-container unit size3of4 lastUnit">
-  <article>
     <h1>$Title</h1>
     <div class="content">$Content</div>
 
@@ -55,14 +50,17 @@
         <% include Sunnysideup\\PushNotifications\\SubscribeButton %>
     </div>
 
+
+
+
+<% end_if %>
+
+
     <div class="previous-message" style="clear: both;">
         <hr />
         <h2>Previous Messages</h2>
         <% include Sunnysideup\\PushNotifications\\PushNotificationList %>
     </div>
 
-
   </article>
 </div>
-
-<% end_if %>

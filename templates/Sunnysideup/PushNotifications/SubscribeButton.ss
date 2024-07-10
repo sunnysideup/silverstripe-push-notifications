@@ -1,20 +1,14 @@
+<div class="add-to-home-screen-container">
+    <button id="add-to-home-screen">Add to Home Screen</button>
+</div>
+
 <% if $UseOneSignal %>
 
 <div class='onesignal-customlink-container'></div>
 
 <% else %>
 
-<button id='subscribe-button' onClick="pushNotifications.requestPushNotifications();return false;">Click to subscribe to push notifications</button>
-
-
-<button id="install-button">Install</button>
-
-<button id="install-and-subscribe">Install and Subscribe</button>
-
-<%--
-<script>
-    const vapid_public_key = 'abcd';
-</script>
---%>
+<button id='subscribe-button' onClick="pushNotifications.requestPushNotifications();return false;">Click to subscribe to notifications</button>
 
 <% end_if %>
+

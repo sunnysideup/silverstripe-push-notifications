@@ -5,6 +5,7 @@ namespace Sunnysideup\PushNotifications\Model;
 use Exception;
 use Page;
 use SilverStripe\Control\Controller;
+use SilverStripe\Control\Director;
 use SilverStripe\Forms\CheckboxField;
 use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridFieldConfig_RecordEditor;
@@ -16,6 +17,8 @@ use Sunnysideup\PushNotifications\Controllers\PushNotificationPageController;
 
 class PushNotificationPage extends Page
 {
+    public const ONE_SIGNAL_INIT_FILE_NAME = 'OneSignalSDKWorker.js';
+
     private static $table_name = 'PushNotificationPage';
 
     private static $icon_class = 'font-icon-fast-forward';
@@ -76,6 +79,23 @@ class PushNotificationPage extends Page
             $this->modifyJsonValue($this->getManifestPath(), 'short_name', SiteConfig::current_site_config()->Title);
             $this->modifyJsonValue($this->getManifestPath(), 'start_url', '/push-notifications');
             $this->modifyJsonValue($this->getManifestPath(), 'display', 'standalone');
+        }
+        if($this->UseOneSignal) {
+            try {
+                copy(
+                    Controller::join_links(
+                        Director::baseFolder(),
+                        '/vendor/sunnysideup/push-notifications/client/dist/third-party/',
+                        self::ONE_SIGNAL_INIT_FILE_NAME
+                    ),
+                    Controller::join_links(
+                        PUBLIC_PATH,
+                        self::ONE_SIGNAL_INIT_FILE_NAME
+                    ),
+                );
+            } catch (Exception $e) {
+                // do nothing
+            }
         }
 
     }
@@ -176,13 +196,28 @@ class PushNotificationPage extends Page
                     '
                     <p class="message warning">
                         Please make sure to review your <a href="/manifest.json">manifest.json</a> file and adjust as required.
-                        This page may write to this file. This file currently is '.($this->canAccessOrCreateFile() ? '' : 'not').'
-                        writeable.
+                        This page may write to this file. This file currently is '.($this->canAccessOrCreateFile() ? '' : 'not').' writeable.
                         '.($this->canAccessOrCreateFile() ? '' : 'Only once the file is writeable you can publish this page. ').'
                     </p>'
                 )
             ]
         );
+        if($this->UseOneSignal) {
+            $accessible = $this->canAccessOrCreateFile($this->OneSignalSDKWorkerPath());
+            $fields->addFieldsToTab(
+                'Root.Main',
+                [
+                    LiteralField::create(
+                        'OneSignalWorkerInfo',
+                        '
+                        <p class="message warning">
+                            Please make sure to review your <a href="/'.self::ONE_SIGNAL_INIT_FILE_NAME.'">'.self::ONE_SIGNAL_INIT_FILE_NAME.'</a> file and adjust as required.
+                            This page may write to this file. This file currently is '.($accessible ? '' : 'not').' writeable.
+                        </p>'
+                    )
+                ]
+            );
+        }
         return $fields;
     }
 
@@ -206,4 +241,11 @@ class PushNotificationPage extends Page
         }
         return false;
     }
+
+    protected function OneSignalSDKWorkerPath(): string
+    {
+        return Controller::join_links(BASE_PATH, 'public', self::ONE_SIGNAL_INIT_FILE_NAME);
+    }
+
+
 }
