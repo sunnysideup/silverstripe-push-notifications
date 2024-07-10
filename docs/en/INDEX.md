@@ -92,6 +92,16 @@ To improve the experience on iOS, you can add the following to your `Page.ss` fi
 <link href="/apple_splash_640.png" sizes="640x1136" rel="apple-touch-startup-image" />
 ```
 
+# Testing
+
+Once added, you may want to remove yourself again.  
+
+To remove yourself from the `added to home screen` functionality. You need to remove localStorage value of `appInstalled` to `no`.
+
+To remove yourself from notification, in chrome, you can click on the lock icon in the address bar and remove the notifications from there.
+
+You may also remove yourself from the CMS list of recipients. 
+
 # more reading
 
 - <https://medium.com/@firt/progressive-web-apps-on-ios-are-here-d00430dee3a7>
