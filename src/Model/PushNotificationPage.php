@@ -40,6 +40,10 @@ class PushNotificationPage extends Page
         'ManifestIcon' => Image::class,
     ];
 
+    private static $owns = [
+        'ManifestIcon',
+    ];
+
     protected function modifyJsonValue(string $filePath, string $key, $newValue, ?bool $overwrite = false): void
     {
         // Check if the file exists
@@ -81,6 +85,7 @@ class PushNotificationPage extends Page
             file_put_contents($filePath, $newJsonContent);
         } catch (Exception $e) {
             throw $e;
+            die('error writing file!');
         }
 
     }
@@ -92,7 +97,9 @@ class PushNotificationPage extends Page
         $this->ParentID = 0;
         // Modify the JSON value
         if($this->canAccessOrCreateFile()) {
-            if($this->ManifestIcon()->exists()) {
+            $icon = $this->ManifestIconID ? $this->ManifestIcon() : null;
+            $icons = [];
+            if($icon && $icon->exists()) {
                 $icons = [
                     [
                         "src" => $this->ManifestIcon()->ScaleWidth(192)->getAbsoluteURL(),
@@ -113,8 +120,8 @@ class PushNotificationPage extends Page
                         "type" => "image/png"
                     ],
                     [
-                        "src" => $this->ManifestIcon()->ScaleWidth(512)->getAbsoluteURL(),
-                        "sizes" => '_resources/vendor/sunnysideup/push-notifications/client/dist/images/icon-512x512.png',
+                        "src" => '_resources/vendor/sunnysideup/push-notifications/client/dist/images/icon-512x512.png',
+                        "sizes" => "512x512",
                         "type" => "image/png"
                     ]
                 ];
@@ -165,7 +172,7 @@ class PushNotificationPage extends Page
                     'PushNotificationsInfo',
                     '
                     <p class="message warning">
-                        Please make sure to review your <a href="/manifest.json">manifest.json</a> file and adjust as required.
+                        Please make sure to review your <a href="/manifest.json?x='.rand(0, 999999999999).'" target="_blank">manifest.json</a> file and adjust as required.
                         This page may write to this file (see options below about overwriting this file).
                         The file currently is '.($this->canAccessOrCreateFile() ? '' : 'not').' writeable.
                         For proper functonality, please make sure that the file has the following features:
@@ -180,7 +187,7 @@ class PushNotificationPage extends Page
                         </ul>
                     </p>'
                 ),
-                CheckboxField::create('OverwriteManifestFile', 'Overwrite manifest values (untick to edit manually). If you are not sure, then just overwrite it here to have acceptable values in your manifest.json'),
+                CheckboxField::create('OverwriteManifestFile', 'Overwrite manifest values (untick to edit manually). If you are not sure, then just overwrite it here to have correct values in your manifest.json'),
                 TextField::create('ThemeColour', 'Theme Colour')
                     ->setDescription('Please enter a 6 digit hex colour code - e.g. a2a111 or ffffff'),
                 TextField::create('BackgroundColour', 'Background Colour')
@@ -243,6 +250,8 @@ class PushNotificationPage extends Page
                                 <a href="https://dashboard.onesignal.com/apps/'.$this->OneSignalKey.'/settings/webpush/configure" target="_blank" rel="noopener noreferrer">Configure (with care!)</a>
                                 <br />
                                 <a href="https://dashboard.onesignal.com/apps/'.$this->OneSignalKey.'/campaigns" target="_blank"  rel="noopener noreferrer">Send Push Notification</a>
+                                <br />
+                                <strong>Do not forget also record your message here!</strong>
                                 <br />
                                 <a href="https://dashboard.onesignal.com/apps/'.$this->OneSignalKey.'/notifications" target="_blank" rel="noopener noreferrer">Review sent messages</a>
                             </p>

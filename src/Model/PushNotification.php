@@ -100,11 +100,13 @@ class PushNotification extends DataObject
         $fields->removeByName('RecipientMembers');
         $fields->removeByName('RecipientGroups');
         $fields->removeByName('SendJobID');
+        $fields->removeByName('SentAt');
         if($this->HasExternalProvider()) {
             $fields->removeByName('ScheduledAt');
+            $fields->dataFieldByName('Sent')
+                ->setDescription('Careful! Once ticked and saved, you can not edit this message.');
         } else {
             $fields->removeByName('Sent');
-            $fields->removeByName('SentAt');
         }
 
 
@@ -244,7 +246,7 @@ class PushNotification extends DataObject
                 )
             );
         }
-        if (! $this->getProvider()) {
+        if (! $this->HasExternalProvider() && ! $this->getProvider()) {
             $result->addFieldError(
                 'Provider',
                 _t(
@@ -261,7 +263,9 @@ class PushNotification extends DataObject
     protected function onBeforeWrite()
     {
         parent::onBeforeWrite();
-
+        if($this->Sent && ! $this->SentAt) {
+            $this->SentAt = date('Y-m-d H:i:s');
+        }
         if (! interface_exists(QueuedJob::class)) {
             return;
         }
