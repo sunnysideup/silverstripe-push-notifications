@@ -12,7 +12,7 @@ const isInStandaloneMode = () =>
 
 // Function to check if the app is already installed
 const isAppInstalled = () => {
-  return localStorage.getItem('appInstalled') === 'true'
+  return isInStandaloneMode() || localStorage.getItem('appInstalled') === 'yes'
 }
 
 window.addEventListener('beforeinstallprompt', e => {
@@ -38,13 +38,21 @@ if (installAppButton) {
       deferredPrompt.prompt()
       const { outcome } = await deferredPrompt.userChoice
       if (outcome === 'accepted') {
-        localStorage.setItem('appInstalled', 'true')
+        localStorage.setItem('appInstalled', 'yes')
+        const installAppButton = document.getElementById('add-to-home-screen')
+        const alternativeInfo = document.getElementById(
+          'add-to-home-screen-alternative-info'
+        )
+        alternativeInfo.style.display = 'none'
+        installAppButton.style.display = 'none'
         deferredPrompt = null
       }
     } else {
       alert('Sorry, we could not install the app.')
     }
   })
+} else {
+  console.log('No install button found')
 }
 
 // Update button state on page load
@@ -68,5 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       appInstalledInfo.style.display = 'none'
     }
+  } else {
+    console.log('No install button found')
   }
 })
