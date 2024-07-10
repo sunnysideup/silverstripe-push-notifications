@@ -70,6 +70,8 @@ Ensure your site meets the following criteria:
 - The web app manifest includes start_url and display.
 - The user has visited your site at least once, and it is not in an incognito window.
 
+**Note that `iOS` and `Firefox` do not support anything much for adding to home screen.**
+
 ## ios support for home screens
 
 To improve the experience on iOS, you can add the following to your `Page.ss` file:
@@ -89,6 +91,14 @@ To improve the experience on iOS, you can add the following to your `Page.ss` fi
 <link href="/apple_splash_750.png" sizes="750x1334" rel="apple-touch-startup-image" />
 <link href="/apple_splash_640.png" sizes="640x1136" rel="apple-touch-startup-image" />
 ```
+
+# more reading
+
+- <https://medium.com/@firt/progressive-web-apps-on-ios-are-here-d00430dee3a7>
+- <https://web.dev/articles/customize-install>
+- <https://stackoverflow.com/questions/50332119/is-it-possible-to-make-an-in-app-button-that-triggers-the-pwa-add-to-home-scree/50356149#50356149>
+- <https://firt.dev/tags/ios>
+- <https://www.netguru.com/blog/pwa-ios>
 
 # other providers to consider
 

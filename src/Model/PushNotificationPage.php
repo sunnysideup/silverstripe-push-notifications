@@ -249,9 +249,10 @@ class PushNotificationPage extends Page
                                 <br />
                                 <a href="https://dashboard.onesignal.com/apps/'.$this->OneSignalKey.'/settings/webpush/configure" target="_blank" rel="noopener noreferrer">Configure (with care!)</a>
                                 <br />
-                                <a href="https://dashboard.onesignal.com/apps/'.$this->OneSignalKey.'/campaigns" target="_blank"  rel="noopener noreferrer">Send Push Notification</a>
                                 <br />
-                                <strong>Do not forget also record your message here!</strong>
+                                <a href="https://dashboard.onesignal.com/apps/'.$this->OneSignalKey.'/campaigns" target="_blank"  rel="noopener noreferrer">Send Push Notification</a>
+                                <strong>Do not forget also record your message here.</strong>
+                                <br />
                                 <br />
                                 <a href="https://dashboard.onesignal.com/apps/'.$this->OneSignalKey.'/notifications" target="_blank" rel="noopener noreferrer">Review sent messages</a>
                             </p>
