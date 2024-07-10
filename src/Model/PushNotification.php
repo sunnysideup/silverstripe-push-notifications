@@ -6,6 +6,8 @@ use Exception;
 use LeKoala\CmsActions\CustomAction;
 use SilverStripe\Control\Director;
 use SilverStripe\Forms\CheckboxSetField;
+use SilverStripe\Forms\GridField\GridFieldAddExistingAutocompleter;
+use SilverStripe\Forms\GridField\GridFieldAddNewButton;
 use SilverStripe\Forms\HeaderField;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\ReadonlyField;
@@ -174,6 +176,10 @@ class PushNotification extends DataObject
             ReadonlyField::create('Created', _t('Push.CREATED', 'Created')),
             ReadonlyField::create('LastEdited', _t('Push.LASTEDITED', 'Last Edited')),
         ]);
+        $subscriberField = $fields->dataFieldByName('SubscriberMessages');
+        if($subscriberField) {
+            $subscriberField->getConfig()->removeComponentsByType(GridFieldAddExistingAutocompleter::class);
+        }
         return $fields;
     }
 
