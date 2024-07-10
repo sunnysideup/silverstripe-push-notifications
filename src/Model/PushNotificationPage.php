@@ -4,6 +4,7 @@ namespace Sunnysideup\PushNotifications\Model;
 
 use Exception;
 use Page;
+use SilverStripe\AssetAdmin\Forms\UploadField;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
 use SilverStripe\Forms\CheckboxField;
@@ -14,6 +15,8 @@ use SilverStripe\Forms\TextField;
 use SilverStripe\SiteConfig\SiteConfig;
 use stdClass;
 use Sunnysideup\PushNotifications\Controllers\PushNotificationPageController;
+use SilverStripe\Assets\Image;
+use SilverStripe\Forms\GridField\GridFieldConfig_RecordViewer;
 
 class PushNotificationPage extends Page
 {
@@ -28,9 +31,16 @@ class PushNotificationPage extends Page
     private static $db = [
         'UseOneSignal' => 'Boolean',
         'OneSignalKey' => 'Varchar(65)',
+        'ThemeColour' => 'Varchar(6)',
+        'BackgroundColour' => 'Varchar(6)',
+        'OverwriteManifestFile' => 'Boolean',
     ];
 
-    protected function modifyJsonValue(string $filePath, string $key, $newValue): void
+    private static $has_one = [
+        'ManifestIcon' => Image::class,
+    ];
+
+    protected function modifyJsonValue(string $filePath, string $key, $newValue, ?bool $overwrite = false): void
     {
         // Check if the file exists
         if (! file_exists($filePath)) {
@@ -50,7 +60,15 @@ class PushNotificationPage extends Page
         }
 
         // Modify the value
-        $data[$key] = $newValue;
+        if($overwrite) {
+            $data[$key] = $newValue;
+        } else {
+            // Check if the key exists in the data
+            if (! array_key_exists($key, $data)) {
+                $data[$key] = $newValue;
+            }
+        }
+        // Update the value (if the key exists in the data
 
         // Encode the data back to JSON
         $newJsonContent = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
@@ -74,11 +92,42 @@ class PushNotificationPage extends Page
         $this->ParentID = 0;
         // Modify the JSON value
         if($this->canAccessOrCreateFile()) {
-            $this->modifyJsonValue($this->getManifestPath(), '$schema', "https://json.schemastore.org/web-manifest-combined.json");
-            $this->modifyJsonValue($this->getManifestPath(), 'name', SiteConfig::current_site_config()->Title);
-            $this->modifyJsonValue($this->getManifestPath(), 'short_name', SiteConfig::current_site_config()->Title);
-            $this->modifyJsonValue($this->getManifestPath(), 'start_url', '/push-notifications');
-            $this->modifyJsonValue($this->getManifestPath(), 'display', 'standalone');
+            if($this->ManifestIcon()->exists()) {
+                $icons = [
+                    [
+                        "src" => $this->ManifestIcon()->ScaleWidth(192)->getAbsoluteURL(),
+                        "sizes" => "192x192",
+                        "type" => "image/png"
+                    ],
+                    [
+                        "src" => $this->ManifestIcon()->ScaleWidth(512)->getAbsoluteURL(),
+                        "sizes" => "512x512",
+                        "type" => "image/png"
+                    ]
+                ];
+            } else {
+                $icons = [
+                    [
+                        "src" => '_resources/vendor/sunnysideup/push-notifications/client/dist/images/icon-192x192.png',
+                        "sizes" => "192x192",
+                        "type" => "image/png"
+                    ],
+                    [
+                        "src" => $this->ManifestIcon()->ScaleWidth(512)->getAbsoluteURL(),
+                        "sizes" => '_resources/vendor/sunnysideup/push-notifications/client/dist/images/icon-512x512.png',
+                        "type" => "image/png"
+                    ]
+                ];
+            }
+            $link = $this->removeGetVariables($this->AbsoluteLink());
+            $this->modifyJsonValue($this->getManifestPath(), '$schema', "https://json.schemastore.org/web-manifest-combined.json", $this->OverwriteManifestFile);
+            $this->modifyJsonValue($this->getManifestPath(), 'name', SiteConfig::current_site_config()->Title, $this->OverwriteManifestFile);
+            $this->modifyJsonValue($this->getManifestPath(), 'short_name', SiteConfig::current_site_config()->Title, $this->OverwriteManifestFile);
+            $this->modifyJsonValue($this->getManifestPath(), 'start_url', $link, $this->OverwriteManifestFile);
+            $this->modifyJsonValue($this->getManifestPath(), 'display', 'standalone', $this->OverwriteManifestFile);
+            $this->modifyJsonValue($this->getManifestPath(), 'background_color', $this->BackgroundColour ? '#' . $this->BackgroundColour : '#ffffff', $this->OverwriteManifestFile);
+            $this->modifyJsonValue($this->getManifestPath(), 'theme_color', $this->ThemeColour ? '#' . $this->ThemeColour : '#000000', $this->OverwriteManifestFile);
+            $this->modifyJsonValue($this->getManifestPath(), 'icons', $icons, $this->OverwriteManifestFile);
         }
         if($this->UseOneSignal) {
             try {
@@ -100,14 +149,6 @@ class PushNotificationPage extends Page
 
     }
 
-    public function canPublish($member = null)
-    {
-        if($this->canAccessOrCreateFile()) {
-            return parent::canPublish($member);
-        }
-        return false;
-    }
-
     protected function getManifestPath(): string
     {
         return Controller::join_links(BASE_PATH, 'public', 'manifest.json');
@@ -118,18 +159,64 @@ class PushNotificationPage extends Page
         $fields = parent::getCMSFields();
 
         $fields->addFieldsToTab(
-            'Root.PushNotifications',
+            'Root.Manifest',
+            [
+                LiteralField::create(
+                    'PushNotificationsInfo',
+                    '
+                    <p class="message warning">
+                        Please make sure to review your <a href="/manifest.json">manifest.json</a> file and adjust as required.
+                        This page may write to this file (see options below about overwriting this file).
+                        The file currently is '.($this->canAccessOrCreateFile() ? '' : 'not').' writeable.
+                        For proper functonality, please make sure that the file has the following features:
+                        <ul>
+                            <li>name</li>
+                            <li>short_name</li>
+                            <li>start_url</li>
+                            <li>display</li>
+                            <li>background_color</li>
+                            <li>theme_color</li>
+                            <li>icons (512 / 192)</li>
+                        </ul>
+                    </p>'
+                ),
+                CheckboxField::create('OverwriteManifestFile', 'Overwrite manifest values (untick to edit manually). If you are not sure, then just overwrite it here to have acceptable values in your manifest.json'),
+                TextField::create('ThemeColour', 'Theme Colour')
+                    ->setDescription('Please enter a 6 digit hex colour code - e.g. a2a111 or ffffff'),
+                TextField::create('BackgroundColour', 'Background Colour')
+                    ->setDescription('Please enter a 6 digit hex colour code - e.g. f1a111 or ffffff'),
+                UploadField::create('ManifestIcon', 'Manifest Icon')
+                    ->setFolderName('manifest-icons')
+                    ->setAllowedExtensions(['png'])
+                    ->setDescription('Please upload a 512x512 pixel PNG file exactly')
+                    ->setAllowedFileCategories('image')
+                    ->setAllowedMaxFileNumber(1)
+
+            ]
+        );
+        $fields->addFieldsToTab(
+            'Root.Provider',
             [
                 CheckboxField::create('UseOneSignal', 'Use OneSignal'),
                 TextField::create('OneSignalKey', 'One Signal Key'),
-
+            ]
+        );
+        $fields->addFieldsToTab(
+            'Root.Messages',
+            [
+                GridField::create(
+                    'PushNotifications',
+                    'Push Notifications',
+                    PushNotification::get(),
+                    GridFieldConfig_RecordEditor::create()
+                )
             ]
         );
         if($this->UseOneSignal) {
             if(!$this->OneSignalKey) {
                 // $fields->removeByName('PushNotifications');
                 $fields->addFieldsToTab(
-                    'Root.Manage',
+                    'Root.Provider',
                     [
                         LiteralField::create(
                             'OneSignalInfo',
@@ -145,7 +232,7 @@ class PushNotificationPage extends Page
                 );
             } else {
                 $fields->addFieldsToTab(
-                    'Root.Manage',
+                    'Root.Provider',
                     [
                         LiteralField::create(
                             'OneSignalInfo',
@@ -164,48 +251,9 @@ class PushNotificationPage extends Page
                     ]
                 );
             }
-        } else {
-            $fields->addFieldsToTab(
-                'Root.PushNotifications',
-                [
-                    GridField::create(
-                        'PushNotifications',
-                        'Push Notifications',
-                        PushNotification::get(),
-                        $config = GridFieldConfig_RecordEditor::create()
-                    )
-                ]
-            );
-            $fields->addFieldsToTab(
-                'Root.Subscribers',
-                [
-                    GridField::create(
-                        'Subscribers',
-                        'Subscribers',
-                        Subscriber::get(),
-                        $config = GridFieldConfig_RecordEditor::create()
-                    )
-                ]
-            );
-        }
-        $fields->addFieldsToTab(
-            'Root.Main',
-            [
-                LiteralField::create(
-                    'PushNotificationsInfo',
-                    '
-                    <p class="message warning">
-                        Please make sure to review your <a href="/manifest.json">manifest.json</a> file and adjust as required.
-                        This page may write to this file. This file currently is '.($this->canAccessOrCreateFile() ? '' : 'not').' writeable.
-                        '.($this->canAccessOrCreateFile() ? '' : 'Only once the file is writeable you can publish this page. ').'
-                    </p>'
-                )
-            ]
-        );
-        if($this->UseOneSignal) {
             $accessible = $this->canAccessOrCreateFile($this->OneSignalSDKWorkerPath());
             $fields->addFieldsToTab(
-                'Root.Main',
+                'Root.Provider',
                 [
                     LiteralField::create(
                         'OneSignalWorkerInfo',
@@ -217,6 +265,22 @@ class PushNotificationPage extends Page
                     )
                 ]
             );
+        } else {
+            $fields->addFieldsToTab(
+                'Root.Subscribers',
+                [
+                    GridField::create(
+                        'Subscribers',
+                        'Subscribers',
+                        Subscriber::get(),
+                        GridFieldConfig_RecordViewer::create()
+                    )
+                ]
+            );
+        }
+
+        if($this->UseOneSignal) {
+
         }
         return $fields;
     }
@@ -245,6 +309,27 @@ class PushNotificationPage extends Page
     protected function OneSignalSDKWorkerPath(): string
     {
         return Controller::join_links(BASE_PATH, 'public', self::ONE_SIGNAL_INIT_FILE_NAME);
+    }
+    protected function removeGetVariables(string $url): string
+    {
+        $parsedUrl = parse_url($url);
+
+        $newUrl = $parsedUrl['scheme'] . '://' . $parsedUrl['host'];
+
+        if (isset($parsedUrl['port'])) {
+            $newUrl .= ':' . $parsedUrl['port'];
+        }
+
+        if (isset($parsedUrl['path'])) {
+            $newUrl .= $parsedUrl['path'];
+        }
+
+        return $newUrl;
+    }
+
+    public function HasExternalProvider(): bool
+    {
+        return $this->UseOneSignal;
     }
 
 
