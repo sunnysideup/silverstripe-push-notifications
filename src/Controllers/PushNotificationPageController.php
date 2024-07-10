@@ -34,13 +34,13 @@ class PushNotificationPageController extends ContentController
     protected function init()
     {
         parent::init();
-        if($this->owner->dataRecord->UseOneSignal) {
+        Requirements::javascript('sunnysideup/push-notifications: client/dist/javascript/add-to-home-screen.js');
+        Requirements::themedCSS('client/dist/css/push');
+        if($this->owner->UseOneSignal) {
             return;
         }
         $key = Environment::getEnv('SS_VAPID_PUBLIC_KEY');
         Requirements::javascript('sunnysideup/push-notifications: client/dist/javascript/service-worker-start.js');
-        Requirements::javascript('sunnysideup/push-notifications: client/dist/javascript/add-to-home-screen.js');
-        Requirements::css('sunnysideup/push-notifications: client/dist/css/push.css');
         if($key && ! $this->UseOneSignal) {
             Requirements::customScript('let vapid_public_key="'.$key.'";', "VapidPublicKey");
         }
