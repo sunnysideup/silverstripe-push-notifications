@@ -147,6 +147,7 @@ class PushNotification extends DataObject
             );
         }
         if ($this->ID && ! $this->HasExternalProvider()) {
+            $possibleRecipientsIds = Subscriber::get()->columnUnique('MemberID');
             $fields->addFieldsToTab(
                 'Root.Main',
                 [
@@ -154,7 +155,9 @@ class PushNotification extends DataObject
                     new CheckboxSetField(
                         'RecipientMembers',
                         _t('Push.RECIPIENTMEMBERS', 'Recipient Members'),
-                        Member::get()->map()
+                        Member::get()
+                            ->filter(['ID' => $possibleRecipientsIds])
+                            ->map()
                     ),
                     new TreeMultiselectField(
                         'RecipientGroups',
