@@ -2,6 +2,7 @@
 
 namespace Sunnysideup\PushNotifications\Model;
 
+use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Security\Member;
 
@@ -27,13 +28,22 @@ class Subscriber extends DataObject
 
     private static $summary_fields = [
         'Member.Title' => 'Who',
-        'SubscriptionDetails' => 'Details',
+        'SubscriptionReadable' => 'Details',
         'SubscriberMessages.Count' => 'Messages',
     ];
 
     private static $has_many = [
         'SubscriberMessages' => SubscriberMessage::class,
     ];
+
+    private static $casting = [
+        'SubscriptionReadable' => 'HTMLText',
+    ];
+
+    public function getSubscriptionReadable()
+    {
+        return '<pre>' . json_decode($this->Subscription, true) . '</pre>';
+    }
 
     /**
      * DataObject create permissions
@@ -55,5 +65,16 @@ class Subscriber extends DataObject
     public function canDelete($member = null)
     {
         return true;
+    }
+
+    public function getCMSFields()
+    {
+        $fields = parent::getCMSFields();
+        $fields->removeByName('Subscription');
+        $fields->replaceField(
+            'Subscription',
+            ReadonlyField::create('SubscriptionReadable', 'Subscription')
+        );
+        return $fields;
     }
 }

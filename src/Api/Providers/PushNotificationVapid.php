@@ -71,16 +71,28 @@ class PushNotificationVapid extends PushNotificationProvider
         if (! is_null($badge) && ! isset(parse_url($badge)['host'])) {
             $badge = Director::absoluteURL($badge);
         }
+        $defaultOptions = [
+            'TTL' => 86400 * 21, // defaults to 4 weeks
+            'urgency' => 'high', // protocol defaults to "normal". (very-low, low, normal, or high)
+            'batchSize' => 200, // defaults to 1000
+        ];
 
+        // for every notification
         $webPush = new WebPush($auth);
+        $webPush->setDefaultOptions($defaultOptions);
 
-        $payload = json_encode([
+        $payloadArray = [
             'title' => $notification->Title,
             'body' => $notification->Content,
             'url' => $notification->Link(),
-            'icon' => $icon,
-            'badge' => $badge,
-        ]);
+        ];
+        if($icon) {
+            $payloadArray['icon'] = $icon;
+        }
+        if($badge) {
+            $payloadArray['badge'] = $badge;
+        }
+        $payload = json_encode($payloadArray);
 
         $subscriptionJsons = [];
 

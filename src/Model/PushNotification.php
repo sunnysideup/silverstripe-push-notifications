@@ -6,6 +6,8 @@ use Exception;
 use LeKoala\CmsActions\CustomAction;
 use SilverStripe\Control\Director;
 use SilverStripe\Forms\CheckboxSetField;
+use SilverStripe\Forms\GridField\GridFieldAddExistingAutocompleter;
+use SilverStripe\Forms\GridField\GridFieldAddNewButton;
 use SilverStripe\Forms\HeaderField;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\ReadonlyField;
@@ -72,9 +74,9 @@ class PushNotification extends DataObject
     ];
 
     private static $summary_fields = [
-        'Title',
-        'SentAt',
-        'RecipientsCount',
+        'Title' => 'Title',
+        'SentAt' => 'Sent',
+        'RecipientsCount' => 'Number of Recipients',
     ];
 
     private static $searchable_fields = [
@@ -94,14 +96,21 @@ class PushNotification extends DataObject
     public function getCMSFields()
     {
         $fields = parent::getCMSFields();
-
+        $fields->removeByName('Provider');
         $fields->removeByName('ProviderClass');
         $fields->removeByName('ProviderSettings');
-        $fields->removeByName('Sent');
-        $fields->removeByName('SentAt');
         $fields->removeByName('RecipientMembers');
         $fields->removeByName('RecipientGroups');
         $fields->removeByName('SendJobID');
+        $fields->removeByName('SentAt');
+        if($this->HasExternalProvider()) {
+            $fields->removeByName('ScheduledAt');
+            $fields->dataFieldByName('Sent')
+                ->setDescription('Careful! Once ticked and saved, you can not edit this message.');
+        } else {
+            $fields->removeByName('Sent');
+        }
+
 
         if ($this->Sent) {
             $fields->insertBefore(
@@ -128,27 +137,38 @@ class PushNotification extends DataObject
             'Push.USEDMAINBODY',
             '(Used as the main body of the notification)'
         ));
-        $fields->addFieldsToTab('Root.Main', [
-            PushProviderField::create(
-                'Provider',
-                _t('Push.PROVIDER', 'Provider')
-            ),
-        ]);
-        if ($this->ID) {
-            $fields->addFieldsToTab('Root.Main', [
-                HeaderField::create('RecipientsHeader', _t('Push.RECIPIENTS', 'Recipients')),
-                new CheckboxSetField(
-                    'RecipientMembers',
-                    _t('Push.RECIPIENTMEMBERS', 'Recipient Members'),
-                    Member::get()->map()
-                ),
-                new TreeMultiselectField(
-                    'RecipientGroups',
-                    _t('Push.RECIPIENTGROUPS', 'Recipient Groups'),
-                    Group::class
-                ),
-                ReadonlyField::create('RecipientsCount', _t('Push.RECIPIENTCOUNT', 'Recipient Count')),
-            ]);
+        if(! $this->HasExternalProvider()) {
+            $fields->addFieldsToTab(
+                'Root.Main',
+                [
+                    PushProviderField::create(
+                        'Provider',
+                        _t('Push.PROVIDER', 'Provider')
+                    ),
+                ]
+            );
+        }
+        if ($this->ID && ! $this->HasExternalProvider()) {
+            $possibleRecipientsIds = Subscriber::get()->columnUnique('MemberID') + [-1 => -1];
+            $fields->addFieldsToTab(
+                'Root.Main',
+                [
+                    HeaderField::create('RecipientsHeader', _t('Push.RECIPIENTS', 'Recipients')),
+                    new CheckboxSetField(
+                        'RecipientMembers',
+                        _t('Push.RECIPIENTMEMBERS', 'Recipient Members'),
+                        Member::get()
+                            ->filter(['ID' => $possibleRecipientsIds])
+                            ->map()
+                    ),
+                    new TreeMultiselectField(
+                        'RecipientGroups',
+                        _t('Push.RECIPIENTGROUPS', 'Recipient Groups'),
+                        Group::class
+                    ),
+                    ReadonlyField::create('RecipientsCount', _t('Push.RECIPIENTCOUNT', 'Recipient Count')),
+                ]
+            );
         }
 
         $fields->addFieldsToTab('Root.Main', [
@@ -156,7 +176,35 @@ class PushNotification extends DataObject
             ReadonlyField::create('Created', _t('Push.CREATED', 'Created')),
             ReadonlyField::create('LastEdited', _t('Push.LASTEDITED', 'Last Edited')),
         ]);
+        $subscriberField = $fields->dataFieldByName('SubscriberMessages');
+        if($subscriberField) {
+            $subscriberField->getConfig()->removeComponentsByType(GridFieldAddExistingAutocompleter::class);
+        }
         return $fields;
+    }
+
+    public function getCMSActions()
+    {
+        $actions = parent::getCMSActions();
+        if($this->canSend()) {
+            $actions->push($action = new CustomAction("doSendCMSAction", "Send"));
+            $action
+                ->addExtraClass('ss-ui-action btn btn-primary font-icon-block-email action--new discard-confirmation')
+                ->setUseButtonTag(true)
+                ->setShouldRefresh(true);
+        }
+
+        return $actions;
+    }
+
+    public function doSendCMSAction()
+    {
+        if($this->canSend()) {
+            $this->doSend();
+            return 'Sent!';
+        } else {
+            return 'Cannot send';
+        }
     }
 
     public function canView($member = null)
@@ -168,11 +216,12 @@ class PushNotification extends DataObject
         if (Permission::checkMember($member, 'ADMIN')) {
             return true;
         }
-
+        if($this->HasExternalProvider()) {
+            return true;
+        }
         if ($this->RecipientMembers()->filter('ID', $member->ID)->exists()) {
             return true;
         }
-
         $recipientGroups = $this->RecipientGroups()->column('ID');
         $memberGroups = $member->Groups()->columnUnique('ID');
 
@@ -181,7 +230,7 @@ class PushNotification extends DataObject
 
     public function canSend($member = null)
     {
-        return ! $this->Sent && $this->canEdit($member) && $this->getProvider() && $this->HasRecipients();
+        return ! $this->HasExternalProvider() && ! $this->Sent && $this->canEdit($member) && $this->getProvider() && $this->HasRecipients();
     }
 
     public function HasRecipients(): bool
@@ -196,7 +245,11 @@ class PushNotification extends DataObject
 
     public function getValidator()
     {
-        return new RequiredFields(['Title', 'ProviderClass']);
+        if($this->HasExternalProvider()) {
+            return RequiredFields::create(['Title','Content']);
+        } else {
+            return RequiredFields::create(['Title', 'Content', 'ProviderClass']);
+        }
     }
 
     /**
@@ -226,12 +279,21 @@ class PushNotification extends DataObject
                 )
             );
         }
-        if (! $this->getProvider()) {
+        if (! $this->HasExternalProvider() && ! $this->getProvider()) {
             $result->addFieldError(
                 'Provider',
                 _t(
                     'Push.CANTSCHEDULEWOPROVIDER',
                     'You cannot schedule a notification without a valid provider configured'
+                )
+            );
+        }
+        if(! $this->Content) {
+            $result->addFieldError(
+                'Content',
+                _t(
+                    'Push.CANTBEBLANK',
+                    'This field cannot be blank'
                 )
             );
         }
@@ -243,7 +305,9 @@ class PushNotification extends DataObject
     protected function onBeforeWrite()
     {
         parent::onBeforeWrite();
-
+        if($this->Sent && ! $this->SentAt) {
+            $this->SentAt = date('Y-m-d H:i:s');
+        }
         if (! interface_exists(QueuedJob::class)) {
             return;
         }
@@ -308,7 +372,7 @@ class PushNotification extends DataObject
 
     public function setProvider(?PushNotificationProvider $provider = null)
     {
-        if ($provider instanceof \Sunnysideup\PushNotifications\Api\PushNotificationProvider) {
+        if ($provider instanceof PushNotificationProvider) {
             $this->providerInst = $provider;
             $this->ProviderClass = get_class($provider);
             $this->ProviderSettings = serialize($provider->getSettings());
@@ -374,27 +438,9 @@ class PushNotification extends DataObject
         return RequiredFields::create('Title', 'ProviderClass');
     }
 
-    public function getCMSActions()
-    {
-        $actions = parent::getCMSActions();
-        if($this->canSend()) {
-            $actions->push($action = new CustomAction("doSendCMSAction", "Send"));
-            $action
-                ->addExtraClass('ss-ui-action btn btn-primary font-icon-block-email action--new discard-confirmation')
-                ->setUseButtonTag(true)
-                ->setShouldRefresh(true);
-        }
 
-        return $actions;
-    }
-
-    public function doSendCMSAction()
+    public function HasExternalProvider(): bool
     {
-        if($this->canSend()) {
-            $this->doSend();
-            return 'Sent!';
-        } else {
-            return 'Cannot send';
-        }
+        return (bool) PushNotificationPage::get_one()?->HasExternalProvider();
     }
 }

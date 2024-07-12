@@ -2,11 +2,6 @@
 Name: push_config
 ---
 SilverStripe\Core\Injector\Injector:
-  Sunnysideup\PushNotifications\Api\PushProvidersRegistry:
-    properties:
-      providers:
-        - Sunnysideup\PushNotifications\Api\Providers\PushNotificationEmail
-        - Sunnysideup\PushNotifications\Api\Providers\PushNotificationVapid
   Sunnysideup\PushNotifications\Forms\PushProviderField:
     properties:
       registry: '%$Sunnysideup\PushNotifications\Api\PushProvidersRegistry'
@@ -19,18 +14,9 @@ SilverStripe\Security\Member:
   extensions:
     - Sunnysideup\PushNotifications\Extensions\MemberExtension
 
-
 ---
 After: framework
 ---
 SilverStripe\Control\Director:
   rules:
     'notifications/$Action': '%$Sunnysideup\PushNotifications\Controllers\PushNotificationController'
-
-PageController:
-  extensions:
-    - Sunnysideup\PushNotifications\Extensions\ScriptIncludeExtension
-
-Sunnysideup\PushNotifications\Controllers\PushNotificationPageController:
-  extensions:
-    - Sunnysideup\PushNotifications\Extensions\ScriptIncludeExtension

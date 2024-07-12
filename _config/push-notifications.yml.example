@@ -2,6 +2,15 @@
 Name: push_config_app
 ---
 
+  Sunnysideup\PushNotifications\Api\PushProvidersRegistry:
+    properties:
+      providers:
+        - Sunnysideup\PushNotifications\Api\Providers\PushNotificationEmail
+        - Sunnysideup\PushNotifications\Api\Providers\PushNotificationVapid
+
+
 Sunnysideup\PushNotifications\Api\Providers\PushNotificationVapid:
     notification_icon: '' # e.g. https://mysite.com/icon.png OR icon.png
     notification_badge: '' # e.g. https://mysite.com/badge.png OR badge.png
+
+
