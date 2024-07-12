@@ -200,7 +200,7 @@ class PushNotificationPage extends Page
                 UploadField::create('ManifestIcon', 'Manifest Icon')
                     ->setFolderName('manifest-icons')
                     ->setAllowedExtensions(['png'])
-                    ->setDescription('Please upload a 512x512 pixel PNG file exactly')
+                    ->setDescription('Please upload a 512x512 pixel PNG file exactly. Apple does not allow transparency in this image.')
                     ->setAllowedFileCategories('image')
                     ->setAllowedMaxFileNumber(1)
 
