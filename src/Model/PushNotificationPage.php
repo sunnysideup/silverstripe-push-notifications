@@ -118,12 +118,12 @@ class PushNotificationPage extends Page
             } else {
                 $icons = [
                     [
-                        "src" => '_resources/vendor/sunnysideup/push-notifications/client/dist/images/icon-192x192.png',
+                        "src" => Director::absoluteURL('/_resources/vendor/sunnysideup/push-notifications/client/dist/images/icon-192x192.png'),
                         "sizes" => "192x192",
                         "type" => "image/png"
                     ],
                     [
-                        "src" => '_resources/vendor/sunnysideup/push-notifications/client/dist/images/icon-512x512.png',
+                        "src" => Director::absoluteURL('/_resources/vendor/sunnysideup/push-notifications/client/dist/images/icon-512x512.png'),
                         "sizes" => "512x512",
                         "type" => "image/png"
                     ]
@@ -187,7 +187,7 @@ class PushNotificationPage extends Page
                             <li>display</li>
                             <li>background_color</li>
                             <li>theme_color</li>
-                            <li>icons (512 / 192)</li>
+                            <li>icons (512x512 / 192x192)</li>
                         </ul>
                     </p>'
                 ),
