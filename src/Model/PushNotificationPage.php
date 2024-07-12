@@ -16,7 +16,9 @@ use SilverStripe\SiteConfig\SiteConfig;
 use stdClass;
 use Sunnysideup\PushNotifications\Controllers\PushNotificationPageController;
 use SilverStripe\Assets\Image;
+use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Forms\GridField\GridFieldConfig_RecordViewer;
+use SilverStripe\Forms\TreeDropdownField;
 
 class PushNotificationPage extends Page
 {
@@ -38,6 +40,7 @@ class PushNotificationPage extends Page
 
     private static $has_one = [
         'ManifestIcon' => Image::class,
+        'StartPageForHomeScreenApp' => SiteTree::class,
     ];
 
     private static $owns = [
@@ -126,7 +129,8 @@ class PushNotificationPage extends Page
                     ]
                 ];
             }
-            $link = $this->removeGetVariables($this->AbsoluteLink());
+            $link = $this->StartPageForHomeScreenAppID ? $this->StartPageForHomeScreenApp()->AbsoluteLink() : $this->AbsoluteLink();
+            $link = $this->removeGetVariables($link);
             $this->modifyJsonValue($this->getManifestPath(), '$schema', "https://json.schemastore.org/web-manifest-combined.json", $this->OverwriteManifestFile);
             $this->modifyJsonValue($this->getManifestPath(), 'name', SiteConfig::current_site_config()->Title, $this->OverwriteManifestFile);
             $this->modifyJsonValue($this->getManifestPath(), 'short_name', SiteConfig::current_site_config()->Title, $this->OverwriteManifestFile);
@@ -192,6 +196,7 @@ class PushNotificationPage extends Page
                     ->setDescription('Please enter a 6 digit hex colour code - e.g. a2a111 or ffffff'),
                 TextField::create('BackgroundColour', 'Background Colour')
                     ->setDescription('Please enter a 6 digit hex colour code - e.g. f1a111 or ffffff'),
+                TreeDropdownField::create('StartPageForHomeScreenAppID', 'Start Page For Home Screen App', SiteTree::class),
                 UploadField::create('ManifestIcon', 'Manifest Icon')
                     ->setFolderName('manifest-icons')
                     ->setAllowedExtensions(['png'])
