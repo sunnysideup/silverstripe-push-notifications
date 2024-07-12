@@ -59,7 +59,7 @@ if (installAppButton) {
 document.addEventListener('DOMContentLoaded', () => {
   // Checks if should display install popup notification:
   if (isIos() && !isInStandaloneMode()) {
-    this.setState({ showInstallMessage: true })
+    // this.setState({ showInstallMessage: true })
   }
   // get elements
   const installAppButton = document.getElementById('add-to-home-screen')
