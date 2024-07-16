@@ -8,7 +8,7 @@ SilverStripe\Core\Injector\Injector:
 
 SilverStripe\Admin\LeftAndMain:
   extra_requirements_css:
-    - 'sunnysideup/push-notifications:client/dist/css/push.css'
+    - 'sunnysideup/push-notifications:client/dist/css/push-admin.css'
 
 SilverStripe\Security\Member:
   extensions:
