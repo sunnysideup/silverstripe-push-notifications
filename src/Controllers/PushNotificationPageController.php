@@ -35,7 +35,7 @@ class PushNotificationPageController extends ContentController
     {
         parent::init();
         Requirements::javascript('sunnysideup/push-notifications: client/dist/javascript/add-to-home-screen.js');
-        Requirements::themedCSS('client/dist/css/push');
+        // Requirements::themedCSS('client/dist/css/push');
         if($this->owner->UseOneSignal) {
             return;
         }
