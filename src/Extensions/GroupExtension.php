@@ -19,30 +19,15 @@ use Sunnysideup\PushNotifications\Model\SubscriberMessage;
  * @method \SilverStripe\ORM\DataList|\Sunnysideup\PushNotifications\Model\Subscriber[] PushNotificationSubscribers()
  * @method \SilverStripe\ORM\DataList|\Sunnysideup\PushNotifications\Model\SubscriberMessage[] SubscriberMessages()
  */
-class MemberExtension extends DataExtension
+class GroupExtension extends DataExtension
 {
-    private static $has_many = [
-        'PushNotificationSubscribers' => Subscriber::class,
-        'SubscriberMessages' => SubscriberMessage::class,
-    ];
-
-    private static $field_labels = [
-        'PushNotificationSubscribers' => 'Push Subscriptions',
-        'SubscriberMessages' => 'Push Messages Sent',
-    ];
     public function onBeforeWrite()
     {
     }
 
 
-
     public function onBeforeDelete()
     {
-        $subscribers = $this->owner->PushNotificationSubscribers();
-        /** @var Subscriber $subscriber */
-        foreach ($subscribers as $subscriber) {
-            $subscriber->delete();
-        }
     }
 
     /**

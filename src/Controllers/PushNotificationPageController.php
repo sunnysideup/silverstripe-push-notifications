@@ -3,6 +3,7 @@
 namespace Sunnysideup\PushNotifications\Controllers;
 
 use SilverStripe\CMS\Controllers\ContentController;
+use SilverStripe\Control\Director;
 use SilverStripe\Core\Environment;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\View\Requirements;
@@ -34,9 +35,11 @@ class PushNotificationPageController extends ContentController
     protected function init()
     {
         parent::init();
+        Requirements::customScript('let push_notification_url="'.Director::absoluteBaseURL($this->Link()).'";', "push_notification_url");
         Requirements::javascript('sunnysideup/push-notifications: client/dist/javascript/add-to-home-screen.js');
         // Requirements::themedCSS('client/dist/css/push');
         if($this->owner->UseOneSignal) {
+            Requirements::javascript('sunnysideup/push-notifications: client/dist/javascript/one-signal.js');
             return;
         }
         $key = Environment::getEnv('SS_VAPID_PUBLIC_KEY');

@@ -20,6 +20,8 @@ class Subscriber extends DataObject
 
     private static $db = [
         'Subscription' => 'Text',
+        'Subscribed' => 'Boolean',
+        'OneSignalUserID' => 'Int',
     ];
 
     private static $has_one = [
@@ -28,7 +30,9 @@ class Subscriber extends DataObject
 
     private static $summary_fields = [
         'Member.Title' => 'Who',
+        'Subscribed.Nice' => 'Subscribed',
         'SubscriptionReadable' => 'Details',
+        'OneSignalUserID' => 'One Signal ID',
         'SubscriberMessages.Count' => 'Messages',
     ];
 
