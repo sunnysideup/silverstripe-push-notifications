@@ -46,13 +46,21 @@ class OneSignalSignupApi
         return $this->oneSignal->apps()->getOne($this->getMyAppID());
     }
 
-    public function addTagsToUser(int $externalUserId, array $tags)
+    public function addTagsToUser(string $externalUserId, array $tags)
     {
         return $this->oneSignal->devices()->editTags(
             $externalUserId,
             [
                 'tags' => $tags
             ]
+        );
+    }
+
+    public function updateUser(string $deviceID, array $data)
+    {
+        return $this->oneSignal->devices()->update(
+            $deviceID,
+            $data
         );
     }
 
@@ -82,7 +90,7 @@ class OneSignalSignupApi
         return $this->oneSignal->notifications()->getAll();
     }
 
-    public function getOneNotification(int $id)
+    public function getOneNotification(string $id)
     {
         return $this->oneSignal->notifications()->getOne($id);
         ;
@@ -90,33 +98,36 @@ class OneSignalSignupApi
 
     public function doSendNotification()
     {
-        $this->oneSignal->notifications()->add([
-            'contents' => [
-                'en' => 'Notification message'
-            ],
-            'included_segments' => ['All'],
-            'data' => ['foo' => 'bar'],
-            'isChrome' => true,
-            'send_after' => new \DateTime('1 hour'),
-            'filters' => [
-                [
-                    'field' => 'tag',
-                    'key' => 'is_vip',
-                    'relation' => '!=',
-                    'value' => 'true',
+        if(1 === 2) {
+            $this->oneSignal->notifications()->add([
+                'contents' => [
+                    'en' => 'Notification message'
                 ],
-                [
-                    'operator' => 'OR',
+                'included_segments' => ['All'],
+                'data' => ['foo' => 'bar'],
+                'isChrome' => true,
+                'send_after' => new \DateTime('1 hour'),
+                'filters' => [
+                    [
+                        'field' => 'tag',
+                        'key' => 'is_vip',
+                        'relation' => '!=',
+                        'value' => 'true',
+                    ],
+                    [
+                        'operator' => 'OR',
+                    ],
+                    [
+                        'field' => 'tag',
+                        'key' => 'is_admin',
+                        'relation' => '=',
+                        'value' => 'true',
+                    ],
                 ],
-                [
-                    'field' => 'tag',
-                    'key' => 'is_admin',
-                    'relation' => '=',
-                    'value' => 'true',
-                ],
-            ],
-            // ..other options
-        ]);
+                // ..other options
+            ]);
+        }
+        die('not implemented');
     }
 
 
