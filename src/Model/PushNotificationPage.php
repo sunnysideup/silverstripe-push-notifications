@@ -17,6 +17,7 @@ use stdClass;
 use Sunnysideup\PushNotifications\Controllers\PushNotificationPageController;
 use SilverStripe\Assets\Image;
 use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\Core\Environment;
 use SilverStripe\Forms\GridField\GridFieldConfig_RecordViewer;
 use SilverStripe\Forms\TreeDropdownField;
 
@@ -32,7 +33,6 @@ class PushNotificationPage extends Page
 
     private static $db = [
         'UseOneSignal' => 'Boolean',
-        'OneSignalKey' => 'Varchar(65)',
         'ThemeColour' => 'Varchar(6)',
         'BackgroundColour' => 'Varchar(6)',
         'OverwriteManifestFile' => 'Boolean',
@@ -210,7 +210,6 @@ class PushNotificationPage extends Page
             'Root.Provider',
             [
                 CheckboxField::create('UseOneSignal', 'Use OneSignal'),
-                TextField::create('OneSignalKey', 'One Signal Key'),
             ]
         );
         $fields->addFieldsToTab(
@@ -225,7 +224,7 @@ class PushNotificationPage extends Page
             ]
         );
         if($this->UseOneSignal) {
-            if(!$this->OneSignalKey) {
+            if(!$this->getOneSignalKey()) {
                 // $fields->removeByName('PushNotifications');
                 $fields->addFieldsToTab(
                     'Root.Provider',
@@ -252,14 +251,14 @@ class PushNotificationPage extends Page
                             <p>
                                 Please access one signal to manage your push notifications:
                                 <br />
-                                <a href="https://dashboard.onesignal.com/apps/'.$this->OneSignalKey.'/settings/webpush/configure" target="_blank" rel="noopener noreferrer">Configure (with care!)</a>
+                                <a href="https://dashboard.onesignal.com/apps/'.$this->getOneSignalKey().'/settings/webpush/configure" target="_blank" rel="noopener noreferrer">Configure (with care!)</a>
                                 <br />
                                 <br />
-                                <a href="https://dashboard.onesignal.com/apps/'.$this->OneSignalKey.'/campaigns" target="_blank"  rel="noopener noreferrer">Send Push Notification</a>
+                                <a href="https://dashboard.onesignal.com/apps/'.$this->getOneSignalKey().'/campaigns" target="_blank"  rel="noopener noreferrer">Send Push Notification</a>
                                 <strong>Do not forget also record your message here.</strong>
                                 <br />
                                 <br />
-                                <a href="https://dashboard.onesignal.com/apps/'.$this->OneSignalKey.'/notifications" target="_blank" rel="noopener noreferrer">Review sent messages</a>
+                                <a href="https://dashboard.onesignal.com/apps/'.$this->getOneSignalKey().'/notifications" target="_blank" rel="noopener noreferrer">Review sent messages</a>
                             </p>
                             '
                         ),
@@ -345,6 +344,11 @@ class PushNotificationPage extends Page
     public function HasExternalProvider(): bool
     {
         return $this->UseOneSignal;
+    }
+
+    public function getOneSignalKey(): ?string
+    {
+        return (string) Environment::getEnv('SS_ONESIGNAL_APP_ID');
     }
 
 
