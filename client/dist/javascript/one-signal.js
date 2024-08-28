@@ -3,34 +3,32 @@ window.MyOneSignalCommsBackToWebsite = {
 
   init: function (OneSignal) {
     // set up a listener for the subscription change event
-    OneSignalDeferred.push(function () {
-      OneSignal.User.addEventListener('change', function (event) {
-        console.log('subscriptionChange', event)
-        console.log(OneSignal.User)
-        MyOneSignalCommsBackToWebsite.onesignalId = OneSignal.User.onesignalId
-        if (isSubscribed) {
-          MyOneSignalCommsBackToWebsite.subscribeOrSubscribeToOneSignal(true)
+    OneSignal.User.addEventListener('change', function (event) {
+      console.log('subscriptionChange', event)
+      console.log(OneSignal.User)
+      MyOneSignalCommsBackToWebsite.onesignalId = OneSignal.User.onesignalId
+      if (isSubscribed) {
+        MyOneSignalCommsBackToWebsite.subscribeOrSubscribeToOneSignal(true)
+        console.log(
+          'User subscribed with ID:',
+          MyOneSignalCommsBackToWebsite.onesignalId
+        )
+        // Store the userId for later use if needed
+      } else {
+        // User unsubscribed
+        if (MyOneSignalCommsBackToWebsite.onesignalId) {
           console.log(
-            'User subscribed with ID:',
-            MyOneSignalCommsBackToWebsite.onesignalId
+            'User with ID:',
+            MyOneSignalCommsBackToWebsite.onesignalId,
+            'has unsubscribed.'
           )
-          // Store the userId for later use if needed
-        } else {
-          // User unsubscribed
-          if (MyOneSignalCommsBackToWebsite.onesignalId) {
-            console.log(
-              'User with ID:',
-              MyOneSignalCommsBackToWebsite.onesignalId,
-              'has unsubscribed.'
-            )
-            MyOneSignalCommsBackToWebsite.subscribeOrSubscribeToOneSignal(false)
+          MyOneSignalCommsBackToWebsite.subscribeOrSubscribeToOneSignal(false)
 
-            // Handle the unsubscription, e.g., notify your server
-          } else {
-            console.log('User unsubscribed but no ID available.')
-          }
+          // Handle the unsubscription, e.g., notify your server
+        } else {
+          console.log('User unsubscribed but no ID available.')
         }
-      })
+      }
     })
   },
 
