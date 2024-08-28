@@ -1,51 +1,46 @@
 window.MyOneSignalCommsBackToWebsite = {
   onesignalId: '',
+  token: '',
 
   init: function (OneSignal) {
     console.log(OneSignal)
-    const pushSubscriptionChangeListener = function (event) {
-      console.log('pushSubscriptionChangeListener', event)
-      console.log('pushSubscriptionChangeListener', event.current)
-      console.log('pushSubscriptionChangeListener', event.current.token)
-      if (event.current.token) {
-        console.log(`The push subscription has received a token!`)
-        //this is a good place to call OneSignal.login and pass in your user ID
-      }
-    }
-
+    MyOneSignalCommsBackToWebsite.token
     OneSignal.User.PushSubscription.addEventListener(
       'change',
-      pushSubscriptionChangeListener
+      MyOneSignalCommsBackToWebsite.pushSubscriptionChangeListener
     )
+  },
 
-    // set up a listener for the subscription change event
-    OneSignal.User.addEventListener('subscriptionChange', function (event) {
-      console.log('subscriptionChange', event)
-      console.log(OneSignal.User)
-      MyOneSignalCommsBackToWebsite.onesignalId = OneSignal.User.onesignalId
-      if (isSubscribed) {
-        MyOneSignalCommsBackToWebsite.subscribeOrSubscribeToOneSignal(true)
+  pushSubscriptionChangeListener: function (event) {
+    console.log('event', event)
+    MyOneSignalCommsBackToWebsite.onesignalId = event.current.id
+    const isSubscribed = event.current.optedIn
+    MyOneSignalCommsBackToWebsite.token = event.current.token
+    console.log('isSubscribed', isSubscribed)
+    console.log('token', MyOneSignalCommsBackToWebsite.token)
+    console.log('oneSignalID', MyOneSignalCommsBackToWebsite.onesignalId)
+    if (isSubscribed) {
+      MyOneSignalCommsBackToWebsite.subscribeOrSubscribeToOneSignal(true)
+      console.log(
+        'User subscribed with ID:',
+        MyOneSignalCommsBackToWebsite.onesignalId
+      )
+      // Store the userId for later use if needed
+    } else {
+      // User unsubscribed
+      if (MyOneSignalCommsBackToWebsite.onesignalId) {
         console.log(
-          'User subscribed with ID:',
-          MyOneSignalCommsBackToWebsite.onesignalId
+          'User with ID:',
+          MyOneSignalCommsBackToWebsite.onesignalId,
+          'has unsubscribed.'
         )
-        // Store the userId for later use if needed
-      } else {
-        // User unsubscribed
-        if (MyOneSignalCommsBackToWebsite.onesignalId) {
-          console.log(
-            'User with ID:',
-            MyOneSignalCommsBackToWebsite.onesignalId,
-            'has unsubscribed.'
-          )
-          MyOneSignalCommsBackToWebsite.subscribeOrSubscribeToOneSignal(false)
+        MyOneSignalCommsBackToWebsite.subscribeOrSubscribeToOneSignal(false)
 
-          // Handle the unsubscription, e.g., notify your server
-        } else {
-          console.log('User unsubscribed but no ID available.')
-        }
+        // Handle the unsubscription, e.g., notify your server
+      } else {
+        console.log('User unsubscribed but no ID available.')
       }
-    })
+    }
   },
 
   subscribeOrSubscribeToOneSignal: function (isSubscribe) {
@@ -72,7 +67,8 @@ window.MyOneSignalCommsBackToWebsite = {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        userId: MyOneSignalCommsBackToWebsite.onesignalId
+        userId: MyOneSignalCommsBackToWebsite.onesignalId.
+        token: MyOneSignalCommsBackToWebsite.token
       })
     })
       .then(response => {

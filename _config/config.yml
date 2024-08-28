@@ -13,10 +13,3 @@ SilverStripe\Admin\LeftAndMain:
 SilverStripe\Security\Member:
   extensions:
     - Sunnysideup\PushNotifications\Extensions\MemberExtension
-
----
-After: framework
----
-SilverStripe\Control\Director:
-  rules:
-    'notifications/$Action': '%$Sunnysideup\PushNotifications\Controllers\PushNotificationController'

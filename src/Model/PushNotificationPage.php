@@ -47,6 +47,10 @@ class PushNotificationPage extends Page
         'ManifestIcon',
     ];
 
+    private static $defaults = [
+        'URLSegment' => 'push-notifications',
+    ];
+
     protected function modifyJsonValue(string $filePath, string $key, $newValue, ?bool $overwrite = false): void
     {
         // Check if the file exists
@@ -96,8 +100,7 @@ class PushNotificationPage extends Page
     protected function onBeforeWrite()
     {
         parent::onBeforeWrite();
-        $this->URLSegment = 'push-notifications';
-        $this->ParentID = 0;
+        $this->ensureStandardLocation();
         // Modify the JSON value
         if($this->canAccessOrCreateFile()) {
             $icon = $this->ManifestIconID ? $this->ManifestIcon() : null;
@@ -349,6 +352,13 @@ class PushNotificationPage extends Page
     public function getOneSignalKey(): ?string
     {
         return (string) Environment::getEnv('SS_ONESIGNAL_APP_ID');
+    }
+
+    protected function ensureStandardLocation()
+    {
+        $defaults = $this->COnfig()->get('defaults');
+        $this->URLSegment = $defaults['URLSegment'];
+        $this->ParentID = 0;
     }
 
 
