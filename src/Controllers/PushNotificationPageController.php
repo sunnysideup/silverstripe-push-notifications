@@ -35,7 +35,7 @@ class PushNotificationPageController extends ContentController
     protected function init()
     {
         parent::init();
-        Requirements::customScript('let push_notification_url="'.Director::absoluteBaseURL($this->Link()).'";', "push_notification_url");
+        Requirements::customScript('window.push_notification_url="'.Director::absoluteURL($this->Link()).'";', "push_notification_url");
         Requirements::javascript('sunnysideup/push-notifications: client/dist/javascript/add-to-home-screen.js');
         // Requirements::themedCSS('client/dist/css/push');
         if($this->owner->UseOneSignal) {
