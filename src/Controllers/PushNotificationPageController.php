@@ -5,6 +5,8 @@ namespace Sunnysideup\PushNotifications\Controllers;
 use Exception;
 use SilverStripe\CMS\Controllers\ContentController;
 use SilverStripe\Control\Director;
+use SilverStripe\Control\HTTPResponse;
+use SilverStripe\Control\Middleware\HTTPCacheControlMiddleware;
 use SilverStripe\Core\Environment;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\Security\Security;
@@ -74,17 +76,19 @@ class PushNotificationPageController extends ContentController
 
     protected function subscribeUnsubscribeOneSignalInner($request, bool $subscribed = true)
     {
-        $userID = (string) $request->postVar('userId');
-        $token = (string) $request->postVar('token');
-        if(!$userID) {
-            echo json_encode(['success' => false, 'error' => 'No user ID provided']);
-            return;
+        $userId = (string) $request->requestVar('userId');
+        $token = (string) $request->requestVar('token');
+        if(!$userId) {
+            HTTPCacheControlMiddleware::singleton()->disableCache();
+            return HTTPResponse::create(json_encode(['success' => false, 'error' => 'No user ID provided']))
+                ->addHeader('Content-Type', 'application/json')
+                ->setStatusCode(404);
         }
         try {
             $member = Security::getCurrentUser();
             $filter = [
                 'MemberID' => $member->ID,
-                'OneSignalUserID' => $userID,
+                'OneSignalUserID' => $userId,
             ];
             $subscriber = Subscriber::get()->filter($filter)->first();
             if(! $subscriber) {
@@ -94,10 +98,14 @@ class PushNotificationPageController extends ContentController
             $subscriber->Subscription = $token;
 
             $subscriber->write();
+            return HTTPResponse::create(json_encode(['success' => true]))
+                ->addHeader('Content-Type', 'application/json')
+                ->setStatusCode(404);
 
-            echo json_encode(['success' => true]);
         } catch (Exception $e) {
-            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+            return HTTPResponse::create(json_encode(['success' => false, 'error' => $e->getMessage()]))
+                ->addHeader('Content-Type', 'application/json')
+                ->setStatusCode(404);
         }
     }
     public function getPushNotifications()
