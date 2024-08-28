@@ -129,7 +129,7 @@ To improve the experience on iOS, you can add the following to your `Page.ss` fi
 
 Once added, you may want to remove yourself again.  
 
-To remove yourself from the `added to home screen` functionality. You need to remove localStorage value of `appInstalled` to `no`.
+To remove yourself from the `added to home screen` functionality. You need to change localStorage value of `appInstalled` to `no`.
 
 To remove yourself from notification, in chrome, you can click on the lock icon in the address bar and remove the notifications from there.
 
@@ -150,12 +150,18 @@ Or from the browser `/dev/tasks/test-one-signal-task`.
 ### set up
 
 1. Make sure you have a OneSignal account, get the credentials and enter them in your `.env` file. Also make sure you have an app set up in OneSignal.
-   Finally, check that you have a Push Notification Page in the CMS.
+   Finally, check that you have a Push Notification Page in the CMS. Check that this page is set up correctly and that only logged-in users can access it.
 
 ### adding a user (user must be logged in to website)
 
 2. Create a new member in the CMS `/admin/security/users/EditForm/field/users/item/new`.
-   Log-in and make sure that you have not yet signed up yet for push notifications.
+   Make sure the user has a group or two, including the groups that can access the Push Notification Page.
+   Log-in and make sure that you have not yet signed up for push notifications.
+   If you are already signed-up, you will need to do the following.
+   Unsubscribe
+   Remove device from OneSignal
+   Press F12, and under local storage, change the key to appInstalled to the value no
+   To remove yourself from notification, in chrome, you can click on the lock icon in the address bar and remove the notifications from there.
 
 3. In the website, go to the `Push Sign-Up` page and sign-up for push notifications.
 

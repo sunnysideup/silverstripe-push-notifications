@@ -3,7 +3,7 @@ window.MyOneSignalCommsBackToWebsite = {
   token: '',
 
   init: function (OneSignal) {
-    console.log(OneSignal)
+    console.debug(OneSignal)
     MyOneSignalCommsBackToWebsite.token
     OneSignal.User.PushSubscription.addEventListener(
       'change',
@@ -12,20 +12,20 @@ window.MyOneSignalCommsBackToWebsite = {
   },
 
   pushSubscriptionChangeListener: function (event) {
-    console.log('event', event)
+    console.debug('event', event)
     MyOneSignalCommsBackToWebsite.onesignalId = event.current.id
     const isSubscribed = event.current.optedIn
     MyOneSignalCommsBackToWebsite.token = event.current.token
-    console.log('isSubscribed', isSubscribed)
-    console.log('token', MyOneSignalCommsBackToWebsite.token)
-    console.log('oneSignalID', MyOneSignalCommsBackToWebsite.onesignalId)
+    console.debug('isSubscribed', isSubscribed)
+    console.debug('token', MyOneSignalCommsBackToWebsite.token)
+    console.debug('oneSignalID', MyOneSignalCommsBackToWebsite.onesignalId)
     if (isSubscribed) {
-      console.log(
+      console.debug(
         'User to subscribe with ID:',
         MyOneSignalCommsBackToWebsite.onesignalId
       )
       MyOneSignalCommsBackToWebsite.subscribeOrSubscribeToOneSignal(true)
-      console.log(
+      console.debug(
         'User subscribed with ID:',
         MyOneSignalCommsBackToWebsite.onesignalId
       )
@@ -33,13 +33,13 @@ window.MyOneSignalCommsBackToWebsite = {
     } else {
       // User unsubscribed
       if (MyOneSignalCommsBackToWebsite.onesignalId) {
-        console.log(
+        console.debug(
           'User with ID:',
           MyOneSignalCommsBackToWebsite.onesignalId,
           'to unsubscribe.'
         )
         MyOneSignalCommsBackToWebsite.subscribeOrSubscribeToOneSignal(false)
-        console.log(
+        console.debug(
           'User with ID:',
           MyOneSignalCommsBackToWebsite.onesignalId,
           'has unsubscribed.'
@@ -47,20 +47,22 @@ window.MyOneSignalCommsBackToWebsite = {
 
         // Handle the unsubscription, e.g., notify your server
       } else {
-        console.log('User unsubscribed but no ID available.')
+        console.log('ERROR: User unsubscribed but no ID available.')
       }
     }
   },
 
   subscribeOrSubscribeToOneSignal: function (isSubscribe) {
     if (!window.push_notification_url) {
-      alert(
+      console.log(
         'ERROR: push_notification_url is not defined. Please try again at a later date.'
       )
       return
     }
     if (!MyOneSignalCommsBackToWebsite.onesignalId) {
-      alert('ERROR: userId is not defined. Please try again at a later date.')
+      console.log(
+        'ERROR: userId is not defined. Please try again at a later date.'
+      )
       return
     }
     let method = 'subscribeonesignal'
@@ -83,19 +85,19 @@ window.MyOneSignalCommsBackToWebsite = {
     })
       .then(response => {
         if (response.ok) {
-          console.log(
+          console.debug(
             'User ID successfully ' +
               (isSubscribe ? 'subscribed' : 'unsubscribed') +
               '.'
           )
         } else {
-          alert(
+          console.log(
             'ERROR: Failed to post user ID, error 2. Please try again at a later date.'
           )
         }
       })
       .catch(error => {
-        alert(
+        console.log(
           'ERROR: Failed to post user ID, error 1. Please try again at a later date.'
         )
       })
