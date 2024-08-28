@@ -76,6 +76,9 @@ class PushNotificationPageController extends ContentController
 
     protected function subscribeUnsubscribeOneSignalInner($request, bool $subscribed = true)
     {
+        // print_r($request->getBody());
+        print_r($request->requestVars());
+        print_r($request->postVars());
         $userId = (string) $request->requestVar('userId');
         $token = (string) $request->requestVar('token');
         if(!$userId) {
@@ -100,7 +103,7 @@ class PushNotificationPageController extends ContentController
             $subscriber->write();
             return HTTPResponse::create(json_encode(['success' => true]))
                 ->addHeader('Content-Type', 'application/json')
-                ->setStatusCode(404);
+                ->setStatusCode(201);
 
         } catch (Exception $e) {
             return HTTPResponse::create(json_encode(['success' => false, 'error' => $e->getMessage()]))
