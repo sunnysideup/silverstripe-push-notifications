@@ -32,13 +32,22 @@ class MemberExtension extends DataExtension
     ];
     public function onBeforeWrite()
     {
+        $owner = $this->getOwner();
+        if($owner->exists()) {
+            $subscribers = $owner->PushNotificationSubscribers();
+            /** @var Subscriber $subscriber */
+            foreach ($subscribers as $subscriber) {
+                $subscriber->write();
+            }
+        }
     }
 
 
 
     public function onBeforeDelete()
     {
-        $subscribers = $this->owner->PushNotificationSubscribers();
+        $owner = $this->getOwner();
+        $subscribers = $owner->PushNotificationSubscribers();
         /** @var Subscriber $subscriber */
         foreach ($subscribers as $subscriber) {
             $subscriber->delete();

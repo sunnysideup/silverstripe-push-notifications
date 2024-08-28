@@ -3,7 +3,10 @@
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
+use SilverStripe\Security\Group;
+use SilverStripe\Security\Member;
 use Sunnysideup\PushNotifications\Api\OneSignalSignupApi;
+use Sunnysideup\PushNotifications\Model\Subscriber;
 
 class TestOneSignalTask extends BuildTask
 {
@@ -14,12 +17,10 @@ class TestOneSignalTask extends BuildTask
     private static $segment = 'test-one-signal-task';
 
     protected $api = null;
-    protected $userId = null;
 
     public function run($request)
     {
         $this->api = Injector::inst()->get(OneSignalSignupApi::class);
-        $this->userId = '123';
 
         $this->header('getApps');
         $this->outcome($this->api->getApps());
@@ -27,17 +28,42 @@ class TestOneSignalTask extends BuildTask
         $this->header('getCurrentApp');
         $this->outcome($this->api->getCurrentApp());
 
-        $this->header('addTagsToUser');
-        $this->outcome($this->api->addTagsToUser($this->userId, ['test KEY' => 'test Value']));
+        $subscription = Subscriber::get()
+            ->filter(['OneSignalUserID:not' => ['', null]])
+            ->sort(['ID' => 'ASC'])
+            ->first();
+        $member = $subscription->Member();
+        $group = Group::get()->first();
 
-        $this->header('updateUser');
-        $this->outcome($this->api->updateUser('XYZ', ['amount_spent' => 999999.99]));
+        if($subscription && $member) {
 
-        $this->header('createSegment');
-        $this->outcome($this->api->createSegment('test segment', ['test KEY' => 'test Value']));
+            $this->header('addExternalUserIdToUser');
+            $this->outcome($this->api->addExternalUserIdToUser($subscription->OneSignalUserID, $member));
 
-        $this->header('deleteSegment');
-        $this->outcome($this->api->deleteSegment('123'));
+            $this->header('updateDevice');
+            $this->outcome($this->api->updateDevice($subscription->OneSignalUserID, ['amount_spent' => 999999.99]));
+
+            $this->header('createSegment');
+            $this->outcome($this->api->createSegment('test segment', ['test KEY' => 'test Value']));
+
+            $this->header('addTagsToUser');
+            $this->outcome($this->api->addTagsToUser($member, ['test KEY' => 'test Value']));
+
+            $this->header('addTagsToUserBasedOnGroups');
+            $this->outcome($this->api->addTagsToUserBasedOnGroups($member));
+
+            $this->header('createSegmentBasedOnMembers');
+            $this->outcome($this->api->createSegmentBasedOnMembers('test segment', Member::get()->filter(['ID' => $member->ID])));
+
+            $this->header('createSegmentBasedOnGroup');
+            $this->outcome($this->api->createSegmentBasedOnGroup($group));
+
+            $this->header('deleteSegment');
+            $this->outcome($this->api->deleteSegment('123'));
+        } else {
+            $this->header('User functions');
+            $this->outcome('Error: No user found!');
+        }
 
         $this->header('getAllNotifications');
         $notifications = $this->api->getAllNotifications();

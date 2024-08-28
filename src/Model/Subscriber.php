@@ -2,10 +2,13 @@
 
 namespace Sunnysideup\PushNotifications\Model;
 
+use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\FieldType\DBBoolean;
 use SilverStripe\ORM\FieldType\DBHTMLText;
 use SilverStripe\Security\Member;
+use Sunnysideup\PushNotifications\Api\OneSignalSignupApi;
 
 /**
  * Class \Sunnysideup\PushNotifications\Model\Subscriber
@@ -23,6 +26,16 @@ class Subscriber extends DataObject
         'Subscription' => 'Text',
         'Subscribed' => 'Boolean',
         'OneSignalUserID' => 'Varchar(64)',
+        'OneSignalUserNote' => 'Varchar(255)',
+        'OneSignalUserTagsNote' => 'Varchar(255)',
+    ];
+
+    private static $field_labels = [
+        'Subscription' => 'Code for subscription',
+        'Subscribed' => 'Is Subscribed',
+        'OneSignalUserID' => 'OneSignal User ID',
+        'OneSignalUserNote' => 'OneSignal User Connection Note',
+        'OneSignalUserTagsNote' => 'OneSignal User Tags (Groups) Added',
     ];
 
     private static $has_one = [
@@ -32,8 +45,7 @@ class Subscriber extends DataObject
     private static $summary_fields = [
         'Member.Title' => 'Who',
         'Subscribed.Nice' => 'Subscribed',
-        'SubscriptionReadable' => 'Details',
-        'OneSignalUserID' => 'One Signal ID',
+        'IsOneSignalUser.Nice' => 'Is OneSignal User',
         'SubscriberMessages.Count' => 'Messages',
     ];
 
@@ -43,6 +55,7 @@ class Subscriber extends DataObject
 
     private static $casting = [
         'SubscriptionReadable' => 'HTMLText',
+        'IsOneSignalUser' => 'Boolean',
     ];
 
     private static $indexes = [
@@ -53,6 +66,11 @@ class Subscriber extends DataObject
     public function getSubscriptionReadable(): DBHTMLText
     {
         return DBHTMLText::create_field('HTMLText', '<pre>' . json_decode($this->Subscription, true) . '</pre>');
+    }
+
+    public function getIsOneSignalUser(): DBBoolean
+    {
+        return DBBoolean::create_field('Boolean', $this->OneSigalUserID ? true : false);
     }
 
     /**
@@ -80,11 +98,50 @@ class Subscriber extends DataObject
     public function getCMSFields()
     {
         $fields = parent::getCMSFields();
-        $fields->removeByName('Subscription');
+        foreach(['Subscribed', 'OneSignalUserID', 'OneSignalUserNote', 'OneSignalUserTagsNote'] as $fieldName) {
+            $fields->replaceField(
+                $fieldName,
+                ReadonlyField::create($fieldName, $fieldName)
+            );
+        }
+        // $fields->removeByName('Subscription');
         $fields->replaceField(
             'Subscription',
             ReadonlyField::create('SubscriptionReadable', 'Subscription')
         );
         return $fields;
+    }
+
+    protected function onBeforeWrite()
+    {
+        parent::onBeforeWrite();
+        $member = $this->Member();
+        if($member && $member->exists()) {
+            $api = Injector::inst()->get(OneSignalSignupApi::class);
+            $outcome = $api->addExternalUserIdToUser($this->OneSignalUserID, $member);
+            if(OneSignalSignupApi::test_success($outcome)) {
+                $this->OneSignalUserNote = 'Succesfully connected to OneSignal';
+            } else {
+                $this->OneSignalUserNote = OneSignalSignupApi::get_error($outcome);
+            }
+            $outcome = $api->addTagsToUserBasedOnGroups($member);
+            if(OneSignalSignupApi::test_success($outcome)) {
+                $this->OneSignalUserTagsNote = 'Sucessfully added group tags to user';
+            } else {
+                $this->OneSignalUserTagsNote = OneSignalSignupApi::get_error($outcome);
+            }
+        } elseif($this->OneSignalUserID) {
+            $this->OneSignalUserNote = 'Error: No member found';
+            $this->OneSignalUserTagsNote = 'Error: No member found';
+        }
+    }
+
+    protected function onBeforeDelete()
+    {
+        parent::onBeforeDelete();
+        if($this->OneSignalUserID) {
+            $api = Injector::inst()->get(OneSignalSignupApi::class);
+            $api->deleteDevice($this->OneSignalUserID);
+        }
     }
 }
