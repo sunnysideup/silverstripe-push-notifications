@@ -1,4 +1,4 @@
-const MyOneSignalCommsBackToWebsite = {
+window.MyOneSignalCommsBackToWebsite = {
   currentUserId: '',
 
   init: function (OneSignal) {
