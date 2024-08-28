@@ -83,8 +83,6 @@ class TestOneSignalTask extends BuildTask
         if(Director::is_cli()) {
             echo PHP_EOL;
             echo PHP_EOL;
-            echo PHP_EOL;
-            echo PHP_EOL;
             echo '========================='.PHP_EOL;
             ;
             echo $message . PHP_EOL;
@@ -100,8 +98,9 @@ class TestOneSignalTask extends BuildTask
         if(Director::is_cli()) {
             echo PHP_EOL;
             echo '========================='.PHP_EOL;
-            print_r($mixed);
+            print_r($mixed).PHP_EOL;
             echo '========================='.PHP_EOL;
+            echo PHP_EOL;
         } else {
             echo '<pre>';
             print_r($mixed);
