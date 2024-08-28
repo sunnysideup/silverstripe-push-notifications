@@ -64,27 +64,23 @@ class MemberExtension extends DataExtension
         $page = PushNotificationPage::get_one();
         $fields->removeFieldFromTab('Root', 'PushNotificationSubscribers');
         $fields->removeFieldFromTab('Root', 'SubscriberMessages');
-        if($page) {
-            if(! $page->UseOneSignal) {
-                $fields->addFieldsToTab(
-                    'Root.Push',
-                    [
-                       GridField::create(
-                           'PushNotificationSubscribers',
-                           'Push Subscriptions',
-                           $owner->PushNotificationSubscribers(),
-                           GridFieldConfig_RecordViewer::create()
-                       ),
-                       GridField::create(
-                           'SubscriberMessages',
-                           'Push Messages Sent',
-                           $owner->SubscriberMessages(),
-                           GridFieldConfig_RecordViewer::create()
-                       ),
-                    ]
-                );
-            }
-        }
+        $fields->addFieldsToTab(
+            'Root.Push',
+            [
+                GridField::create(
+                    'PushNotificationSubscribers',
+                    'Push Subscriptions',
+                    $owner->PushNotificationSubscribers(),
+                    GridFieldConfig_RecordViewer::create()
+                ),
+                GridField::create(
+                    'SubscriberMessages',
+                    'Push Messages Sent',
+                    $owner->SubscriberMessages(),
+                    GridFieldConfig_RecordViewer::create()
+                ),
+            ]
+        );
         return $fields;
     }
 }

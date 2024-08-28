@@ -57,8 +57,10 @@ class TestOneSignalTask extends BuildTask
             $this->outcome($segmentOutcome);
 
             $segmentId = OneSignalSignupApi::test_id($segmentOutcome);
-            $this->header('deleteSegment with id: '.$segmentId);
-            $this->outcome($this->api->deleteSegment($segmentId));
+            if($segmentId) {
+                $this->header('deleteSegment with id: '.$segmentId);
+                $this->outcome($this->api->deleteSegment($segmentId));
+            }
         } else {
             $this->header('User functions');
             $this->outcome('Error: No user found!');
