@@ -20,6 +20,10 @@ window.MyOneSignalCommsBackToWebsite = {
     console.log('token', MyOneSignalCommsBackToWebsite.token)
     console.log('oneSignalID', MyOneSignalCommsBackToWebsite.onesignalId)
     if (isSubscribed) {
+      console.log(
+        'User to subscribe with ID:',
+        MyOneSignalCommsBackToWebsite.onesignalId
+      )
       MyOneSignalCommsBackToWebsite.subscribeOrSubscribeToOneSignal(true)
       console.log(
         'User subscribed with ID:',
@@ -32,9 +36,14 @@ window.MyOneSignalCommsBackToWebsite = {
         console.log(
           'User with ID:',
           MyOneSignalCommsBackToWebsite.onesignalId,
-          'has unsubscribed.'
+          'to unsubscribe.'
         )
         MyOneSignalCommsBackToWebsite.subscribeOrSubscribeToOneSignal(false)
+        console.log(
+          'User with ID:',
+          MyOneSignalCommsBackToWebsite.onesignalId,
+          'has unsubscribed.'
+        )
 
         // Handle the unsubscription, e.g., notify your server
       } else {
@@ -59,6 +68,7 @@ window.MyOneSignalCommsBackToWebsite = {
       method = 'un' + method
     }
     const url = window.push_notification_url + `/${method}`
+    console.log(url)
 
     // Send a POST request to your server
     fetch(url, {
