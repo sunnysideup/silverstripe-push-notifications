@@ -3,6 +3,18 @@ window.MyOneSignalCommsBackToWebsite = {
 
   init: function (OneSignal) {
     console.log(OneSignal)
+    const pushSubscriptionChangeListener = function (event) {
+      if (event.current.token) {
+        console.log(`The push subscription has received a token!`)
+        //this is a good place to call OneSignal.login and pass in your user ID
+      }
+    }
+
+    OneSignal.User.PushSubscription.addEventListener(
+      'change',
+      pushSubscriptionChangeListener
+    )
+
     // set up a listener for the subscription change event
     OneSignal.User.addEventListener('subscriptionChange', function (event) {
       console.log('subscriptionChange', event)
