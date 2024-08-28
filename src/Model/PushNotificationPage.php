@@ -282,23 +282,20 @@ class PushNotificationPage extends Page
                     )
                 ]
             );
-        } else {
-            $fields->addFieldsToTab(
-                'Root.Subscribers',
-                [
-                    GridField::create(
-                        'Subscribers',
-                        'Subscribers',
-                        Subscriber::get(),
-                        GridFieldConfig_RecordEditor::create()
-                    )
-                ]
-            );
         }
+        $fields->addFieldsToTab(
+            'Root.Subscribers',
+            [
+                GridField::create(
+                    'Subscribers',
+                    'Subscribers',
+                    Subscriber::get(),
+                    GridFieldConfig_RecordEditor::create()
+                )
+            ]
+        );
 
-        if($this->UseOneSignal) {
 
-        }
         return $fields;
     }
 

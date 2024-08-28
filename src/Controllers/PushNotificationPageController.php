@@ -78,10 +78,7 @@ class PushNotificationPageController extends ContentController
     {
         // print_r($request->getBody());
         HTTPCacheControlMiddleware::singleton()->disableCache();
-        print_r($request->requestVars());
-        print_r($request->postVars());
-        print_r($_POST);
-        $userId = (string) $request->requestVar('userId');
+        $userId = (string) $request->postVar('userId');
         $token = (string) $request->requestVar('token');
         if(!$userId) {
             return HTTPResponse::create(json_encode(['success' => false, 'error' => 'No user ID provided']))

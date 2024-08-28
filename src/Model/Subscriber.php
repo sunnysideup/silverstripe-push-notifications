@@ -4,6 +4,7 @@ namespace Sunnysideup\PushNotifications\Model;
 
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\FieldType\DBHTMLText;
 use SilverStripe\Security\Member;
 
 /**
@@ -21,7 +22,7 @@ class Subscriber extends DataObject
     private static $db = [
         'Subscription' => 'Text',
         'Subscribed' => 'Boolean',
-        'OneSignalUserID' => 'Int',
+        'OneSignalUserID' => 'Varchar(64)',
     ];
 
     private static $has_one = [
@@ -44,9 +45,14 @@ class Subscriber extends DataObject
         'SubscriptionReadable' => 'HTMLText',
     ];
 
-    public function getSubscriptionReadable()
+    private static $indexes = [
+        'Subscribed' => true,
+        'OneSignalUserID' => true,
+    ];
+
+    public function getSubscriptionReadable(): DBHTMLText
     {
-        return '<pre>' . json_decode($this->Subscription, true) . '</pre>';
+        return DBHTMLText::create_field('HTMLText', '<pre>' . json_decode($this->Subscription, true) . '</pre>');
     }
 
     /**
