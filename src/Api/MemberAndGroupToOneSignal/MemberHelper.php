@@ -31,9 +31,11 @@ class MemberHelper
     public static function member_groups_2_tag_codes(Member $member): array
     {
         $tags = [];
-        $memberGroups = $member->Groups()->columnUnique();
+        $memberGroups = $member->Groups()->limit(10)->columnUnique();
         foreach(Group::get() as $group) {
-            $tags[GroupHelper::group_2_code($group)] = in_array($group->ID, $memberGroups, true) ? 'Y' : 'N';
+            if(in_array($group->ID, $memberGroups, true)) {
+                $tags[GroupHelper::group_2_code($group)] = 'Y';
+            }
         }
         return $tags;
     }

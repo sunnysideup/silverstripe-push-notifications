@@ -123,6 +123,11 @@ class OneSignalSignupApi
 
     public function addTagsToUserBasedOnGroups(Member $member): array
     {
+        //reset first...
+        $this->addTagsToUser(
+            $member,
+            []
+        );
         return $this->addTagsToUser(
             $member,
             MemberHelper::member_groups_2_tag_codes($member)
@@ -170,25 +175,32 @@ class OneSignalSignupApi
 
     public function createSegmentBasedOnGroup(Group $group): array
     {
+        $this->deleteSegmentBasedOnGroup($group);
         $filters[] = [
             'field' => 'tag',
             'key' => GroupHelper::group_2_code($group),
             'relation' => '=',
             'value' => 'Y',
         ];
-        return $this->oneSignal->apps()->createSegment(
+        $outcome = $this->oneSignal->apps()->createSegment(
             $this->getMyAppID(),
             [
                 'name' => GroupHelper::group_2_name($group),
                 'filters' => $filters,
             ]
         );
+
+        return $outcome;
     }
 
 
     public function deleteSegmentBasedOnGroup(Group $group): array
     {
-        return $this->deleteSegment($group->OneSignalSegmentID);
+        if($group->OneSignalSegmentID) {
+            return $this->deleteSegment($group->OneSignalSegmentID);
+        } else {
+            return ['success' => 1, ['_status_code' => 200]];
+        }
     }
 
     public function deleteSegment(string $segmentId): array
