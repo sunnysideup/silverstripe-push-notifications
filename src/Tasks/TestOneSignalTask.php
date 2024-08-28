@@ -29,7 +29,7 @@ class TestOneSignalTask extends BuildTask
         $this->outcome($this->api->getCurrentApp());
 
         $subscription = Subscriber::get()
-            ->filter(['OneSignalUserID:not' => ['', null]])
+            ->filter(['OneSignalUserID:not' => ['', null, 0]])
             ->sort(['ID' => 'ASC'])
             ->first();
         $member = $subscription->Member();
