@@ -1,5 +1,6 @@
 const MyOneSignalCommsBackToWebsite = {
   currentUserId: '',
+
   init: function (OneSignal) {
     // Check if the user is already subscribed and get their user ID
     OneSignal.getUserId().then(function (userId) {

@@ -1,3 +1,5 @@
+<% if $OneSignalKey %>
+
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
     window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -22,3 +24,5 @@
 <div class="subscribe-now">
     <div class='onesignal-customlink-container'></div>
 </div>
+
+<% end_if %>
