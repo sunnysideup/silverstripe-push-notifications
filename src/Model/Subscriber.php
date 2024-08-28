@@ -70,7 +70,7 @@ class Subscriber extends DataObject
 
     public function getIsOneSignalUser(): DBBoolean
     {
-        return DBBoolean::create_field('Boolean', $this->OneSigalUserID ? true : false);
+        return DBBoolean::create_field('Boolean', $this->OneSignalUserID ? true : false);
     }
 
     /**
@@ -101,13 +101,20 @@ class Subscriber extends DataObject
         foreach(['Subscribed', 'OneSignalUserID', 'OneSignalUserNote', 'OneSignalUserTagsNote'] as $fieldName) {
             $fields->replaceField(
                 $fieldName,
-                ReadonlyField::create($fieldName, $fieldName)
+                ReadonlyField::create($fieldName, $fields->dataFieldByName($fieldName)->Title())
             );
         }
         // $fields->removeByName('Subscription');
         $fields->replaceField(
             'Subscription',
             ReadonlyField::create('SubscriptionReadable', 'Subscription')
+        );
+        $fields->addFieldsToTab(
+            'Root.Main',
+            [
+                ReadonlyField::create('IsOneSignalUser', 'Is OneSignal User'),
+                ReadonlyField::create('Groups', 'Groups', $this->Member()->Groups()->column('Title')),
+            ]
         );
         return $fields;
     }
