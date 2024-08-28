@@ -119,7 +119,7 @@ class Subscriber extends DataObject
         $fields->addFieldsToTab(
             'Root.Main',
             [
-                ReadonlyField::create('IsOneSignalUser', 'Is OneSignal User', $this->IsOneSignalUser()->Nice()),
+                ReadonlyField::create('IsOneSignalUser', 'Is OneSignal User', $this->getIsOneSignalUser()->Nice()),
                 ReadonlyField::create('Groups', 'Groups', $this->Member()->Groups()->column('Title')),
                 ReadonlyField::create('OneSignalUserTagsNote', 'Update Notes'),
             ]
