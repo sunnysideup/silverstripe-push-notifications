@@ -55,11 +55,13 @@ class TestOneSignalTask extends BuildTask
             $this->header('createSegmentBasedOnMembers');
             $this->outcome($this->api->createSegmentBasedOnMembers('test segment', Member::get()->filter(['ID' => $member->ID])));
 
+            $segmentOutcome = $this->api->createSegmentBasedOnGroup($group);
             $this->header('createSegmentBasedOnGroup');
-            $this->outcome($this->api->createSegmentBasedOnGroup($group));
+            $this->outcome($segmentOutcome);
 
+            $segmentId = OneSignalSignupApi::test_id($segmentOutcome);
             $this->header('deleteSegment');
-            $this->outcome($this->api->deleteSegment('123'));
+            $this->outcome($this->api->deleteSegment($segmentId));
         } else {
             $this->header('User functions');
             $this->outcome('Error: No user found!');

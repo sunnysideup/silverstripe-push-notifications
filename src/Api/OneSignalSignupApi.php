@@ -63,6 +63,14 @@ class OneSignalSignupApi
         return false;
     }
 
+    public static function test_id($outcome): string
+    {
+        if(! is_array($outcome)) {
+            return '';
+        }
+        return $outcome['id'] ?? '';
+    }
+
     public static function get_error($outcome): string
     {
         if(! is_array($outcome)) {
