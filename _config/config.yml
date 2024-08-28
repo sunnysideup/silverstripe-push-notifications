@@ -13,3 +13,6 @@ SilverStripe\Admin\LeftAndMain:
 SilverStripe\Security\Member:
   extensions:
     - Sunnysideup\PushNotifications\Extensions\MemberExtension
+SilverStripe\Security\Group:
+  extensions:
+    - Sunnysideup\PushNotifications\Extensions\GroupExtension
