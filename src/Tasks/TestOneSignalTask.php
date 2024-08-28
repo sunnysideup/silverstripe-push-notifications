@@ -99,6 +99,7 @@ class TestOneSignalTask extends BuildTask
             echo PHP_EOL;
             echo '========================='.PHP_EOL;
             print_r($mixed).PHP_EOL;
+            echo PHP_EOL;
             echo '========================='.PHP_EOL;
             echo PHP_EOL;
         } else {
