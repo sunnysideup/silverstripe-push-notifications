@@ -95,7 +95,7 @@ class PushNotificationPageController extends ContentController
                 $subscriber = Subscriber::create($filter);
             }
             $subscriber->Subscribed = $subscribed;
-            $subscriber->Subscription = $token;
+            $subscriber->Subscription = (string) $token;
 
             $subscriber->write();
             return HTTPResponse::create(json_encode(['success' => true]))
@@ -105,7 +105,7 @@ class PushNotificationPageController extends ContentController
         } catch (Exception $e) {
             return HTTPResponse::create(json_encode(['success' => false, 'error' => $e->getMessage()]))
                 ->addHeader('Content-Type', 'application/json')
-                ->setStatusCode(404);
+                ->setStatusCode(500);
         }
     }
     public function getPushNotifications()
