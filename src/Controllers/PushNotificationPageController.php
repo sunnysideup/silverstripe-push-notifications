@@ -80,6 +80,7 @@ class PushNotificationPageController extends ContentController
         HTTPCacheControlMiddleware::singleton()->disableCache();
         print_r($request->requestVars());
         print_r($request->postVars());
+        print_r($_POST);
         $userId = (string) $request->requestVar('userId');
         $token = (string) $request->requestVar('token');
         if(!$userId) {

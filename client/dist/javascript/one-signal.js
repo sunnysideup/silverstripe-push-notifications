@@ -69,17 +69,17 @@ window.MyOneSignalCommsBackToWebsite = {
     }
     const url = window.push_notification_url + `/${method}`
     console.log(url)
+    const urlEncodedData = new URLSearchParams({
+      userId: MyOneSignalCommsBackToWebsite.onesignalId,
+      token: MyOneSignalCommsBackToWebsite.token
+    })
 
-    // Send a POST request to your server
     fetch(url, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/x-www-form-urlencoded'
       },
-      body: JSON.stringify({
-        userId: MyOneSignalCommsBackToWebsite.onesignalId,
-        token: MyOneSignalCommsBackToWebsite.token
-      })
+      body: urlEncodedData.toString()
     })
       .then(response => {
         if (response.ok) {
