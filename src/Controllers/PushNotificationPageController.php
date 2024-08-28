@@ -23,7 +23,9 @@ class PushNotificationPageController extends ContentController
 {
     private static $allowed_actions = [
         'subscribe' => true,
+        'unsubscribe' => true,
         'subscribeonesignal' => true,
+        'unsubscribeonesignal' => true,
     ];
 
 
