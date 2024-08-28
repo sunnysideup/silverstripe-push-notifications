@@ -3,9 +3,10 @@ window.MyOneSignalCommsBackToWebsite = {
 
   init: function (OneSignal) {
     // set up a listener for the subscription change event
-    OneSignal.push(function () {
-      OneSignal.on('subscriptionChange', function (isSubscribed) {
-        console.log('subscriptionChange', isSubscribed)
+    OneSignalDeferred.push(function () {
+      OneSignal.User.addEventListener('change', function (event) {
+        console.log('subscriptionChange', event)
+        console.log(OneSignal.User)
         MyOneSignalCommsBackToWebsite.onesignalId = OneSignal.User.onesignalId
         if (isSubscribed) {
           MyOneSignalCommsBackToWebsite.subscribeOrSubscribeToOneSignal(true)
