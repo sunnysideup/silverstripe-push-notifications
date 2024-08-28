@@ -148,14 +148,15 @@ class Subscriber extends DataObject
                 $outcome = $api->addExternalUserIdToUser($this->OneSignalUserID, $member);
                 if(OneSignalSignupApi::test_success($outcome)) {
                     $this->OneSignalUserNote = 'Succesfully connected to OneSignal';
+                    $outcome = $api->addTagsToUserBasedOnGroups($member);
+                    if(OneSignalSignupApi::test_success($outcome)) {
+                        $this->OneSignalUserTagsNote = 'Sucessfully added group tags to user';
+                    } else {
+                        $this->OneSignalUserTagsNote = OneSignalSignupApi::get_error($outcome);
+                    }
                 } else {
                     $this->OneSignalUserNote = OneSignalSignupApi::get_error($outcome);
-                }
-                $outcome = $api->addTagsToUserBasedOnGroups($member);
-                if(OneSignalSignupApi::test_success($outcome)) {
-                    $this->OneSignalUserTagsNote = 'Sucessfully added group tags to user';
-                } else {
-                    $this->OneSignalUserTagsNote = OneSignalSignupApi::get_error($outcome);
+                    $this->OneSignalUserTagsNote = 'Error: could not add external user id so could not add tags';
                 }
             } else {
                 $this->OneSignalUserNote = 'Error: No member found';
