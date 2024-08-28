@@ -67,7 +67,7 @@ window.MyOneSignalCommsBackToWebsite = {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        userId: MyOneSignalCommsBackToWebsite.onesignalId.
+        userId: MyOneSignalCommsBackToWebsite.onesignalId,
         token: MyOneSignalCommsBackToWebsite.token
       })
     })
