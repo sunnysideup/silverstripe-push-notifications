@@ -15,7 +15,7 @@ class GroupHelper
 
     public static function group_2_name(Group $group): string
     {
-        return $group->Title;
+        return 'Website: '.$group->Title;
     }
 
 
