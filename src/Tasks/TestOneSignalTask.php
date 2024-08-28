@@ -52,9 +52,6 @@ class TestOneSignalTask extends BuildTask
             $this->header('addTagsToUserBasedOnGroups');
             $this->outcome($this->api->addTagsToUserBasedOnGroups($member));
 
-            $this->header('createSegmentBasedOnMembers');
-            $this->outcome($this->api->createSegmentBasedOnMembers('test segment', Member::get()->filter(['ID' => $member->ID])));
-
             $segmentOutcome = $this->api->createSegmentBasedOnGroup($group);
             $this->header('createSegmentBasedOnGroup');
             $this->outcome($segmentOutcome);

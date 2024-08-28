@@ -76,7 +76,7 @@ class OneSignalSignupApi
         if(! is_array($outcome)) {
             return 'Outcome is not an array, '.print_r($outcome, 1);
         }
-        return $outcome['errors'] ?? 'No error message found';
+        return implode(',', $outcome['errors']) ?? 'No error message found';
     }
 
     public function __construct()
@@ -158,26 +158,6 @@ class OneSignalSignupApi
 
     public function createSegment(string $name, array $filters): array
     {
-        return $this->oneSignal->apps()->createSegment(
-            $this->getMyAppID(),
-            [
-                'name' => $name,
-                'filters' => $filters,
-            ]
-        );
-    }
-
-    public function createSegmentBasedOnMembers(string $name, DataList $members): array
-    {
-        $filters = [];
-        foreach($members as $member) {
-            $filters[] = [
-                'field' => 'external_user_id',
-                'key' => MemberHelper::member_2_external_user_id($member),
-                'relation' => '=',
-                'value' => 'true',
-            ];
-        }
         return $this->oneSignal->apps()->createSegment(
             $this->getMyAppID(),
             [

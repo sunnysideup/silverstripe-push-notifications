@@ -65,7 +65,7 @@ class Subscriber extends DataObject
 
     public function getSubscriptionReadable(): DBHTMLText
     {
-        return DBHTMLText::create_field('HTMLText', '<pre>' . json_decode($this->Subscription, true) . '</pre>');
+        return DBHTMLText::create_field('HTMLText', '<pre>' . json_decode((string) $this->Subscription, true) . '</pre>');
     }
 
     public function getIsOneSignalUser(): DBBoolean
