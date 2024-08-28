@@ -98,7 +98,7 @@ class Subscriber extends DataObject
     public function getCMSFields()
     {
         $fields = parent::getCMSFields();
-        foreach(['Subscribed', 'OneSignalUserID', 'OneSignalUserNote', 'OneSignalUserTagsNote'] as $fieldName) {
+        foreach(['OneSignalUserID', 'OneSignalUserNote', 'OneSignalUserTagsNote'] as $fieldName) {
             $fields->replaceField(
                 $fieldName,
                 ReadonlyField::create($fieldName, $fields->dataFieldByName($fieldName)->Title())
@@ -106,14 +106,19 @@ class Subscriber extends DataObject
         }
         // $fields->removeByName('Subscription');
         $fields->replaceField(
+            'Subscribed',
+            ReadonlyField::create('SubscribedReadable', 'Subscribed', $this->dbObject('Subscribed')->Nice())
+        );
+        $fields->replaceField(
             'Subscription',
             ReadonlyField::create('SubscriptionReadable', 'Subscription')
         );
         $fields->addFieldsToTab(
             'Root.Main',
             [
-                ReadonlyField::create('IsOneSignalUser', 'Is OneSignal User'),
+                ReadonlyField::create('IsOneSignalUser', 'Is OneSignal User', $this->IsOneSignalUser()->Nice()),
                 ReadonlyField::create('Groups', 'Groups', $this->Member()->Groups()->column('Title')),
+                ReadonlyField::create('OneSignalUserTagsNote', 'Update Notes'),
             ]
         );
         return $fields;

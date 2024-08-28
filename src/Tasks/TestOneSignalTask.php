@@ -37,27 +37,27 @@ class TestOneSignalTask extends BuildTask
 
         if($subscription && $member) {
 
-            $this->header('addExternalUserIdToUser');
+            $this->header('addExternalUserIdToUser: '.$subscription->OneSignalUserID.' - '.$member->Email);
             $this->outcome($this->api->addExternalUserIdToUser($subscription->OneSignalUserID, $member));
 
-            $this->header('updateDevice');
+            $this->header('updateDevice: '.$subscription->OneSignalUserID);
             $this->outcome($this->api->updateDevice($subscription->OneSignalUserID, ['amount_spent' => 999999.99]));
 
-            $this->header('createSegment');
+            $this->header('createSegment: test segment');
             $this->outcome($this->api->createSegment('test segment', ['test KEY' => 'test Value']));
 
-            $this->header('addTagsToUser');
+            $this->header('addTagsToUser: '.$member->Email. ' test KEY');
             $this->outcome($this->api->addTagsToUser($member, ['test KEY' => 'test Value']));
 
-            $this->header('addTagsToUserBasedOnGroups');
+            $this->header('addTagsToUserBasedOnGroups: '.$member->Email);
             $this->outcome($this->api->addTagsToUserBasedOnGroups($member));
 
             $segmentOutcome = $this->api->createSegmentBasedOnGroup($group);
-            $this->header('createSegmentBasedOnGroup');
+            $this->header('createSegmentBasedOnGroup: '.$group->Title);
             $this->outcome($segmentOutcome);
 
             $segmentId = OneSignalSignupApi::test_id($segmentOutcome);
-            $this->header('deleteSegment');
+            $this->header('deleteSegment with id: '.$segmentId);
             $this->outcome($this->api->deleteSegment($segmentId));
         } else {
             $this->header('User functions');
@@ -70,7 +70,7 @@ class TestOneSignalTask extends BuildTask
         $this->outcome('There are ' . $count . ' notifications');
         if($count > 0) {
             $id = $notifications['notifications'][0]['id'];
-            $this->header('getOneNotification');
+            $this->header('getOneNotification with id: '.$id);
             $this->outcome($this->api->getOneNotification($id));
         }
 
