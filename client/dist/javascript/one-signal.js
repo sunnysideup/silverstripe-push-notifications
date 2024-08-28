@@ -2,18 +2,10 @@ window.MyOneSignalCommsBackToWebsite = {
   currentUserId: '',
 
   init: function (OneSignal) {
-    if (OneSignal._currentUser.onesignalId) {
-      MyOneSignalCommsBackToWebsite.currentUserId = OneSignal.User.externalId
-      console.log('User ID available:', userId)
-      // Handle the user ID (e.g., send it to your server)
-    } else {
-      console.log('User ID not yet available.')
-      // Optionally, you can handle cases where the user ID is not yet assigned
-    }
-
     // set up a listener for the subscription change event
     OneSignal.push(function () {
       OneSignal.on('subscriptionChange', function (isSubscribed) {
+        MyOneSignalCommsBackToWebsite.currentUserId = OneSignal.User.externalId
         if (isSubscribed) {
           // User subscribed
           OneSignal.getUserId().then(function (userId) {
