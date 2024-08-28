@@ -1,28 +1,25 @@
 window.MyOneSignalCommsBackToWebsite = {
-  currentUserId: '',
+  onesignalId: '',
 
   init: function (OneSignal) {
     // set up a listener for the subscription change event
     OneSignal.push(function () {
       OneSignal.on('subscriptionChange', function (isSubscribed) {
-        MyOneSignalCommsBackToWebsite.currentUserId = OneSignal.User.externalId
+        console.log('subscriptionChange', isSubscribed)
+        MyOneSignalCommsBackToWebsite.onesignalId = OneSignal.User.onesignalId
         if (isSubscribed) {
-          // User subscribed
-          OneSignal.getUserId().then(function (userId) {
-            MyOneSignalCommsBackToWebsite.currentUserId = userId
-            MyOneSignalCommsBackToWebsite.subscribeOrSubscribeToOneSignal(true)
-            console.log(
-              'User subscribed with ID:',
-              MyOneSignalCommsBackToWebsite.currentUserId
-            )
-            // Store the userId for later use if needed
-          })
+          MyOneSignalCommsBackToWebsite.subscribeOrSubscribeToOneSignal(true)
+          console.log(
+            'User subscribed with ID:',
+            MyOneSignalCommsBackToWebsite.onesignalId
+          )
+          // Store the userId for later use if needed
         } else {
           // User unsubscribed
-          if (MyOneSignalCommsBackToWebsite.currentUserId) {
+          if (MyOneSignalCommsBackToWebsite.onesignalId) {
             console.log(
               'User with ID:',
-              MyOneSignalCommsBackToWebsite.currentUserId,
+              MyOneSignalCommsBackToWebsite.onesignalId,
               'has unsubscribed.'
             )
             MyOneSignalCommsBackToWebsite.subscribeOrSubscribeToOneSignal(false)
@@ -43,11 +40,10 @@ window.MyOneSignalCommsBackToWebsite = {
       )
       return
     }
-    if (!MyOneSignalCommsBackToWebsite.currentUserId) {
+    if (!MyOneSignalCommsBackToWebsite.onesignalId) {
       alert('ERROR: userId is not defined. Please try again at a later date.')
       return
     }
-    // Replace 'xxx' with your actual base URL
     let method = 'subscribeonesignal'
     if (!isSubscribe) {
       method = 'un' + method
@@ -61,7 +57,7 @@ window.MyOneSignalCommsBackToWebsite = {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        userId: MyOneSignalCommsBackToWebsite.currentUserId
+        userId: MyOneSignalCommsBackToWebsite.onesignalId
       })
     })
       .then(response => {
