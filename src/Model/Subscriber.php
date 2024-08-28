@@ -2,6 +2,7 @@
 
 namespace Sunnysideup\PushNotifications\Model;
 
+use SilverStripe\Control\Director;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\ORM\DataObject;
@@ -98,11 +99,13 @@ class Subscriber extends DataObject
     public function getCMSFields()
     {
         $fields = parent::getCMSFields();
-        foreach(['OneSignalUserID', 'OneSignalUserNote', 'OneSignalUserTagsNote'] as $fieldName) {
-            $fields->replaceField(
-                $fieldName,
-                ReadonlyField::create($fieldName, $fields->dataFieldByName($fieldName)->Title())
-            );
+        if(! Director::isDev()) {
+            foreach(['OneSignalUserID', 'OneSignalUserNote', 'OneSignalUserTagsNote'] as $fieldName) {
+                $fields->replaceField(
+                    $fieldName,
+                    ReadonlyField::create($fieldName, $fields->dataFieldByName($fieldName)->Title())
+                );
+            }
         }
         // $fields->removeByName('Subscription');
         $fields->replaceField(
@@ -127,7 +130,7 @@ class Subscriber extends DataObject
     protected function onBeforeWrite()
     {
         parent::onBeforeWrite();
-        if($this->OneSignalUserID) {
+        if($this->OneSignalUserID && $this->Subscribed) {
             $member = $this->Member();
             if($member && $member->exists()) {
                 $api = Injector::inst()->get(OneSignalSignupApi::class);
