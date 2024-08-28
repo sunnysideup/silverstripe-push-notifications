@@ -163,12 +163,13 @@ Or from the browser `/dev/tasks/test-one-signal-task`.
   (a) external user ID (with ID of the Member signing up), and
   (b) tags for the Silverstripe groups that the user belongs to.
 
-5. In the website, go to the Push Notifications page in the CMS and see, under subscriptions, that the user has been added with a OneSignal ID.
+5. In the website, go to the Push Notifications page (`/admin/pages`) in the CMS and see,
+   under subscriptions, that the user has been added with a OneSignal ID.
    This proves that there is a good connection between the two.
 
-6. In the website, go to a group that the user belongs to and save the group.
+6. In the website, go to a `Group(s)` that the user belongs to and save the group.
 
-7. In the OneSignal dashboard, check if the user has been added a segment that matches the group.
+7. In the OneSignal dashboard, check if the user has been added a segment(s) that matches these Groups.
 
 ### moving a user
 
@@ -191,6 +192,7 @@ Or from the browser `/dev/tasks/test-one-signal-task`.
 - User without groups
 - Rename Group
 - Delete Group
+- User with multiple devices
 
 # more reading
 
