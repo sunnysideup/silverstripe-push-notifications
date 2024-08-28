@@ -130,7 +130,7 @@ class Subscriber extends DataObject
     protected function onBeforeWrite()
     {
         parent::onBeforeWrite();
-        if($this->OneSignalUserID && $this->Subscribed) {
+        if($this->OneSignalUserID) {
             $member = $this->Member();
             if($member && $member->exists()) {
                 $api = Injector::inst()->get(OneSignalSignupApi::class);
