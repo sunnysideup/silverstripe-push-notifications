@@ -2,10 +2,8 @@
 # general info
 
 This module allows you to send push notifications to your users.
-You can either use One Signal or you can use Vapid.
+You can either use OneSignal or you can use Vapid.
 It will require you to do some styling and testing!
-
-It also
 
 # Configuration
 
@@ -50,13 +48,7 @@ We provide two options (providers) here and it is up to you to decide which one 
 
 **You can not use both providers at the same time and you can not really switch between them without some work. So choose carefully.**
 
-## OPTION 1: use OneSignal
-
-Head to <https://onesignal.com/> and create an account and follow your nose from there.
-
-At the moment, you will need to copy of our messages on OneSignal to the push-notifications page.
-
-## OPTION 2: use vapid
+## OPTION 1: use vapid - the vanilla approach
 
 Please go to <https://vapidkeys.com/> to generate your vapid keys.
 
@@ -67,6 +59,34 @@ SS_VAPID_SUBJECT=""
 SS_VAPID_PUBLIC_KEY=""
 SS_VAPID_PRIVATE_KEY=""
 ```
+
+## OPTION 2: use OneSignal - the SaaS approach
+
+Head to <https://onesignal.com/> and create an account and follow your nose from there.
+
+Then you will need to add the following to your `.env` file:
+
+```env
+# OneSignal APP
+SS_ONESIGNAL_APP_ID="" 
+SS_ONESIGNAL_REST_API_KEY=""
+# OneSignal User
+SS_ONESIGNAL_USER_AUTH_KEY=""
+```
+
+At the moment, you will need to copy messages on OneSignal to the push-notifications page.
+
+### setup a sync  
+
+To run a sync of all members and groups with OneSignal, you can run the following task from the command line:
+
+```shell
+`vendor/bin/sake dev/tasks/sync-one-signal`
+```
+
+You could consider running this overnight as a cron job.
+
+You can also run this from the browser `/dev/tasks/sync-one-signal`.
 
 # Feature 2: Add to home Screen (PWA)
 
@@ -105,6 +125,8 @@ To improve the experience on iOS, you can add the following to your `Page.ss` fi
 
 # Testing
 
+## how to repeat testing
+
 Once added, you may want to remove yourself again.  
 
 To remove yourself from the `added to home screen` functionality. You need to remove localStorage value of `appInstalled` to `no`.
@@ -112,6 +134,63 @@ To remove yourself from the `added to home screen` functionality. You need to re
 To remove yourself from notification, in chrome, you can click on the lock icon in the address bar and remove the notifications from there.
 
 You may also remove yourself from the CMS list of recipients.
+
+## Testing Members and Groups on OneSignal
+
+There is a task that you can run to test the basic connections:
+
+You can run this from the command line:
+
+```shell
+`vendor/bin/sake dev/tasks/test-one-signal-task`
+```
+
+Or from the browser `/dev/tasks/test-one-signal-task`.
+
+### set up
+
+1. Make sure you have a OneSignal account, get the credentials and enter them in your `.env` file. Also make sure you have an app set up in OneSignal.
+   Finally, check that you have a Push Notification Page in the CMS.
+
+### adding a user (user must be logged in to website)
+
+2. Create a new member in the CMS `/admin/security/users/EditForm/field/users/item/new`.
+   Log-in and make sure that you have not yet signed up yet for push notifications.
+
+3. In the website, go to the `Push Sign-Up` page and sign-up for push notifications.
+
+4. Go to the OneSignal dashboard and check if the device is added with:
+  (a) external user ID (with ID of the Member signing up), and
+  (b) tags for the Silverstripe groups that the user belongs to.
+
+5. In the website, go to the Push Notifications page in the CMS and see, under subscriptions, that the user has been added with a OneSignal ID.
+   This proves that there is a good connection between the two.
+
+6. In the website, go to a group that the user belongs to and save the group.
+
+7. In the OneSignal dashboard, check if the user has been added a segment that matches the group.
+
+### moving a user
+
+8. In the website, go to user and change the group they belong to. Change the groups they belong to (add a group, remove a group, etc...).
+
+9. In the OneSignal dashboard, after every group change, see that the user tags have been changed.
+
+### removing a user
+
+10. Find a deletable user in the CMS with one or more subscriptions and delete the user in the CMS.
+
+11. Check that the user's devices have been removed from OneSignal.
+
+### Test Sending
+
+12. Go to OneSignal and chose a segment (mirroring a group in the Silverstripe CMS) and send a message to that segment.
+
+### Edge Cases
+
+- User without groups
+- Rename Group
+- Delete Group
 
 # more reading
 

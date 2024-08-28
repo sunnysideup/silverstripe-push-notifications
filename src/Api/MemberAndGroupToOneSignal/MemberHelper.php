@@ -2,20 +2,13 @@
 
 namespace Sunnysideup\PushNotifications\Api\MemberAndGroupToOneSignal;
 
-use OneSignal\Config;
-use SilverStripe\Core\Config\Configurable;
-use SilverStripe\Core\Environment;
-use SilverStripe\Core\Extensible;
-use SilverStripe\Core\Injector\Injectable;
-
-use OneSignal\OneSignal;
-use Symfony\Component\HttpClient\Psr18Client;
-use Nyholm\Psr7\Factory\Psr17Factory;
 use SilverStripe\Security\Group;
 use SilverStripe\Security\Member;
 
 class MemberHelper
 {
+    protected const LIMIT_FOR_TAGS = 10;
+
     public static function member_2_external_user_id(Member $member): string
     {
         return 'member_' . $member->ID;
@@ -31,7 +24,8 @@ class MemberHelper
     public static function member_groups_2_tag_codes(Member $member): array
     {
         $tags = [];
-        $memberGroups = $member->Groups()->limit(10)->columnUnique();
+        // note that One Signal limits tags to 10 per user!
+        $memberGroups = $member->Groups()->limit(self::LIMIT_FOR_TAGS)->columnUnique();
         foreach(Group::get() as $group) {
             if(in_array($group->ID, $memberGroups, true)) {
                 $tags[GroupHelper::group_2_code($group)] = 'Y';

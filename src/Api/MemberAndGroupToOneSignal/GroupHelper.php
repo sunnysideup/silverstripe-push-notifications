@@ -2,9 +2,7 @@
 
 namespace Sunnysideup\PushNotifications\Api\MemberAndGroupToOneSignal;
 
-use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Security\Group;
-use Sunnysideup\PushNotifications\Api\OneSignalSignupApi;
 
 class GroupHelper
 {
