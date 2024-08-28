@@ -4,6 +4,7 @@ namespace Sunnysideup\PushNotifications\Model;
 
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Injector\Injector;
+use SilverStripe\Forms\HeaderField;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBBoolean;
@@ -88,6 +89,9 @@ class Subscriber extends DataObject
 
     public function canEdit($member = null)
     {
+        if(Director::isDev()) {
+            return true;
+        }
         return false;
     }
 
@@ -119,8 +123,15 @@ class Subscriber extends DataObject
         $fields->addFieldsToTab(
             'Root.Main',
             [
-                ReadonlyField::create('IsOneSignalUser', 'Is OneSignal User', $this->getIsOneSignalUser()->Nice()),
-                ReadonlyField::create('Groups', 'Groups', $this->Member()->Groups()->column('Title')),
+                ReadonlyField::create('IsOneSignalUserReadable', 'Is OneSignal User', $this->getIsOneSignalUser()->Nice()),
+            ],
+            'OneSignalUserID'
+        );
+        $fields->addFieldsToTab(
+            'Root.Main',
+            [
+                HeaderField::create('OneSignalUserHeader', 'Related Member'),
+                ReadonlyField::create('Groups', 'Groups', implode(', ', $this->Member()->Groups()->column('Title'))),
                 ReadonlyField::create('OneSignalUserTagsNote', 'Update Notes'),
             ]
         );
