@@ -184,14 +184,18 @@ class PushNotificationPageController extends ContentController
         $member = Security::getCurrentUser();
         $oldGroups = $member->Groups()->columnUnique();
         $oldGroups = array_combine($oldGroups, $oldGroups);
+        $signupableGroups = (array) $this->SignupGroups()->columnUnique();
         foreach($data['Groups'] as $groupID) {
-            $group = Group::get()->byID((int) $groupID);
-            if(! $group) {
-                continue;
+            // IMPORTANT SECURITY CHECK!!!
+            if(in_array($groupID, $signupableGroups) || in_array($groupID, $oldGroups)) {
+                $group = Group::get()->byID((int) $groupID);
+                if(! $group) {
+                    continue;
+                }
+                $member->Groups()->add($group);
+                $group->write();
+                unset($oldGroups[$groupID]);
             }
-            $member->Groups()->add($group);
-            $group->write();
-            unset($oldGroups[$groupID]);
         }
         foreach($oldGroups as $groupID) {
             $group = Group::get()->byID((int) $groupID);
