@@ -21,6 +21,7 @@ use SilverStripe\Core\Environment;
 use SilverStripe\Forms\CheckboxSetField;
 use SilverStripe\Forms\GridField\GridFieldConfig_RecordViewer;
 use SilverStripe\Forms\GridField\GridFieldConfig_RelationEditor;
+use SilverStripe\Forms\HTMLEditor\HTMLEditorField;
 use SilverStripe\Forms\TreeDropdownField;
 use SilverStripe\Security\Group;
 
@@ -39,6 +40,7 @@ class PushNotificationPage extends Page
         'ThemeColour' => 'Varchar(6)',
         'BackgroundColour' => 'Varchar(6)',
         'OverwriteManifestFile' => 'Boolean',
+        'SignupGroupsIntro' => 'HTMLText',
     ];
 
     private static $has_one = [
@@ -201,6 +203,7 @@ class PushNotificationPage extends Page
         $fields->addFieldsToTab(
             'Root.SignupGroups',
             [
+                HTMLEditorField::create('SignupGroupsIntro', 'Intro for users to ask them to sign up to groups'),
                 CheckboxSetField::create(
                     'SignupGroups',
                     'Joinable Groups'.PHP_EOL.'CAREFUL SEE BELOW',
