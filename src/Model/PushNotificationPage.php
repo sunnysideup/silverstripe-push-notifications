@@ -140,9 +140,9 @@ class PushNotificationPage extends Page
                     [
                         LiteralField::create(
                             'OneSignalInfo',
-                            '<h2>One Signal</h2>
+                            '<h2>OneSignal</h2>
                             <p>
-                                Please access one signal to manage your push notifications:
+                                Please access OneSignal to manage your push notifications:
                                 <br />
                                 <a href="https://app.onesignal.com/apps/new" target="_blank">Create a new app</a>
                                 </p>
@@ -156,9 +156,9 @@ class PushNotificationPage extends Page
                     [
                         LiteralField::create(
                             'OneSignalInfo',
-                            '<h2>One Signal</h2>
+                            '<h2>OneSignal</h2>
                             <p>
-                                Please access one signal to manage your push notifications:
+                                Please access OneSignal to manage your push notifications:
                                 <br />
                                 <a href="https://dashboard.onesignal.com/apps/'.$this->getOneSignalKey().'/settings/webpush/configure" target="_blank" rel="noopener noreferrer">Configure (with care!)</a>
                                 <br />

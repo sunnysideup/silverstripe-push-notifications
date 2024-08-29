@@ -10,9 +10,9 @@ use Sunnysideup\PushNotifications\Model\Subscriber;
 
 class TestOneSignalTask extends BuildTask
 {
-    protected $title = 'Test One Signal Task';
+    protected $title = 'Test OneSignal Task';
 
-    protected $description = 'This task is used to test the one signal connectivity';
+    protected $description = 'This task is used to test the OneSignal connectivity';
 
     private static $segment = 'test-one-signal-task';
 

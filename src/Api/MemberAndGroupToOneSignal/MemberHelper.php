@@ -24,7 +24,7 @@ class MemberHelper
     public static function member_groups_2_tag_codes(Member $member): array
     {
         $tags = [];
-        // note that One Signal limits tags to 10 per user!
+        // note that OneSignal limits tags to 10 per user!
         $memberGroups = $member->Groups()->limit(self::LIMIT_FOR_TAGS)->columnUnique();
         foreach(Group::get() as $group) {
             if(in_array($group->ID, $memberGroups, true)) {
