@@ -8,7 +8,13 @@ use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPResponse;
 use SilverStripe\Control\Middleware\HTTPCacheControlMiddleware;
 use SilverStripe\Core\Environment;
+use SilverStripe\Forms\CheckboxSetField;
+use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\Form;
+use SilverStripe\Forms\FormAction;
+use SilverStripe\Forms\RequiredFields;
 use SilverStripe\ORM\ArrayList;
+use SilverStripe\Security\Group;
 use SilverStripe\Security\Security;
 use SilverStripe\View\Requirements;
 use Sunnysideup\PushNotifications\Model\PushNotification;
@@ -24,10 +30,11 @@ use Sunnysideup\PushNotifications\Model\Subscriber;
 class PushNotificationPageController extends ContentController
 {
     private static $allowed_actions = [
-        'subscribe' => true,
+        'subscribe' => 'isMember',
         'unsubscribe' => true,
         'subscribeonesignal' => true,
         'unsubscribeonesignal' => true,
+        'SelectGroupsForm' => true,
     ];
 
 
@@ -140,6 +147,62 @@ class PushNotificationPageController extends ContentController
         if($key && ! $this->UseOneSignal) {
             Requirements::customScript('let vapid_public_key="'.$key.'";', "VapidPublicKey");
         }
+    }
+
+    public function SelectGroupsForm(): Form
+    {
+        $member = Security::getCurrentUser();
+        $memberGroups = (array) $member->Groups()->columnUnique();
+        $signupableGroups = (array) $this->SignupGroups()->columnUnique();
+        $groupOptions = Group::get()
+            ->filter(['ID' => array_merge([-1], $signupableGroups, $memberGroups)])
+            ->map('ID', 'BreadcrumbsSimple');
+        $fields = FieldList::create(
+            CheckboxSetField::create('Groups', 'Select Your Groups', $groupOptions)
+            ->setValue($memberGroups)
+        );
+
+        $actions = FieldList::create(
+            FormAction::create('doSelectGroupsForm', 'Submit')
+        );
+
+        $validator = RequiredFields::create();
+
+        $form = Form::create(
+            $this,
+            'SelectGroupsForm',
+            $fields,
+            $actions,
+            $validator
+        );
+
+        return $form;
+    }
+
+    public function doSelectGroupsForm(array $data, Form $form)
+    {
+        $member = Security::getCurrentUser();
+        $oldGroups = $member->Groups()->columnUnique();
+        $oldGroups = array_combine($oldGroups, $oldGroups);
+        foreach($data['Groups'] as $groupID) {
+            $group = Group::get()->byID((int) $groupID);
+            if(! $group) {
+                continue;
+            }
+            $member->Groups()->add($group);
+            $group->write();
+            unset($oldGroups[$groupID]);
+        }
+        foreach($oldGroups as $groupID) {
+            $group = Group::get()->byID((int) $groupID);
+            if(! $group) {
+                continue;
+            }
+            $member->Groups()->remove($group);
+            $group->write();
+        }
+        $member->write();
+        $this->redirectBack();
     }
 
 

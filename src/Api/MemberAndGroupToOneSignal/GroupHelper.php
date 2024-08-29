@@ -13,8 +13,7 @@ class GroupHelper
 
     public static function group_2_name(Group $group): string
     {
-        return 'Website: '.$group->Title;
+        return 'Website: '.$group->getBreadcrumbs();
     }
-
 
 }

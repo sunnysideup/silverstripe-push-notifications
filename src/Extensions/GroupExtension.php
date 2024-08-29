@@ -29,6 +29,15 @@ class GroupExtension extends DataExtension
         'OneSignalSegmentID' => true,
     ];
 
+    private static $casting = [
+        'getBreadcrumbsSimple' => 'Varchar',
+    ];
+
+    public function getBreadcrumbsSimple()
+    {
+        return $this->getOwner()->getBreadcrumbs(' » ');
+    }
+
     public function onBeforeWrite()
     {
         $owner = $this->getOwner();

@@ -18,8 +18,11 @@ use Sunnysideup\PushNotifications\Controllers\PushNotificationPageController;
 use SilverStripe\Assets\Image;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Core\Environment;
+use SilverStripe\Forms\CheckboxSetField;
 use SilverStripe\Forms\GridField\GridFieldConfig_RecordViewer;
+use SilverStripe\Forms\GridField\GridFieldConfig_RelationEditor;
 use SilverStripe\Forms\TreeDropdownField;
+use SilverStripe\Security\Group;
 
 class PushNotificationPage extends Page
 {
@@ -43,6 +46,10 @@ class PushNotificationPage extends Page
         'StartPageForHomeScreenApp' => SiteTree::class,
     ];
 
+    private static $many_many = [
+        'SignupGroups' => Group::class,
+    ];
+
     private static $owns = [
         'ManifestIcon',
     ];
@@ -51,116 +58,13 @@ class PushNotificationPage extends Page
         'URLSegment' => 'push-notifications',
     ];
 
-    protected function modifyJsonValue(string $filePath, string $key, $newValue, ?bool $overwrite = false): void
-    {
-        // Check if the file exists
-        if (! file_exists($filePath)) {
-            throw new Exception('File not found.');
-        }
-
-        // Read the file contents
-        $jsonContent = file_get_contents($filePath);
-        if ($jsonContent === false) {
-            throw new Exception('Failed to read the file.');
-        }
-
-        // Decode the JSON data into an associative array
-        $data = json_decode($jsonContent, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new Exception('Failed to decode JSON: ' . json_last_error_msg());
-        }
-
-        // Modify the value
-        if($overwrite) {
-            $data[$key] = $newValue;
-        } else {
-            // Check if the key exists in the data
-            if (! array_key_exists($key, $data)) {
-                $data[$key] = $newValue;
-            }
-        }
-        // Update the value (if the key exists in the data
-
-        // Encode the data back to JSON
-        $newJsonContent = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-        if ($newJsonContent === false) {
-            throw new Exception('Failed to encode JSON: ' . json_last_error_msg());
-        }
-
-        // Save the modified JSON data back to the file
-        try {
-            file_put_contents($filePath, $newJsonContent);
-        } catch (Exception $e) {
-            throw $e;
-            die('error writing file!');
-        }
-
-    }
-
     protected function onBeforeWrite()
     {
         parent::onBeforeWrite();
         $this->ensureStandardLocation();
+        $this->writeManifestAndIconFiles();
+        $this->copyOneSignalFile();
         // Modify the JSON value
-        if($this->canAccessOrCreateFile()) {
-            $icon = $this->ManifestIconID ? $this->ManifestIcon() : null;
-            $icons = [];
-            if($icon && $icon->exists()) {
-                $icons = [
-                    [
-                        "src" => $this->ManifestIcon()->ScaleWidth(192)->getAbsoluteURL(),
-                        "sizes" => "192x192",
-                        "type" => "image/png"
-                    ],
-                    [
-                        "src" => $this->ManifestIcon()->ScaleWidth(512)->getAbsoluteURL(),
-                        "sizes" => "512x512",
-                        "type" => "image/png"
-                    ]
-                ];
-            } else {
-                $icons = [
-                    [
-                        "src" => Director::absoluteURL('/_resources/vendor/sunnysideup/push-notifications/client/dist/images/icon-192x192.png'),
-                        "sizes" => "192x192",
-                        "type" => "image/png"
-                    ],
-                    [
-                        "src" => Director::absoluteURL('/_resources/vendor/sunnysideup/push-notifications/client/dist/images/icon-512x512.png'),
-                        "sizes" => "512x512",
-                        "type" => "image/png"
-                    ]
-                ];
-            }
-            $link = $this->StartPageForHomeScreenAppID ? $this->StartPageForHomeScreenApp()->AbsoluteLink() : $this->AbsoluteLink();
-            $link = $this->removeGetVariables($link);
-            $this->modifyJsonValue($this->getManifestPath(), '$schema', "https://json.schemastore.org/web-manifest-combined.json", $this->OverwriteManifestFile);
-            $this->modifyJsonValue($this->getManifestPath(), 'name', SiteConfig::current_site_config()->Title, $this->OverwriteManifestFile);
-            $this->modifyJsonValue($this->getManifestPath(), 'short_name', SiteConfig::current_site_config()->Title, $this->OverwriteManifestFile);
-            $this->modifyJsonValue($this->getManifestPath(), 'start_url', $link, $this->OverwriteManifestFile);
-            $this->modifyJsonValue($this->getManifestPath(), 'display', 'standalone', $this->OverwriteManifestFile);
-            $this->modifyJsonValue($this->getManifestPath(), 'background_color', $this->BackgroundColour ? '#' . $this->BackgroundColour : '#ffffff', $this->OverwriteManifestFile);
-            $this->modifyJsonValue($this->getManifestPath(), 'theme_color', $this->ThemeColour ? '#' . $this->ThemeColour : '#000000', $this->OverwriteManifestFile);
-            $this->modifyJsonValue($this->getManifestPath(), 'icons', $icons, $this->OverwriteManifestFile);
-        }
-        if($this->UseOneSignal) {
-            try {
-                copy(
-                    Controller::join_links(
-                        Director::baseFolder(),
-                        '/vendor/sunnysideup/push-notifications/client/dist/third-party/',
-                        self::ONE_SIGNAL_INIT_FILE_NAME
-                    ),
-                    Controller::join_links(
-                        PUBLIC_PATH,
-                        self::ONE_SIGNAL_INIT_FILE_NAME
-                    ),
-                );
-            } catch (Exception $e) {
-                // do nothing
-            }
-        }
-
     }
 
     protected function getManifestPath(): string
@@ -294,6 +198,18 @@ class PushNotificationPage extends Page
                 )
             ]
         );
+        $fields->addFieldsToTab(
+            'Root.SignupGroups',
+            [
+                CheckboxSetField::create(
+                    'SignupGroups',
+                    'Joinable Groups'.PHP_EOL.'CAREFUL SEE BELOW',
+                    Group::get()->filter('Code:not', 'administrators')
+                        ->map('ID', 'BreadcrumbsSimple'),
+                )
+                    ->setDescription('CAREFUL: only select groups without any special permissions as otherwise users can grant themselves those permissions.')
+            ]
+        );
 
 
         return $fields;
@@ -356,6 +272,119 @@ class PushNotificationPage extends Page
         $defaults = $this->COnfig()->get('defaults');
         $this->URLSegment = $defaults['URLSegment'];
         $this->ParentID = 0;
+    }
+
+    protected function writeManifestAndIconFiles()
+    {
+
+        if($this->canAccessOrCreateFile()) {
+            $icon = $this->ManifestIconID ? $this->ManifestIcon() : null;
+            $icons = [];
+            if($icon && $icon->exists()) {
+                $icons = [
+                    [
+                        "src" => $this->ManifestIcon()->ScaleWidth(192)->getAbsoluteURL(),
+                        "sizes" => "192x192",
+                        "type" => "image/png"
+                    ],
+                    [
+                        "src" => $this->ManifestIcon()->ScaleWidth(512)->getAbsoluteURL(),
+                        "sizes" => "512x512",
+                        "type" => "image/png"
+                    ]
+                ];
+            } else {
+                $icons = [
+                    [
+                        "src" => Director::absoluteURL('/_resources/vendor/sunnysideup/push-notifications/client/dist/images/icon-192x192.png'),
+                        "sizes" => "192x192",
+                        "type" => "image/png"
+                    ],
+                    [
+                        "src" => Director::absoluteURL('/_resources/vendor/sunnysideup/push-notifications/client/dist/images/icon-512x512.png'),
+                        "sizes" => "512x512",
+                        "type" => "image/png"
+                    ]
+                ];
+            }
+            $link = $this->StartPageForHomeScreenAppID ? $this->StartPageForHomeScreenApp()->AbsoluteLink() : $this->AbsoluteLink();
+            $link = $this->removeGetVariables($link);
+            $this->modifyJsonValue($this->getManifestPath(), '$schema', "https://json.schemastore.org/web-manifest-combined.json", $this->OverwriteManifestFile);
+            $this->modifyJsonValue($this->getManifestPath(), 'name', SiteConfig::current_site_config()->Title, $this->OverwriteManifestFile);
+            $this->modifyJsonValue($this->getManifestPath(), 'short_name', SiteConfig::current_site_config()->Title, $this->OverwriteManifestFile);
+            $this->modifyJsonValue($this->getManifestPath(), 'start_url', $link, $this->OverwriteManifestFile);
+            $this->modifyJsonValue($this->getManifestPath(), 'display', 'standalone', $this->OverwriteManifestFile);
+            $this->modifyJsonValue($this->getManifestPath(), 'background_color', $this->BackgroundColour ? '#' . $this->BackgroundColour : '#ffffff', $this->OverwriteManifestFile);
+            $this->modifyJsonValue($this->getManifestPath(), 'theme_color', $this->ThemeColour ? '#' . $this->ThemeColour : '#000000', $this->OverwriteManifestFile);
+            $this->modifyJsonValue($this->getManifestPath(), 'icons', $icons, $this->OverwriteManifestFile);
+        }
+    }
+
+    protected function copyOneSignalFile()
+    {
+        if($this->UseOneSignal) {
+            try {
+                copy(
+                    Controller::join_links(
+                        Director::baseFolder(),
+                        '/vendor/sunnysideup/push-notifications/client/dist/third-party/',
+                        self::ONE_SIGNAL_INIT_FILE_NAME
+                    ),
+                    Controller::join_links(
+                        PUBLIC_PATH,
+                        self::ONE_SIGNAL_INIT_FILE_NAME
+                    ),
+                );
+            } catch (Exception $e) {
+                // do nothing
+            }
+        }
+    }
+
+    protected function modifyJsonValue(string $filePath, string $key, $newValue, ?bool $overwrite = false): void
+    {
+        // Check if the file exists
+        if (! file_exists($filePath)) {
+            throw new Exception('File not found.');
+        }
+
+        // Read the file contents
+        $jsonContent = file_get_contents($filePath);
+        if ($jsonContent === false) {
+            throw new Exception('Failed to read the file.');
+        }
+
+        // Decode the JSON data into an associative array
+        $data = json_decode($jsonContent, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new Exception('Failed to decode JSON: ' . json_last_error_msg());
+        }
+
+        // Modify the value
+        if($overwrite) {
+            $data[$key] = $newValue;
+        } else {
+            // Check if the key exists in the data
+            if (! array_key_exists($key, $data)) {
+                $data[$key] = $newValue;
+            }
+        }
+        // Update the value (if the key exists in the data
+
+        // Encode the data back to JSON
+        $newJsonContent = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        if ($newJsonContent === false) {
+            throw new Exception('Failed to encode JSON: ' . json_last_error_msg());
+        }
+
+        // Save the modified JSON data back to the file
+        try {
+            file_put_contents($filePath, $newJsonContent);
+        } catch (Exception $e) {
+            throw $e;
+            die('error writing file!');
+        }
+
     }
 
 

@@ -13,6 +13,8 @@
             <% include Sunnysideup\\PushNotifications\\SignUpVapid %>
         <% end_if %>
 
+        $SelectGroupsForm
+
         <% include Sunnysideup\\PushNotifications\\PushNotificationList %>
 
     </article>
