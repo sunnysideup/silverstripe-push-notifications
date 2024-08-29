@@ -13,7 +13,10 @@
             <% include Sunnysideup\\PushNotifications\\SignUpVapid %>
         <% end_if %>
 
-        $SelectGroupsForm
+        <div class="sign-up-holder">
+            $SignupGroupsIntro
+            $SelectGroupsForm
+        </div>
 
         <% include Sunnysideup\\PushNotifications\\PushNotificationList %>
 
