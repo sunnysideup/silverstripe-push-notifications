@@ -200,6 +200,10 @@ Or from the browser `/dev/tasks/test-one-signal-task`.
 - Delete Group
 - User with multiple devices
 
+#### Many Many Syncers
+
+In Group, the method Members calls `DirectMembers()` which calls `getManyManyComponents()` which has an extension hook `updateManyManyComponents`.
+
 # more reading
 
 - <https://medium.com/@firt/progressive-web-apps-on-ios-are-here-d00430dee3a7>
