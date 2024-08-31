@@ -14,7 +14,7 @@ class NotificationHelper
 
     private static string $default_scheduled_at_string = '1 hour';
 
-    public function notification2oneSignal(PushNotification $pushNotification): array
+    public function notification2oneSignal(PushNotification $pushNotification, $segments = []): array
     {
         $targetChannel = $pushNotification->OneSignalTargetChannel();
         if(! in_array($targetChannel, ['push', 'email', 'sms'])) {
@@ -32,16 +32,21 @@ class NotificationHelper
             // 'isChrome' => true,
             'send_after' => new DateTime($sendAfterString),
             "target_channel" => $targetChannel,
+            "url" => $pushNotification->AbsoluteLink(),
         ];
-        $filter = GroupHelper::singleton()->groups2oneSignalFilter($pushNotification->RecipientGroups());
-        if(! empty($filter)) {
-            $dataForNotification['filters'] = $filter;
-        } elseif(! empty($segments)) {
-            $dataForNotification['included_segments'] = GroupHelper::singleton()->groups2oneSignalSegmentFilter($pushNotification->RecipientGroups());
+        $aliases = MemberHelper::singleton()->members2oneSignalAliases($pushNotification->RecipientGroups());
+        if(! empty($aliases)) {
+            $dataForNotification['include_aliases'] = [
+                'external_id' => $aliases,
+            ];
+        } else {
+            $filter = GroupHelper::singleton()->groups2oneSignalFilter($pushNotification->RecipientGroups());
+            if(! empty($filter)) {
+                $dataForNotification['filters'] = $filter;
+            } elseif(! empty($segments)) {
+                $dataForNotification['included_segments'] = GroupHelper::singleton()->groups2oneSignalSegmentFilter($pushNotification->RecipientGroups());
+            }
         }
-        // $data = [
-        //     'url' => $pushNotification->URL,
-        // ];
         return $dataForNotification;
     }
 
