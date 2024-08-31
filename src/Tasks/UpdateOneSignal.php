@@ -49,7 +49,12 @@ class UpdateOneSignal extends BuildTask
                 $notification = PushNotification::create($filter);
                 $notification->write();
             }
-            $valuesForNotificationDataOneObject = NotificationHelper::getValuesForNotificationDataOneObject($oneSignalNotification);
+            $valuesForNotificationDataOneObject = NotificationHelper::singleton()
+                ->getValuesForNotificationDataOneObject($oneSignalNotification);
+            foreach($valuesForNotificationDataOneObject as $key => $value) {
+                $notification->{$key} = $value;
+            }
+            $notification->write();
         }
 
     }

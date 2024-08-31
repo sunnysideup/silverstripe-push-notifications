@@ -33,6 +33,7 @@ class LinkHelper
     {
         return Controller::join_links(
             $this->baseLink(),
+            'apps',
             Environment::getEnv('SS_ONESIGNAL_APP_ID'),
         );
     }
@@ -41,6 +42,7 @@ class LinkHelper
     {
         return Controller::join_links(
             $this->baseLink(),
+            'apps',
             Environment::getEnv('SS_ONESIGNAL_APP_ID'),
             'settings',
             'webpush',
@@ -52,6 +54,7 @@ class LinkHelper
     {
         return Controller::join_links(
             $this->baseLink(),
+            'apps',
             Environment::getEnv('SS_ONESIGNAL_APP_ID'),
             'notifications',
             'new'
@@ -62,6 +65,7 @@ class LinkHelper
     {
         return Controller::join_links(
             $this->baseLink(),
+            'apps',
             Environment::getEnv('SS_ONESIGNAL_APP_ID'),
             'subscriptions',
         );
@@ -71,6 +75,7 @@ class LinkHelper
     {
         return Controller::join_links(
             $this->baseLink(),
+            'apps',
             Environment::getEnv('SS_ONESIGNAL_APP_ID'),
             'campaigns'
         );
@@ -80,6 +85,7 @@ class LinkHelper
     {
         return Controller::join_links(
             $this->baseLink(),
+            'apps',
             Environment::getEnv('SS_ONESIGNAL_APP_ID'),
             'notifications'
         );
@@ -90,6 +96,7 @@ class LinkHelper
     {
         return Controller::join_links(
             $this->baseLink(),
+            'apps',
             Environment::getEnv('SS_ONESIGNAL_APP_ID'),
             'notifications',
             $id

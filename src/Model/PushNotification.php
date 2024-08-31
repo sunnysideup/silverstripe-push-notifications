@@ -3,6 +3,7 @@
 namespace Sunnysideup\PushNotifications\Model;
 
 use DateTime;
+use DateTimeInterface;
 use Exception;
 use LeKoala\CmsActions\CustomAction;
 use SilverStripe\Control\Director;
@@ -34,6 +35,7 @@ use Symbiote\QueuedJobs\Services\QueuedJobService;
  * Class \Sunnysideup\PushNotifications\Model\PushNotification
  *
  * @property string $Title
+ * @property bool $TestOnly
  * @property string $Content
  * @property string $AdditionalInfo
  * @property string $ProviderClass
@@ -44,6 +46,7 @@ use Symbiote\QueuedJobs\Services\QueuedJobService;
  * @property string $SentAt
  * @property string $OneSignalNotificationID
  * @property string $OneSignalNotificationNote
+ * @property int $OneSignalNumberOfDeliveries
  * @property int $SendJobID
  * @method QueuedJobDescriptor SendJob()
  * @method DataList|SubscriberMessage[] SubscriberMessages()
@@ -69,6 +72,7 @@ class PushNotification extends DataObject
         'SentAt' => 'Datetime',
         'OneSignalNotificationID' => 'Varchar(64)',
         'OneSignalNotificationNote' => 'Varchar(255)',
+        'OneSignalNumberOfDeliveries' => 'Int',
     ];
 
     private static $has_one = [
@@ -96,6 +100,7 @@ class PushNotification extends DataObject
         'HasSendingErrors' => 'Sending errors',
         'OneSignalNotificationID' => 'OneSignal Notification ID',
         'OneSignalNotificationNote' => 'Any notes around connection to OneSignal',
+        'OneSignalNumberOfDeliveries' => 'Number of delivery attempts',
     ];
 
     private static $summary_fields = [
@@ -286,8 +291,9 @@ class PushNotification extends DataObject
             $fields->addFieldsToTab(
                 'Root.OneSignal',
                 [
-                    ReadonlyField::create('OneSignalNotificationID', 'OneSignal Notification ID'),
-                    ReadonlyField::create('OneSignalNotificationNote', 'OneSignal Notification Note'),
+                    ReadonlyField::create('OneSignalNotificationID', 'Notification ID'),
+                    ReadonlyField::create('OneSignalNotificationNote', 'Notification Note'),
+                    ReadonlyField::create('OneSignalNumberOfDeliveries', 'Number of Delivery Attempts'),
                 ]
             );
             if($this->OneSignalNotificationID) {
@@ -612,11 +618,17 @@ class PushNotification extends DataObject
 
     public function ScheduledAtNice(?string $alternativeTime = ''): string
     {
-        $timeAsString = $alternativeTime ?: $this->ScheduledAt;
-        $date = new DateTime($timeAsString);
+        $date = $this->ScheduledAtDateTimeInterface($alternativeTime);
 
         // Format the timestamp
         return $date->format('D M d Y H:i:s \G\M\TO (T)');
+    }
+
+    public function ScheduledAtDateTimeInterface(?string $alternativeTime = ''): DateTimeInterface
+    {
+        $timeAsString = $alternativeTime ?: $this->ScheduledAt;
+        return new DateTime($timeAsString);
+
     }
 
     public function IsOneSignal(): bool
