@@ -3,8 +3,10 @@
 namespace Sunnysideup\PushNotifications\Api\Providers;
 
 use SilverStripe\Control\Email\Email;
+use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\TextField;
+use Sunnysideup\PushNotifications\Api\OneSignalSignupApi;
 use Sunnysideup\PushNotifications\Api\PushNotificationProvider;
 use Sunnysideup\PushNotifications\Model\PushNotification;
 use Sunnysideup\PushNotifications\Model\SubscriberMessage;
@@ -21,25 +23,24 @@ class PushNotificationOneSignal extends PushNotificationProvider
         return _t('Push.ONESIGNAL', 'OneSignal');
     }
 
-    public function sendPushNotification(PushNotification $notification)
+    public function sendPushNotification(PushNotification $notification): bool
     {
+        /** @var OneSignalSignupApi $api */
+        $api = Injector::inst()->get(OneSignalSignupApi::class);
+        $outcome = $api->doSendNotification($notification);
+        return $api->processResults(
+            $notification,
+            $outcome,
+            'OneSignalNotificationID',
+            'OneSignalNotificationNote',
+            'Could not add OneSignal notification'
+        );
     }
 
 
     public function getSettingsFields()
     {
-        return new FieldList([
-            new TextField(
-                $this->getSettingFieldName('Subject'),
-                _t('Push.EMAILSUBJECT', 'Email Subject'),
-                $this->getSetting('Subject')
-            ),
-            new TextField(
-                $this->getSettingFieldName('From'),
-                _t('Push.EMAILFROM', 'Email From Address'),
-                $this->getSetting('From')
-            ),
-        ]);
+        return new FieldList();
     }
 
     public function setSettings(array $data)
@@ -56,6 +57,6 @@ class PushNotificationOneSignal extends PushNotificationProvider
 
     public function isEnabled(): bool
     {
-        return true;
+        return OneSignalSignupApi::is_enabled();
     }
 }

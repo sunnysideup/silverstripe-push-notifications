@@ -37,23 +37,12 @@ class PushNotificationVapid extends PushNotificationProvider
         return _t('Push.VAPID', 'Vapid');
     }
 
-    public function sendPushNotification(PushNotification $notification)
+    public function sendPushNotification(PushNotification $notification): bool
     {
-        $subject = Environment::getEnv('SS_VAPID_SUBJECT');
-        if (! $subject) {
-            user_error('SS_VAPID_SUBJECT is not defined');
-        }
-
+        $error = false;
         $publicKey = Environment::getEnv('SS_VAPID_PUBLIC_KEY');
-        if (! $publicKey) {
-            user_error('SS_VAPID_PUBLIC_KEY is not defined');
-        }
-
         $privateKey = Environment::getEnv('SS_VAPID_PRIVATE_KEY');
-        if (! $privateKey) {
-            user_error('SS_VAPID_PRIVATE_KEY is not defined');
-        }
-
+        $subject = Environment::getEnv('SS_VAPID_SUBJECT');
         $auth = [
             'VAPID' => [
                 'subject' => $subject,
@@ -94,7 +83,7 @@ class PushNotificationVapid extends PushNotificationProvider
         }
         $payload = json_encode($payloadArray);
 
-        $subscriptionJsons = [];
+        // $subscriptionJsons = [];
 
         foreach ($notification->getRecipients() as $recipient) {
             $subscriptions = $recipient->PushNotificationSubscribers();
@@ -105,29 +94,53 @@ class PushNotificationVapid extends PushNotificationProvider
                 $outcome = $webPush->sendOneNotification($subscription, $payload);
 
                 if ($outcome->isSuccess()) {
-                    $subscriptionJsons[$subscriber->ID]['success'] = true;
-                    $subscriptionJsons[$subscriber->ID]['outcome'] = 'Success!';
+                    // $subscriptionJsons[$subscriber->ID]['success'] = true;
+                    // $subscriptionJsons[$subscriber->ID]['outcome'] = 'Success!';
                     $log->Success = true;
                 } else {
-                    $subscriptionJsons[$subscriber->ID]['success'] = false;
-                    $subscriptionJsons[$subscriber->ID]['outcome'] = $outcome->getReason();
+                    // $subscriptionJsons[$subscriber->ID]['success'] = false;
+                    // $subscriptionJsons[$subscriber->ID]['outcome'] = $outcome->getReason();
                     $log->ErrorMessage = $outcome->getReason();
                     $log->Success = false;
+                    $error = true;
                 }
                 $log->write();
             }
         }
 
-        return json_encode(['success' => true, 'results' => $subscriptionJsons]);
+        return $error;
     }
 
 
 
-    public function isEnabled(): bool
+    public function isEnabled(?bool $showErrors = false): bool
     {
-        $subject = Environment::getEnv('SS_VAPID_SUBJECT');
+        $allGood = true;
         $publicKey = Environment::getEnv('SS_VAPID_PUBLIC_KEY');
         $privateKey = Environment::getEnv('SS_VAPID_PRIVATE_KEY');
-        return $subject && $publicKey && $privateKey;
+        $subject = Environment::getEnv('SS_VAPID_SUBJECT');
+        if (! $subject) {
+            if($showErrors) {
+                user_error('SS_VAPID_SUBJECT is not defined');
+            }
+            $allGood = false;
+        }
+
+        $publicKey = Environment::getEnv('SS_VAPID_PUBLIC_KEY');
+        if (! $publicKey) {
+            if($showErrors) {
+                user_error('SS_VAPID_PUBLIC_KEY is not defined');
+            }
+            $allGood = false;
+        }
+
+        $privateKey = Environment::getEnv('SS_VAPID_PRIVATE_KEY');
+        if (! $privateKey) {
+            if($showErrors) {
+                user_error('SS_VAPID_PRIVATE_KEY is not defined');
+            }
+            $allGood = false;
+        }
+        return $allGood;
     }
 }

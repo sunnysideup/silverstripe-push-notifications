@@ -21,13 +21,13 @@ class PushNotificationEmail extends PushNotificationProvider
         return _t('Push.EMAIL', 'Email');
     }
 
-    public function sendPushNotification(PushNotification $notification)
+    public function sendPushNotification(PushNotification $notification): bool
     {
         $email = new Email();
         $email->setFrom($this->getSetting('From'));
         $email->setSubject($this->getSetting('Subject'));
         $email->setBody($notification->Content);
-
+        $error = false;
         foreach ($notification->getRecipients() as $recipient) {
             $log = SubscriberMessage::create_new($recipient, $notification);
             if (! $this->isValidEmail($recipient->Email)) {
@@ -41,12 +41,14 @@ class PushNotificationEmail extends PushNotificationProvider
                 $email->send();
                 $log->Success = true;
             } catch (\Exception $e) {
+                $error = true;
                 // log error
                 $log->ErrorMessage = $e->getMessage();
                 $log->Success = false;
             }
             $log->write();
         }
+        return $error;
     }
 
     protected function isValidEmail(string $email): bool

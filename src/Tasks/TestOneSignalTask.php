@@ -58,7 +58,7 @@ class TestOneSignalTask extends BuildTask
             $this->header('createSegmentBasedOnGroup: '.$group->Title);
             $this->outcome($segmentOutcome);
 
-            $segmentId = OneSignalSignupApi::test_id($segmentOutcome);
+            $segmentId = OneSignalSignupApi::get_id_from_outcome($segmentOutcome);
             if($segmentId) {
                 $this->header('deleteSegment with id: '.$segmentId);
                 $this->outcome($this->api->deleteSegment($segmentId));

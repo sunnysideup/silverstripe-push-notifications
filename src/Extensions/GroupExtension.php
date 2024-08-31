@@ -52,7 +52,7 @@ class GroupExtension extends DataExtension
                 $api = Injector::inst()->get(OneSignalSignupApi::class);
                 $outcome = $api->createSegmentBasedOnGroup($owner);
                 if(OneSignalSignupApi::test_success($outcome)) {
-                    $owner->OneSignalSegmentID = OneSignalSignupApi::test_id($outcome);
+                    $owner->OneSignalSegmentID = OneSignalSignupApi::get_id_from_outcome($outcome);
                     $owner->OneSignalSegmentNote = 'Succesfully connected to OneSignal';
                 } else {
                     $owner->OneSignalSegmentID = '';

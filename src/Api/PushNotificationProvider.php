@@ -23,10 +23,12 @@ abstract class PushNotificationProvider
     abstract public function getTitle();
 
     /**
+     * returns true if the notification was sent successfully
+     *
      * @param PushNotification $notification the notification to send
      * @throws PushException if sending the notification fails
      */
-    abstract public function sendPushNotification(PushNotification $notification);
+    abstract public function sendPushNotification(PushNotification $notification): bool;
 
     /**
      * @return array
@@ -42,6 +44,7 @@ abstract class PushNotificationProvider
      */
     public function setSettings(array $data)
     {
+        $this->settings = $data;
     }
 
     public function getSetting($key)

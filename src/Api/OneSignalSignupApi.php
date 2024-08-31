@@ -11,6 +11,7 @@ use SilverStripe\Core\Injector\Injectable;
 use OneSignal\OneSignal;
 use Symfony\Component\HttpClient\Psr18Client;
 use Nyholm\Psr7\Factory\Psr17Factory;
+use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\DataList;
 use SilverStripe\Security\Group;
 use SilverStripe\Security\Member;
@@ -52,6 +53,12 @@ class OneSignalSignupApi
         'timezone',
     ];
 
+    private const REQUIRED_ENV_VARS = [
+        'SS_ONESIGNAL_APP_ID',
+        'SS_ONESIGNAL_REST_API_KEY',
+        'SS_ONESIGNAL_USER_AUTH_KEY',
+    ];
+
     protected $oneSignal = null;
 
     public static function test_success($outcome): bool
@@ -65,13 +72,24 @@ class OneSignalSignupApi
         return false;
     }
 
+
+    public static function is_enabled(): bool
+    {
+        foreach(self::REQUIRED_ENV_VARS as $key) {
+            if(! Environment::getEnv($key)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /**
      * returns the id based on the outcome
      *
      * @param mixed $outcome
      * @return string
      */
-    public static function test_id($outcome): string
+    public static function get_id_from_outcome($outcome): string
     {
         if(! is_array($outcome)) {
             return '';
@@ -79,12 +97,15 @@ class OneSignalSignupApi
         return (string) $outcome['id'] ?? '';
     }
 
-    public static function get_error($outcome): string
+    public static function get_error($outcome, ?string $alternativeError = ''): string
     {
-        if(! is_array($outcome)) {
-            return 'Outcome is not an array, '.print_r($outcome, 1);
+        if(!$alternativeError) {
+            $alternativeError = 'ERROR IN: '.get_called_class().'.';
         }
-        return implode(',', $outcome['errors']) ?? 'No error message found';
+        if(! is_array($outcome)) {
+            return $alternativeError.' Outcome is not an array: ' . print_r($outcome, 1);
+        }
+        return implode(',', $outcome['errors']) ?? $alternativeError;
     }
 
     public static function notification_id_to_onesignal_link($id): string
@@ -104,6 +125,32 @@ class OneSignalSignupApi
         $this->oneSignal = new OneSignal($config, $httpClient, $requestFactory, $streamFactory);
     }
 
+
+    public function processResults(
+        $obj,
+        array $outcome,
+        ?string $idStoredInFieldName = '',
+        ?string $noteStoredInFieldName = '',
+        ?string $alternativeError = ''
+    ): bool {
+        if(OneSignalSignupApi::test_success($outcome)) {
+            if($idStoredInFieldName) {
+                $obj->$idStoredInFieldName = OneSignalSignupApi::get_id_from_outcome($outcome);
+            }
+            if($noteStoredInFieldName) {
+                $obj->$noteStoredInFieldName = 'Succesfully connected to OneSignal';
+            }
+            return true;
+        } else {
+            if($idStoredInFieldName) {
+                $obj->$idStoredInFieldName = '';
+            }
+            if($noteStoredInFieldName) {
+                $obj->$noteStoredInFieldName = OneSignalSignupApi::get_error($outcome, $alternativeError);
+            }
+        }
+        return false;
+    }
 
     public function getApps()
     {
@@ -249,13 +296,8 @@ class OneSignalSignupApi
 
     protected function checkAndGetCredentials(): array
     {
-        $vars = [
-            'SS_ONESIGNAL_APP_ID',
-            'SS_ONESIGNAL_REST_API_KEY',
-            'SS_ONESIGNAL_USER_AUTH_KEY',
-        ];
         $array = [];
-        foreach($vars as $key) {
+        foreach(self::REQUIRED_ENV_VARS as $key) {
             if(! Environment::getEnv($key)) {
                 user_error('Please add ' . $key . ' to your .env file');
             } else {

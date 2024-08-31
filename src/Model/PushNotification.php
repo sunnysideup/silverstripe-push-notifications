@@ -2,6 +2,7 @@
 
 namespace Sunnysideup\PushNotifications\Model;
 
+use DateTime;
 use Exception;
 use LeKoala\CmsActions\CustomAction;
 use SilverStripe\Control\Director;
@@ -18,6 +19,7 @@ use SilverStripe\ORM\ValidationResult;
 use SilverStripe\Security\Group;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Security;
+use Sunnysideup\PushNotifications\Api\Providers\PushNotificationOneSignal;
 use Sunnysideup\PushNotifications\Api\PushNotificationProvider;
 use Sunnysideup\PushNotifications\ErrorHandling\PushException;
 use Sunnysideup\PushNotifications\Forms\PushProviderField;
@@ -56,6 +58,7 @@ class PushNotification extends DataObject
         'ProviderSettings' => 'Text',
         'ScheduledAt' => 'Datetime',
         'Sent' => 'Boolean',
+        'HasSendingErrors' => 'Boolean',
         'SentAt' => 'Datetime',
         'OneSignalNotificationID' => 'Varchar(64)',
         'OneSignalNotificationNote' => 'Varchar(255)',
@@ -76,13 +79,14 @@ class PushNotification extends DataObject
 
     private static $field_labels = [
         'Title' => 'Title',
-        'Content' => 'Short Message',
-        'AdditionalInfo' => 'Only shown on the website',
+        'Content' => 'Short message',
+        'AdditionalInfo' => 'Website only info',
         'ProviderClass' => 'How it is send',
         'ProviderSettings' => 'Details for sending',
-        'ScheduledAt' => 'When you want to send it',
+        'ScheduledAt' => 'Scheduled to be sent at',
         'Sent' => 'Has it been sent?',
         'SentAt' => 'When was it sent?',
+        'HasSendingErrors' => 'Sending errors',
         'OneSignalNotificationID' => 'OneSignal Notification ID',
         'OneSignalNotificationNote' => 'Any notes around connection to OneSignal',
     ];
@@ -90,6 +94,7 @@ class PushNotification extends DataObject
     private static $summary_fields = [
         'Title' => 'Title',
         'SentAt' => 'Sent',
+        'HasSendingErrors.Nice' => 'Sending Errors',
         'RecipientsCount' => 'Number of Recipients',
     ];
 
@@ -98,6 +103,7 @@ class PushNotification extends DataObject
         'Content',
         'Sent',
         'OneSignalNotificationID',
+        'HasSendingErrors',
     ];
 
     private static $casting = [
@@ -115,6 +121,14 @@ class PushNotification extends DataObject
     private static $default_sort = 'ID DESC';
 
     protected $providerInst;
+
+    public function populateDefaults()
+    {
+        if(PushNotificationPage::get_one()->UseOneSignal) {
+            $this->ProviderClass = PushNotificationOneSignal::class;
+        }
+        return $this;
+    }
 
     public function getCMSFields()
     {
@@ -159,7 +173,8 @@ class PushNotification extends DataObject
             if(interface_exists(QueuedJob::class) || $this->HasExternalProvider()) {
                 $fields->insertBefore(
                     'Title',
-                    $fields->dataFieldByName('ScheduledAt'),
+                    $fields->dataFieldByName('ScheduledAt')
+                        ->setDescription($this->ScheduledAtNice()),
                 );
             } else {
                 $fields->insertBefore(
@@ -524,9 +539,12 @@ class PushNotification extends DataObject
             throw new PushException('No push notification provider has been set.');
         }
 
-        $provider->sendPushNotification($this);
+        $outcome = $provider->sendPushNotification($this);
 
         $this->Sent = true;
+        if(! $outcome) {
+            $this->HasSendingErrors = true;
+        }
         $this->SentAt = date('Y-m-d H:i:s');
         $this->write();
     }
@@ -552,4 +570,13 @@ class PushNotification extends DataObject
     {
         return 'push';
     }
+
+    public function ScheduledAtNice(): string
+    {
+        $date = new DateTime($this->ScheduledAt);
+
+        // Format the timestamp
+        return $date->format('D M d Y H:i:s \G\M\TO (T)');
+    }
+
 }
