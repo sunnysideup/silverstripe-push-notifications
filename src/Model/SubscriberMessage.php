@@ -23,17 +23,33 @@ use SilverStripe\Security\Security;
  */
 class SubscriberMessage extends DataObject
 {
+    public static function subscriber_message_exists(Member $member, PushNotification $pushNotification, ?Subscriber $subscriber = null): bool
+    {
+        return self::get()->filter(self::get_filter_for_new($member, $pushNotification, $subscriber))->exists();
+    }
+
     public static function create_new(Member $member, PushNotification $pushNotification, ?Subscriber $subscriber = null)
     {
-        $obj = self::create();
-        $obj->MemberID = $member->ID;
-        $obj->PushNotificationID = $pushNotification->ID;
-        if ($subscriber instanceof Subscriber) {
-            $obj->SubscriberID = $subscriber->ID;
+        if(self::subscriber_message_exists($member, $pushNotification, $subscriber)) {
+            return null;
         }
+        $obj = self::create(self::get_filter_for_new($member, $pushNotification, $subscriber));
         $obj->write();
         return $obj;
     }
+
+    protected static function get_filter_for_new(Member $member, PushNotification $pushNotification, ?Subscriber $subscriber = null)
+    {
+        $filter = [
+            'MemberID' => $member->ID,
+            'PushNotificationID' => $pushNotification->ID,
+        ];
+        if($subscriber instanceof Subscriber) {
+            $filter['SubscriberID'] = $subscriber->ID;
+        }
+        return $filter;
+    }
+
 
     private static $table_name = 'SubscriberMessage';
 

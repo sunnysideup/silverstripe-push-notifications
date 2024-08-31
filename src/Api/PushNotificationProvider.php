@@ -29,6 +29,10 @@ abstract class PushNotificationProvider
      * @throws PushException if sending the notification fails
      */
     abstract public function sendPushNotification(PushNotification $notification): bool;
+    public function sendingComplete(PushNotification $notification): bool
+    {
+        return $notification->SubscriberMessages()->count() >= $notification->getRecipientsCount();
+    }
 
     /**
      * @return array

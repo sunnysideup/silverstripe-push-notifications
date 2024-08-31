@@ -8,6 +8,7 @@ use SilverStripe\Security\Group;
 use SilverStripe\Security\Member;
 use Sunnysideup\PushNotifications\Api\ConvertToOneSignal\NotificationHelper;
 use Sunnysideup\PushNotifications\Api\OneSignalSignupApi;
+use Sunnysideup\PushNotifications\Api\Providers\PushNotificationOneSignal;
 use Sunnysideup\PushNotifications\Model\PushNotification;
 use Sunnysideup\PushNotifications\Model\Subscriber;
 
@@ -25,28 +26,41 @@ class UpdateOneSignal extends BuildTask
     {
         Environment::increaseTimeLimitTo(3600);
         Environment::increaseMemoryLimitTo('512M');
-        $this->header('WRITING GROUPS');
-        $groups = Group::get()->filter(['OneSignalSegmentID:not' => ['', null, 0]]);
-        foreach($groups as $group) {
-            $this->outcome('Group: ' . $group->getBreadcrumbsSimple());
-            $group->write();
-        }
-        $this->header('WRITING SUBSCRIPTIONS');
-        $subscribers = Subscriber::get()->filter(['OneSignalUserID:not' => ['', null, 0]]);
-        foreach($subscribers as $subscriber) {
-            $this->outcome('Writing: ' . $subscriber->Member()?->Email, ' - ', $subscriber->OneSignalUserID);
-            $subscriber->write();
-        }
+        // $this->header('WRITING GROUPS');
+        // $groups = Group::get()->filter(['OneSignalSegmentID:not' => ['', null, 0]]);
+        // foreach($groups as $group) {
+        //     $this->outcome('Group: ' . $group->getBreadcrumbsSimple());
+        //     $group->write();
+        // }
+        // $this->header('WRITING SUBSCRIPTIONS');
+        // $subscribers = Subscriber::get()->filter(['OneSignalUserID:not' => ['', null, 0]]);
+        // foreach($subscribers as $subscriber) {
+        //     $this->outcome('Writing: ' . $subscriber->Member()?->Email, ' - '. $subscriber->OneSignalUserID);
+        //     $subscriber->write();
+        // }
         $this->header('WRITING NOTIFICATIONS');
         /** @var OneSignalSignupApi $api */
         $api = Injector::inst()->get(OneSignalSignupApi::class);
         $allNotifications = $api->getAllNotifications();
-        foreach($allNotifications as $oneSignalNotification) {
+        $notificationList = $allNotifications['notifications'] ?? [];
+        foreach($notificationList as $oneSignalNotification) {
+            $id = $oneSignalNotification['id'] ?? '';
+            if(! $id) {
+                $this->outcome('ERROR: ' . ' no id for '.print_r($oneSignalNotification, 1));
+                continue;
+            }
             $this->outcome('Notification: ' . $oneSignalNotification['id']);
             $filter = ['OneSignalNotificationID' => $oneSignalNotification['id']];
             $notification = PushNotification::get()->filter($filter)->first();
             if(! $notification) {
                 $notification = PushNotification::create($filter);
+                $notificationList->ProviderClass = PushNotificationOneSignal::class;
+                if(! $notification->Title) {
+                    $notification->Title = $oneSignalNotification['headings']['en'] ?? '';
+                }
+                if(! $notification->Content) {
+                    $notification->Content = $oneSignalNotification['contents']['en'] ?? '';
+                }
                 $notification->write();
             }
             $valuesForNotificationDataOneObject = NotificationHelper::singleton()

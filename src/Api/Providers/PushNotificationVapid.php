@@ -39,6 +39,9 @@ class PushNotificationVapid extends PushNotificationProvider
 
     public function sendPushNotification(PushNotification $notification): bool
     {
+        if($this->sendingComplete($notification)) {
+            return false;
+        }
         $error = false;
         $publicKey = Environment::getEnv('SS_VAPID_PUBLIC_KEY');
         $privateKey = Environment::getEnv('SS_VAPID_PRIVATE_KEY');
@@ -89,6 +92,10 @@ class PushNotificationVapid extends PushNotificationProvider
             $subscriptions = $recipient->PushNotificationSubscribers();
             foreach ($subscriptions as $subscriber) {
                 $log = SubscriberMessage::create_new($recipient, $notification, $subscriber);
+                if(! $log) {
+                    continue;
+                }
+
                 $subscription = Subscription::create(json_decode($subscriber->Subscription, true));
 
                 $outcome = $webPush->sendOneNotification($subscription, $payload);

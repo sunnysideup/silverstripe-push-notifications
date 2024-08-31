@@ -23,6 +23,9 @@ class PushNotificationEmail extends PushNotificationProvider
 
     public function sendPushNotification(PushNotification $notification): bool
     {
+        if($this->sendingComplete($notification)) {
+            return false;
+        }
         $email = new Email();
         $email->setFrom($this->getSetting('From'));
         $email->setSubject($this->getSetting('Subject'));
@@ -30,6 +33,9 @@ class PushNotificationEmail extends PushNotificationProvider
         $error = false;
         foreach ($notification->getRecipients() as $recipient) {
             $log = SubscriberMessage::create_new($recipient, $notification);
+            if(! $log) {
+                continue;
+            }
             if (! $this->isValidEmail($recipient->Email)) {
                 $log->Success = false;
                 $log->ErrorMessage = 'Not a valid email address';
