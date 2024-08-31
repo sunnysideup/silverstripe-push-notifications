@@ -58,6 +58,7 @@ class PushNotification extends DataObject
 
     private static $db = [
         'Title' => 'Varchar(100)',
+        'TestOnly' => 'Boolean',
         'Content' => 'Text',
         'AdditionalInfo' => 'HTMLText',
         'ProviderClass' => 'Varchar(255)',
@@ -99,13 +100,15 @@ class PushNotification extends DataObject
 
     private static $summary_fields = [
         'Title' => 'Title',
+        'TestOnly.Nice' => 'Test only',
+        'RecipientsCount' => 'Number of Recipients',
         'SentAt' => 'Sent',
         'HasSendingErrors.Nice' => 'Sending Errors',
-        'RecipientsCount' => 'Number of Recipients',
     ];
 
     private static $searchable_fields = [
         'Title',
+        'TestOnly',
         'Content',
         'Sent',
         'OneSignalNotificationID',

@@ -5,6 +5,7 @@ use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
 use SilverStripe\Security\Group;
 use SilverStripe\Security\Member;
+use SilverStripe\Security\Security;
 use Sunnysideup\PushNotifications\Api\OneSignalSignupApi;
 use Sunnysideup\PushNotifications\Model\PushNotification;
 use Sunnysideup\PushNotifications\Model\Subscriber;
@@ -30,11 +31,11 @@ class TestOneSignalTask extends BuildTask
         $this->outcome($this->api->getCurrentApp());
 
 
+        $member = Security::getCurrentUser();
         $subscription = Subscriber::get()
-            ->filter(['OneSignalUserID:not' => ['', null, 0]])
+            ->filter(['OneSignalUserID:not' => ['', null, 0], 'MemberID' => $member->ID])
             ->sort(['ID' => 'ASC'])
             ->first();
-        $member = $subscription->Member();
         $group = Group::get()->first();
 
         if($subscription && $member) {
@@ -75,7 +76,7 @@ class TestOneSignalTask extends BuildTask
 
         } else {
             $this->header('User functions');
-            $this->outcome('Error: No user found!');
+            $this->outcome('Error: To test the user functions, please make sure you are signed up for push notifications!');
         }
 
         $this->header('getAllNotifications');
