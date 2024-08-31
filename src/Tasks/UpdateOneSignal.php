@@ -6,7 +6,9 @@ use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
 use SilverStripe\Security\Group;
 use SilverStripe\Security\Member;
+use Sunnysideup\PushNotifications\Api\ConvertToOneSignal\NotificationHelper;
 use Sunnysideup\PushNotifications\Api\OneSignalSignupApi;
+use Sunnysideup\PushNotifications\Model\PushNotification;
 use Sunnysideup\PushNotifications\Model\Subscriber;
 
 class UpdateOneSignal extends BuildTask
@@ -23,15 +25,33 @@ class UpdateOneSignal extends BuildTask
     {
         Environment::increaseTimeLimitTo(3600);
         Environment::increaseMemoryLimitTo('512M');
-        $groups = Group::get();
+        $this->header('WRITING GROUPS');
+        $groups = Group::get()->filter(['OneSignalSegmentID:not' => ['', null, 0]]);
         foreach($groups as $group) {
-            $this->header('Group: ' . $group->getBreadcrumbsSimple());
+            $this->outcome('Group: ' . $group->getBreadcrumbsSimple());
             $group->write();
-            foreach($group->Members() as $member) {
-                $this->header('Member: ' . $member->Email);
-                $member->write();
-            }
         }
+        $this->header('WRITING SUBSCRIPTIONS');
+        $subscribers = Subscriber::get()->filter(['OneSignalUserID:not' => ['', null, 0]]);
+        foreach($subscribers as $subscriber) {
+            $this->outcome('Writing: ' . $subscriber->Member()?->Email, ' - ', $subscriber->OneSignalUserID);
+            $subscriber->write();
+        }
+        $this->header('WRITING NOTIFICATIONS');
+        /** @var OneSignalSignupApi $api */
+        $api = Injector::inst()->get(OneSignalSignupApi::class);
+        $allNotifications = $api->getAllNotifications();
+        foreach($allNotifications as $oneSignalNotification) {
+            $this->outcome('Notification: ' . $oneSignalNotification['id']);
+            $filter = ['OneSignalNotificationID' => $oneSignalNotification['id']];
+            $notification = PushNotification::get()->filter($filter)->first();
+            if(! $notification) {
+                $notification = PushNotification::create($filter);
+                $notification->write();
+            }
+            $valuesForNotificationDataOneObject = NotificationHelper::getValuesForNotificationDataOneObject($oneSignalNotification);
+        }
+
     }
 
 
@@ -43,7 +63,6 @@ class UpdateOneSignal extends BuildTask
             echo PHP_EOL;
             echo PHP_EOL;
             echo '========================='.PHP_EOL;
-            ;
             echo $message . PHP_EOL;
             echo '========================='.PHP_EOL;
             ;
@@ -56,9 +75,8 @@ class UpdateOneSignal extends BuildTask
     {
         if(Director::is_cli()) {
             echo PHP_EOL;
-            echo '========================='.PHP_EOL;
             print_r($mixed);
-            echo '========================='.PHP_EOL;
+            echo PHP_EOL;
         } else {
             echo '<pre>';
             print_r($mixed);

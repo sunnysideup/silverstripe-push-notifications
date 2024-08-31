@@ -4,13 +4,11 @@ namespace Sunnysideup\PushNotifications\Extensions;
 
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\GridField\GridField;
-use SilverStripe\Forms\GridField\GridFieldAddNewButton;
-use SilverStripe\Forms\GridField\GridFieldConfig_RecordEditor;
 use SilverStripe\Forms\GridField\GridFieldConfig_RecordViewer;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\ORM\DataExtension;
+use SilverStripe\Security\Member;
 use Sunnysideup\PushNotifications\Api\ConvertToOneSignal\MemberHelper;
-use Sunnysideup\PushNotifications\Model\PushNotificationPage;
 use Sunnysideup\PushNotifications\Model\Subscriber;
 use Sunnysideup\PushNotifications\Model\SubscriberMessage;
 

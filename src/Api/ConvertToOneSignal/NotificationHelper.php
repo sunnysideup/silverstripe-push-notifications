@@ -63,6 +63,11 @@ class NotificationHelper
         return $dataForNotification;
     }
 
+    public function getValuesForNotificationDataOneObject(array $oneSignalNotification): array
+    {
+        return [];
+    }
+
 }
 
 
