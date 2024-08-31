@@ -11,7 +11,7 @@ use Sunnysideup\PushNotifications\Model\Subscriber;
 
 class UpdateOneSignal extends BuildTask
 {
-    protected $title = 'Test OneSignal Task';
+    protected $title = 'Update OneSignal Data';
 
     protected $description = 'Goes through all the Groups and all Members and updates their OneSignal data';
 

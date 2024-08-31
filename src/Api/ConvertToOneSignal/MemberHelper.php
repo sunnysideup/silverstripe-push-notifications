@@ -5,6 +5,7 @@ namespace Sunnysideup\PushNotifications\Api\ConvertToOneSignal;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\ORM\DataList;
+use SilverStripe\ORM\ManyManyList;
 use SilverStripe\Security\Group;
 use SilverStripe\Security\Member;
 
@@ -40,7 +41,7 @@ class MemberHelper
         return $tags;
     }
 
-    public function members2oneSignalAliases(DataList $members): array
+    public function members2oneSignalAliases(DataList|ManyManyList $members): array
     {
         $includedAliases = [];
         if($members->count() > 2000) {

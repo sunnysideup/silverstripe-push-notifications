@@ -15,6 +15,7 @@ class NotificationHelper
     private static string $default_scheduled_at_string = '1 hour';
 
     private static bool $use_segments_to_target_groups = false;
+    private static bool $remove_unused_segments_from_onesignal = true;
 
     public function notification2oneSignal(PushNotification $pushNotification): array
     {

@@ -15,6 +15,7 @@ use SilverStripe\Forms\RequiredFields;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\ManyManyList;
 use SilverStripe\ORM\ValidationResult;
 use SilverStripe\Security\Group;
 use SilverStripe\Security\Member;
@@ -528,19 +529,19 @@ class PushNotification extends DataObject
      */
     public function getRecipients(): DataList
     {
-        $set = new ArrayList();
+        $array = [0 => 0];
         $members = $this->RecipientMembers();
-        $set->merge([0 => 0]);
         if($members->count() > 0) {
-            $set->merge($members);
+            $array = array_merge($array, $members->columnUnique('ID'));
         } else {
             /** @var Group $group */
             foreach ($this->RecipientGroups() as $group) {
-                $set->merge($group->Members());
+                $array = array_merge($array, $group->Members()->columnUnique('ID'));
+
             }
         }
 
-        return Member::get()->filter(['ID' => $set->columnUnique('ID')]);
+        return Member::get()->filter(['ID' => $array]);
     }
 
     /**

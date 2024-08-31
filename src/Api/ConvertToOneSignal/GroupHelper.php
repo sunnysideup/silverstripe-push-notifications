@@ -5,6 +5,7 @@ namespace Sunnysideup\PushNotifications\Api\ConvertToOneSignal;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\ORM\DataList;
+use SilverStripe\ORM\ManyManyList;
 use SilverStripe\Security\Group;
 
 class GroupHelper
@@ -22,7 +23,7 @@ class GroupHelper
         return 'Website: '.$group->getBreadcrumbsSimple();
     }
 
-    public function groups2oneSignalFilter(DataList $groups): array
+    public function groups2oneSignalFilter(DataList|ManyManyList $groups): array
     {
         $length = $groups->count();
         $count = 0;
@@ -45,7 +46,7 @@ class GroupHelper
 
     }
 
-    public function groups2oneSignalSegmentFilter(DataList $groups): array
+    public function groups2oneSignalSegmentFilter(DataList|ManyManyList $groups): array
     {
         $list = [];
         foreach($groups as $group) {

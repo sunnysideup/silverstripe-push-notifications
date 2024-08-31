@@ -2,6 +2,7 @@
 
 namespace Sunnysideup\PushNotifications\Extensions;
 
+use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\GridField\GridField;
@@ -9,6 +10,7 @@ use SilverStripe\Forms\GridField\GridFieldConfig_RecordViewer;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\ORM\DataExtension;
 use Sunnysideup\PushNotifications\Api\ConvertToOneSignal\GroupHelper;
+use Sunnysideup\PushNotifications\Api\ConvertToOneSignal\NotificationHelper;
 use Sunnysideup\PushNotifications\Api\OneSignalSignupApi;
 use Sunnysideup\PushNotifications\Model\PushNotification;
 use Sunnysideup\PushNotifications\Model\PushNotificationPage;
@@ -49,7 +51,7 @@ class GroupExtension extends DataExtension
     {
         $owner = $this->getOwner();
         if($owner->hasOneSignalSegment()) {
-            if($owner->hasUnsentOneSignalMessages()) {
+            if($owner->hasUnsentOneSignalMessages() && $this->useOneSignalSegmentsForSending()) {
                 /** @var OneSignalSignupApi $api */
                 $api = Injector::inst()->get(OneSignalSignupApi::class);
                 $outcome = $api->createSegmentBasedOnGroup($owner);
@@ -60,7 +62,7 @@ class GroupExtension extends DataExtension
                     'OneSignalSegmentNote',
                     'Could not add OneSignal segment'
                 );
-            } else {
+            } elseif($this->removeUnusedSegmentsFromOneSignal()) {
                 $this->removeOneSignalSegment();
             }
         }
@@ -113,6 +115,17 @@ class GroupExtension extends DataExtension
     {
         $owner = $this->getOwner();
         return $owner->PushNotifications()->filter(['Sent' => 0])->count() ? true : false;
+    }
+
+
+    public function useOneSignalSegmentsForSending(): bool
+    {
+        return (bool) Config::inst()->get(NotificationHelper::class, 'use_segments_to_target_groups');
+    }
+
+    public function removeUnusedSegmentsFromOneSignal(): bool
+    {
+        return (bool) Config::inst()->get(NotificationHelper::class, 'remove_unused_segments_from_onesignal');
     }
 
 
