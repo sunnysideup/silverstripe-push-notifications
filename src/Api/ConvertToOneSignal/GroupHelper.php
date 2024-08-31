@@ -1,6 +1,6 @@
 <?php
 
-namespace Sunnysideup\PushNotifications\Api\Converters;
+namespace Sunnysideup\PushNotifications\Api\ConvertToOneSignal;
 
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Injector\Injectable;

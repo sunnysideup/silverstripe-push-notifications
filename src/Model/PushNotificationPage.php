@@ -24,6 +24,7 @@ use SilverStripe\Forms\GridField\GridFieldConfig_RelationEditor;
 use SilverStripe\Forms\HTMLEditor\HTMLEditorField;
 use SilverStripe\Forms\TreeDropdownField;
 use SilverStripe\Security\Group;
+use Sunnysideup\PushNotifications\Api\ConvertToOneSignal\LinkHelper;
 
 class PushNotificationPage extends Page
 {
@@ -144,7 +145,7 @@ class PushNotificationPage extends Page
                             <p>
                                 Please access OneSignal to manage your push notifications:
                                 <br />
-                                <a href="https://app.onesignal.com/apps/new" target="_blank">Create a new app</a>
+                                <a href="'.LinkHelper::singleton()->createNewAppLink().'" target="_blank">Create a new app</a>
                                 </p>
                             '
                         ),
@@ -159,15 +160,23 @@ class PushNotificationPage extends Page
                             '<h2>OneSignal</h2>
                             <p>
                                 Please access OneSignal to manage your push notifications:
-                                <br />
-                                <a href="https://dashboard.onesignal.com/apps/'.$this->getOneSignalKey().'/settings/webpush/configure" target="_blank" rel="noopener noreferrer">Configure (with care!)</a>
-                                <br />
-                                <br />
-                                <a href="https://dashboard.onesignal.com/apps/'.$this->getOneSignalKey().'/campaigns" target="_blank"  rel="noopener noreferrer">Send Push Notification</a>
+                                <br />'.
+                                LinkHelper::singleton()->createHtmlLink(
+                                    LinkHelper::singleton()->configurePushNotificationsLink(),
+                                    'Configure (with care!)'
+                                ).'<br />
+                                <br />'.
+                                LinkHelper::singleton()->createHtmlLink(
+                                    LinkHelper::singleton()->sendNewPushNotificationLink(),
+                                    'Send New Push Notification'
+                                ).'
                                 <strong>Do not forget also record your message here.</strong>
                                 <br />
-                                <br />
-                                <a href="https://dashboard.onesignal.com/apps/'.$this->getOneSignalKey().'/notifications" target="_blank" rel="noopener noreferrer">Review sent messages</a>
+                                <br />'.
+                                LinkHelper::singleton()->createHtmlLink(
+                                    LinkHelper::singleton()->sentPushNotificationLink(),
+                                    'Review sent messages'
+                                ).'
                             </p>
                             '
                         ),

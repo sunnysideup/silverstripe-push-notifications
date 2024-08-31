@@ -15,9 +15,10 @@ use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\DataList;
 use SilverStripe\Security\Group;
 use SilverStripe\Security\Member;
-use Sunnysideup\PushNotifications\Api\Converters\GroupHelper;
-use Sunnysideup\PushNotifications\Api\Converters\MemberHelper;
-use Sunnysideup\PushNotifications\Api\Converters\NotificationHelper;
+use Sunnysideup\PushNotifications\Api\ConvertToOneSignal\GroupHelper;
+use Sunnysideup\PushNotifications\Api\ConvertToOneSignal\LinkHelper;
+use Sunnysideup\PushNotifications\Api\ConvertToOneSignal\MemberHelper;
+use Sunnysideup\PushNotifications\Api\ConvertToOneSignal\NotificationHelper;
 use Sunnysideup\PushNotifications\Model\PushNotification;
 
 class OneSignalSignupApi
@@ -110,7 +111,7 @@ class OneSignalSignupApi
 
     public static function notification_id_to_onesignal_link($id): string
     {
-        return 'https://app.onesignal.com/apps/' . Environment::getEnv('SS_ONESIGNAL_APP_ID') . '/notifications/' . $id;
+        return LinkHelper::singleton()->notificationLink($id);
     }
 
     public function __construct()
