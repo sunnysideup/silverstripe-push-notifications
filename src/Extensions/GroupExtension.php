@@ -37,6 +37,7 @@ class GroupExtension extends DataExtension
 
     private static $casting = [
         'getBreadcrumbsSimple' => 'Varchar',
+        'getBreadcrumbsSimpleWithCount' => 'Varchar',
     ];
 
     private static $belongs_many_many = [
@@ -45,7 +46,12 @@ class GroupExtension extends DataExtension
 
     public function getBreadcrumbsSimple(): string
     {
-        return $this->getOwner()->getBreadcrumbs(' » ') . ' (' . $this->getOwner()->Members()->count() . ')';
+        return $this->getOwner()->getBreadcrumbs(' » ');
+    }
+
+    public function getBreadcrumbsSimpleWithCount(): string
+    {
+        return $this->getOwner()->getBreadcrumbsSimple() . ' (' . $this->getOwner()->Members()->count() . ')';
     }
 
     public function onBeforeWrite()

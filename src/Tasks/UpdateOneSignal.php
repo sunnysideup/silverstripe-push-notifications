@@ -29,13 +29,13 @@ class UpdateOneSignal extends BuildTask
         $this->header('WRITING GROUPS');
         $groups = Group::get()->filter(['OneSignalSegmentID:not' => ['', null, 0]]);
         foreach($groups as $group) {
-            $this->outcome('Group: ' . $group->getBreadcrumbsSimple());
+            $this->outcome('Group: ' . $group->getBreadcrumbsSimpleWithCount());
             $group->write();
         }
         $this->header('WRITING SUBSCRIPTIONS');
         $subscribers = Subscriber::get()->filter(['OneSignalUserID:not' => ['', null, 0]]);
         foreach($subscribers as $subscriber) {
-            $this->outcome('Writing: ' . $subscriber->Member()?->Email, ' - '. $subscriber->OneSignalUserID);
+            $this->outcome('Writing: ' . $subscriber->Member()?->Email. ' - '. $subscriber->OneSignalUserID);
             $subscriber->write();
         }
         $this->header('WRITING NOTIFICATIONS');

@@ -271,7 +271,7 @@ class PushNotification extends DataObject
                             'RecipientGroups',
                             'Recipients'.PHP_EOL.'SELECT WITH CARE!',
                             PushNotificationPage::get_one()->SignupGroups()
-                                ->map('ID', 'BreadcrumbsSimple'),
+                                ->map('ID', 'BreadcrumbsSimpleWithCount'),
                         )->setDescription(_t(
                             'Push.RECIPIENTGROUPSDESCRIPTION',
                             'If you select recipeitn groups, then individual recipient members will be ignored!'

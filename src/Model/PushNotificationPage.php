@@ -231,7 +231,7 @@ class PushNotificationPage extends Page
                     'SignupGroups',
                     'Joinable Groups'.PHP_EOL.'CAREFUL SEE BELOW',
                     Group::get()->filter('Code:not', 'administrators')
-                        ->map('ID', 'BreadcrumbsSimple'),
+                        ->map('ID', 'BreadcrumbsSimpleWithCount'),
                 )
                     ->setDescription('CAREFUL: only select groups without any special permissions as otherwise users can grant themselves those permissions.')
             ]

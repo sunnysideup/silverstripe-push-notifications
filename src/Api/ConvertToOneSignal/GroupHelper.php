@@ -20,7 +20,7 @@ class GroupHelper
 
     public function group2oneSignalName(Group $group): string
     {
-        return 'Website: '.$group->getBreadcrumbsSimple();
+        return 'Website: '.$group->getBreadcrumbsSimpleWithCount();
     }
 
     public function groups2oneSignalFilter(DataList|ManyManyList $groups): array
