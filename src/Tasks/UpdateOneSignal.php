@@ -54,7 +54,7 @@ class UpdateOneSignal extends BuildTask
             $notification = PushNotification::get()->filter($filter)->first();
             if(! $notification) {
                 $notification = PushNotification::create($filter);
-                $notificationList->ProviderClass = PushNotificationOneSignal::class;
+                $notification->ProviderClass = PushNotificationOneSignal::class;
                 if(! $notification->Title) {
                     $notification->Title = $oneSignalNotification['headings']['en'] ?? '';
                 }
