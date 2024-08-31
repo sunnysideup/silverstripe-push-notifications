@@ -26,6 +26,20 @@ use SilverStripe\Forms\TreeDropdownField;
 use SilverStripe\Security\Group;
 use Sunnysideup\PushNotifications\Api\ConvertToOneSignal\LinkHelper;
 
+/**
+ * Class \Sunnysideup\PushNotifications\Model\PushNotificationPage
+ *
+ * @property bool $UseOneSignal
+ * @property string $ThemeColour
+ * @property string $BackgroundColour
+ * @property bool $OverwriteManifestFile
+ * @property string $SignupGroupsIntro
+ * @property int $ManifestIconID
+ * @property int $StartPageForHomeScreenAppID
+ * @method Image ManifestIcon()
+ * @method SiteTree StartPageForHomeScreenApp()
+ * @method ManyManyList|Group[] SignupGroups()
+ */
 class PushNotificationPage extends Page
 {
     public const ONESIGNAL_INIT_FILE_NAME = 'OneSignalSDKWorker.js';

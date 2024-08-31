@@ -17,9 +17,9 @@ use SilverStripe\Security\Security;
  * @property int $SubscriberID
  * @property int $PushNotificationID
  * @property int $MemberID
- * @method \Sunnysideup\PushNotifications\Model\Subscriber Subscriber()
- * @method \Sunnysideup\PushNotifications\Model\PushNotification PushNotification()
- * @method \SilverStripe\Security\Member Member()
+ * @method Subscriber Subscriber()
+ * @method PushNotification PushNotification()
+ * @method Member Member()
  */
 class SubscriberMessage extends DataObject
 {

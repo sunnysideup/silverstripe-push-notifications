@@ -17,9 +17,9 @@ use Sunnysideup\PushNotifications\Model\SubscriberMessage;
 /**
  * Class \Sunnysideup\PushNotifications\Extensions\MemberExtension
  *
- * @property \SilverStripe\Security\Member|\Sunnysideup\PushNotifications\Extensions\MemberExtension $owner
- * @method \SilverStripe\ORM\DataList|\Sunnysideup\PushNotifications\Model\Subscriber[] PushNotificationSubscribers()
- * @method \SilverStripe\ORM\DataList|\Sunnysideup\PushNotifications\Model\SubscriberMessage[] SubscriberMessages()
+ * @property Member|MemberExtension $owner
+ * @method DataList|Subscriber[] PushNotificationSubscribers()
+ * @method DataList|SubscriberMessage[] SubscriberMessages()
  */
 class MemberExtension extends DataExtension
 {

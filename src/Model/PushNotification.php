@@ -39,11 +39,15 @@ use Symbiote\QueuedJobs\Services\QueuedJobService;
  * @property string $ProviderSettings
  * @property string $ScheduledAt
  * @property bool $Sent
+ * @property bool $HasSendingErrors
  * @property string $SentAt
+ * @property string $OneSignalNotificationID
+ * @property string $OneSignalNotificationNote
  * @property int $SendJobID
- * @method \Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor SendJob()
- * @method \SilverStripe\ORM\DataList|\Sunnysideup\PushNotifications\Model\SubscriberMessage[] SubscriberMessages()
- * @method \SilverStripe\ORM\ManyManyList|\SilverStripe\Security\Group[] RecipientGroups()
+ * @method QueuedJobDescriptor SendJob()
+ * @method DataList|SubscriberMessage[] SubscriberMessages()
+ * @method ManyManyList|Member[] RecipientMembers()
+ * @method ManyManyList|Group[] RecipientGroups()
  */
 class PushNotification extends DataObject
 {
@@ -114,7 +118,6 @@ class PushNotification extends DataObject
 
     private static $indexes = [
         'Title' => true,
-        'Content' => true,
         'Sent' => true,
         'OneSignalNotificationID' => true,
     ];

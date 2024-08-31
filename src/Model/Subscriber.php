@@ -16,9 +16,13 @@ use Sunnysideup\PushNotifications\Api\OneSignalSignupApi;
  * Class \Sunnysideup\PushNotifications\Model\Subscriber
  *
  * @property string $Subscription
+ * @property bool $Subscribed
+ * @property string $OneSignalUserID
+ * @property string $OneSignalUserNote
+ * @property string $OneSignalUserTagsNote
  * @property int $MemberID
- * @method \SilverStripe\Security\Member Member()
- * @method \SilverStripe\ORM\DataList|\Sunnysideup\PushNotifications\Model\SubscriberMessage[] SubscriberMessages()
+ * @method Member Member()
+ * @method DataList|SubscriberMessage[] SubscriberMessages()
  */
 class Subscriber extends DataObject
 {

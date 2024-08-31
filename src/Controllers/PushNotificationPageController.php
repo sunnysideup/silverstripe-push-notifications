@@ -23,9 +23,9 @@ use Sunnysideup\PushNotifications\Model\Subscriber;
 /**
  * Class \Sunnysideup\PushNotifications\Controllers\PushNotificationPageController
  *
- * @property \Sunnysideup\PushNotifications\Model\PushNotificationPage $dataRecord
- * @method \Sunnysideup\PushNotifications\Model\PushNotificationPage data()
- * @mixin \Sunnysideup\PushNotifications\Model\PushNotificationPage
+ * @property PushNotificationPage $dataRecord
+ * @method PushNotificationPage data()
+ * @mixin PushNotificationPage
  */
 class PushNotificationPageController extends ContentController
 {
