@@ -10,7 +10,7 @@ use Sunnysideup\PushNotifications\Model\Subscriber;
 
 class TestOneSignalTask extends BuildTask
 {
-    protected $title = 'Test One Signal Task';
+    protected $title = 'Test OneSignal Task';
 
     protected $description = 'This task is used to test the one signal connectivity';
 
@@ -28,43 +28,46 @@ class TestOneSignalTask extends BuildTask
         $this->header('getCurrentApp');
         $this->outcome($this->api->getCurrentApp());
 
-        $subscription = Subscriber::get()
-            ->filter(['OneSignalUserID:not' => ['', null, 0]])
-            ->sort(['ID' => 'ASC'])
-            ->first();
-        $member = $subscription->Member();
-        $group = Group::get()->first();
+        $this->header('doSendNotification');
+        $this->outcome($this->api->doSendNotification());
 
-        if($subscription && $member) {
+        // $subscription = Subscriber::get()
+        //     ->filter(['OneSignalUserID:not' => ['', null, 0]])
+        //     ->sort(['ID' => 'ASC'])
+        //     ->first();
+        // $member = $subscription->Member();
+        // $group = Group::get()->first();
 
-            $this->header('addExternalUserIdToUser: '.$subscription->OneSignalUserID.' - '.$member->Email);
-            $this->outcome($this->api->addExternalUserIdToUser($subscription->OneSignalUserID, $member));
+        // if($subscription && $member) {
 
-            $this->header('updateDevice: '.$subscription->OneSignalUserID);
-            $this->outcome($this->api->updateDevice($subscription->OneSignalUserID, ['amount_spent' => 999999.99]));
+        //     $this->header('addExternalUserIdToUser: '.$subscription->OneSignalUserID.' - '.$member->Email);
+        //     $this->outcome($this->api->addExternalUserIdToUser($subscription->OneSignalUserID, $member));
 
-            $this->header('createSegment: test segment');
-            $this->outcome($this->api->createSegment('test segment', ['test KEY' => 'test Value']));
+        //     $this->header('updateDevice: '.$subscription->OneSignalUserID);
+        //     $this->outcome($this->api->updateDevice($subscription->OneSignalUserID, ['amount_spent' => 999999.99]));
 
-            $this->header('addTagsToUser: '.$member->Email. ' test KEY');
-            $this->outcome($this->api->addTagsToUser($member, ['test KEY' => 'test Value']));
+        //     $this->header('createSegment: test segment');
+        //     $this->outcome($this->api->createSegment('test segment', ['test KEY' => 'test Value']));
 
-            $this->header('addTagsToUserBasedOnGroups: '.$member->Email);
-            $this->outcome($this->api->addTagsToUserBasedOnGroups($member));
+        //     $this->header('addTagsToUser: '.$member->Email. ' test KEY');
+        //     $this->outcome($this->api->addTagsToUser($member, ['test KEY' => 'test Value']));
 
-            $segmentOutcome = $this->api->createSegmentBasedOnGroup($group);
-            $this->header('createSegmentBasedOnGroup: '.$group->Title);
-            $this->outcome($segmentOutcome);
+        //     $this->header('addTagsToUserBasedOnGroups: '.$member->Email);
+        //     $this->outcome($this->api->addTagsToUserBasedOnGroups($member));
 
-            $segmentId = OneSignalSignupApi::test_id($segmentOutcome);
-            if($segmentId) {
-                $this->header('deleteSegment with id: '.$segmentId);
-                $this->outcome($this->api->deleteSegment($segmentId));
-            }
-        } else {
-            $this->header('User functions');
-            $this->outcome('Error: No user found!');
-        }
+        //     $segmentOutcome = $this->api->createSegmentBasedOnGroup($group);
+        //     $this->header('createSegmentBasedOnGroup: '.$group->Title);
+        //     $this->outcome($segmentOutcome);
+
+        //     $segmentId = OneSignalSignupApi::test_id($segmentOutcome);
+        //     if($segmentId) {
+        //         $this->header('deleteSegment with id: '.$segmentId);
+        //         $this->outcome($this->api->deleteSegment($segmentId));
+        //     }
+        // } else {
+        //     $this->header('User functions');
+        //     $this->outcome('Error: No user found!');
+        // }
 
         $this->header('getAllNotifications');
         $notifications = $this->api->getAllNotifications();

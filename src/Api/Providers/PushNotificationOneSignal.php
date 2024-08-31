@@ -18,7 +18,7 @@ class PushNotificationOneSignal extends PushNotificationProvider
 {
     public function getTitle()
     {
-        return _t('Push.ONESIGNAL', 'One Signal');
+        return _t('Push.ONESIGNAL', 'OneSignal');
     }
 
     public function sendPushNotification(PushNotification $notification)

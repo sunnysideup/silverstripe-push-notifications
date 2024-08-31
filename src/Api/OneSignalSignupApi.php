@@ -14,8 +14,10 @@ use Nyholm\Psr7\Factory\Psr17Factory;
 use SilverStripe\ORM\DataList;
 use SilverStripe\Security\Group;
 use SilverStripe\Security\Member;
-use Sunnysideup\PushNotifications\Api\MemberAndGroupToOneSignal\GroupHelper;
-use Sunnysideup\PushNotifications\Api\MemberAndGroupToOneSignal\MemberHelper;
+use Sunnysideup\PushNotifications\Api\Converters\GroupHelper;
+use Sunnysideup\PushNotifications\Api\Converters\MemberHelper;
+use Sunnysideup\PushNotifications\Api\Converters\NotificationHelper;
+use Sunnysideup\PushNotifications\Model\PushNotification;
 
 class OneSignalSignupApi
 {
@@ -63,12 +65,18 @@ class OneSignalSignupApi
         return false;
     }
 
+    /**
+     * returns the id based on the outcome
+     *
+     * @param mixed $outcome
+     * @return string
+     */
     public static function test_id($outcome): string
     {
         if(! is_array($outcome)) {
             return '';
         }
-        return $outcome['id'] ?? '';
+        return (string) $outcome['id'] ?? '';
     }
 
     public static function get_error($outcome): string
@@ -77,6 +85,11 @@ class OneSignalSignupApi
             return 'Outcome is not an array, '.print_r($outcome, 1);
         }
         return implode(',', $outcome['errors']) ?? 'No error message found';
+    }
+
+    public static function notification_id_to_onesignal_link($id): string
+    {
+        return 'https://app.onesignal.com/apps/' . Environment::getEnv('SS_ONESIGNAL_APP_ID') . '/notifications/' . $id;
     }
 
     public function __construct()
@@ -107,7 +120,7 @@ class OneSignalSignupApi
     {
         return $this->updateDevice(
             $deviceID,
-            MemberHelper::member_2_external_user_array($member)
+            MemberHelper::singleton()->member2externalUserArray($member)
         );
     }
 
@@ -130,7 +143,7 @@ class OneSignalSignupApi
         );
         return $this->addTagsToUser(
             $member,
-            MemberHelper::member_groups_2_tag_codes($member)
+            MemberHelper::singleton()->memberGroups2tagCodes($member)
         );
     }
 
@@ -138,7 +151,7 @@ class OneSignalSignupApi
 
     public function addTagsToUser(Member $member, array $tags): array
     {
-        $externalUserId = MemberHelper::member_2_external_user_id($member);
+        $externalUserId = MemberHelper::singleton()->member2externalUserId($member);
         return $this->oneSignal->devices()->editTags(
             $externalUserId,
             [
@@ -178,14 +191,14 @@ class OneSignalSignupApi
         $this->deleteSegmentBasedOnGroup($group);
         $filters[] = [
             'field' => 'tag',
-            'key' => GroupHelper::group_2_code($group),
+            'key' => GroupHelper::singleton()->group2oneSignalCode($group),
             'relation' => '=',
             'value' => 'Y',
         ];
         $outcome = $this->oneSignal->apps()->createSegment(
             $this->getMyAppID(),
             [
-                'name' => GroupHelper::group_2_name($group),
+                'name' => GroupHelper::singleton()->group2oneSignalName($group),
                 'filters' => $filters,
             ]
         );
@@ -223,38 +236,14 @@ class OneSignalSignupApi
         ;
     }
 
-    public function doSendNotification(): array
+
+    public function doSendNotification(PushNotification $pushNotification, ?array $additionalData = []): array
     {
-        if(1 === 2) {
-            $this->oneSignal->notifications()->add([
-                'contents' => [
-                    'en' => 'Notification message'
-                ],
-                'included_segments' => ['All'],
-                'data' => ['foo' => 'bar'],
-                'isChrome' => true,
-                'send_after' => new \DateTime('1 hour'),
-                'filters' => [
-                    [
-                        'field' => 'tag',
-                        'key' => 'is_vip',
-                        'relation' => '!=',
-                        'value' => 'true',
-                    ],
-                    [
-                        'operator' => 'OR',
-                    ],
-                    [
-                        'field' => 'tag',
-                        'key' => 'is_admin',
-                        'relation' => '=',
-                        'value' => 'true',
-                    ],
-                ],
-                // ..other options
-            ]);
-        }
-        die('not implemented');
+        $dataForNotification = NotificationHelper::singleton()->notification2oneSignal($pushNotification);
+        // add custom data...
+        $dataForNotification = array_merge($dataForNotification, $additionalData);
+
+        return $this->oneSignal->notifications()->add($dataForNotification);
     }
 
 

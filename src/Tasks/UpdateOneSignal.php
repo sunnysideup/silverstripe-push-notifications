@@ -11,7 +11,7 @@ use Sunnysideup\PushNotifications\Model\Subscriber;
 
 class UpdateOneSignal extends BuildTask
 {
-    protected $title = 'Test One Signal Task';
+    protected $title = 'Test OneSignal Task';
 
     protected $description = 'Goes through all the Groups and all Members and updates their OneSignal data';
 
@@ -25,7 +25,7 @@ class UpdateOneSignal extends BuildTask
         Environment::increaseMemoryLimitTo('512M');
         $groups = Group::get();
         foreach($groups as $group) {
-            $this->header('Group: ' . $group->Title);
+            $this->header('Group: ' . $group->getBreadcrumbsSimple());
             $group->write();
             foreach($group->Members() as $member) {
                 $this->header('Member: ' . $member->Email);

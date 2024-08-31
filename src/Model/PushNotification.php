@@ -7,18 +7,16 @@ use LeKoala\CmsActions\CustomAction;
 use SilverStripe\Control\Director;
 use SilverStripe\Forms\CheckboxSetField;
 use SilverStripe\Forms\GridField\GridFieldAddExistingAutocompleter;
-use SilverStripe\Forms\GridField\GridFieldAddNewButton;
 use SilverStripe\Forms\HeaderField;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\Forms\RequiredFields;
-use SilverStripe\Forms\TreeMultiselectField;
 use SilverStripe\ORM\ArrayList;
+use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\ValidationResult;
 use SilverStripe\Security\Group;
 use SilverStripe\Security\Member;
-use SilverStripe\Security\Permission;
 use SilverStripe\Security\Security;
 use Sunnysideup\PushNotifications\Api\PushNotificationProvider;
 use Sunnysideup\PushNotifications\ErrorHandling\PushException;
@@ -42,11 +40,12 @@ use Symbiote\QueuedJobs\Services\QueuedJobService;
  * @property int $SendJobID
  * @method \Symbiote\QueuedJobs\DataObjects\QueuedJobDescriptor SendJob()
  * @method \SilverStripe\ORM\DataList|\Sunnysideup\PushNotifications\Model\SubscriberMessage[] SubscriberMessages()
- * @method \SilverStripe\ORM\ManyManyList|\SilverStripe\Security\Member[] RecipientMembers()
  * @method \SilverStripe\ORM\ManyManyList|\SilverStripe\Security\Group[] RecipientGroups()
  */
 class PushNotification extends DataObject
 {
+    private const MAX_UNSENT_MESSAGES = 3;
+
     private static $table_name = 'PushNotification';
 
     private static $db = [
@@ -58,6 +57,8 @@ class PushNotification extends DataObject
         'ScheduledAt' => 'Datetime',
         'Sent' => 'Boolean',
         'SentAt' => 'Datetime',
+        'OneSignalNotificationID' => 'Varchar(64)',
+        'OneSignalNotificationNote' => 'Varchar(255)',
     ];
 
     private static $has_one = [
@@ -73,6 +74,19 @@ class PushNotification extends DataObject
         'RecipientGroups' => Group::class,
     ];
 
+    private static $field_labels = [
+        'Title' => 'Title',
+        'Content' => 'Short Message',
+        'AdditionalInfo' => 'Only shown on the website',
+        'ProviderClass' => 'How it is send',
+        'ProviderSettings' => 'Details for sending',
+        'ScheduledAt' => 'When you want to send it',
+        'Sent' => 'Has it been sent?',
+        'SentAt' => 'When was it sent?',
+        'OneSignalNotificationID' => 'OneSignal Notification ID',
+        'OneSignalNotificationNote' => 'Any notes around connection to OneSignal',
+    ];
+
     private static $summary_fields = [
         'Title' => 'Title',
         'SentAt' => 'Sent',
@@ -83,19 +97,39 @@ class PushNotification extends DataObject
         'Title',
         'Content',
         'Sent',
+        'OneSignalNotificationID',
     ];
 
     private static $casting = [
         'RecipientsCount' => 'Int',
+        'GroupsSummary' => 'Varchar',
     ];
 
-    private static $default_sort = 'Created DESC';
+    private static $indexes = [
+        'Title' => true,
+        'Content' => true,
+        'Sent' => true,
+        'OneSignalNotificationID' => true,
+    ];
+
+    private static $default_sort = 'ID DESC';
 
     protected $providerInst;
 
     public function getCMSFields()
     {
         $fields = parent::getCMSFields();
+        if($this->isOverMaxOfNumberOfUnsentNotifications()) {
+            $fields->unshift(
+                HeaderField::create(
+                    'MaxUnsentMessages',
+                    _t(
+                        'Push.MAXUNSENTMESSAGES',
+                        'You have reached the maximum number of unsent messages. Please send some before creating more.'
+                    )
+                )
+            );
+        }
         $fields->removeByName('Provider');
         $fields->removeByName('ProviderClass');
         $fields->removeByName('ProviderSettings');
@@ -104,7 +138,7 @@ class PushNotification extends DataObject
         $fields->removeByName('SendJobID');
         $fields->removeByName('SentAt');
         if($this->HasExternalProvider()) {
-            $fields->removeByName('ScheduledAt');
+            // $fields->removeByName('ScheduledAt');
             $fields->dataFieldByName('Sent')
                 ->setDescription('Careful! Once ticked and saved, you can not edit this message.');
         } else {
@@ -115,12 +149,28 @@ class PushNotification extends DataObject
         if ($this->Sent) {
             $fields->insertBefore(
                 'Title',
-                new LiteralField('SentAsMessage', sprintf('<p class="message">%s</p>', _t(
+                new LiteralField('SentAtMessage', sprintf('<p class="message">%s</p>', _t(
                     'Push.SENTAT',
                     'This notification was sent at {at}',
                     ['at' => $this->obj('SentAt')->Nice()]
                 ))),
             );
+        } else {
+            if(interface_exists(QueuedJob::class) || $this->HasExternalProvider()) {
+                $fields->insertBefore(
+                    'Title',
+                    $fields->dataFieldByName('ScheduledAt'),
+                );
+            } else {
+                $fields->insertBefore(
+                    'Title',
+                    new LiteralField('ScheduledAtMessage', sprintf('<p class="message">%s</p>', _t(
+                        'Push.SCHEDULEDAT',
+                        'This notification will be send at {at}',
+                        ['at' => $this->obj('ScheduledAt')->Nice()]
+                    ))),
+                );
+            }
         }
         $fields->dataFieldByName('Title')->setDescription(_t(
             'Push.USEDASTITLE',
@@ -128,10 +178,6 @@ class PushNotification extends DataObject
         ));
         $fields->dataFieldByName('Content')->setRows(2);
         $fields->dataFieldByName('AdditionalInfo')->setRows(4);
-
-        if ($this->Sent || ! interface_exists(QueuedJob::class)) {
-            $fields->removeByName('ScheduledAt');
-        }
 
         $fields->dataFieldByName('Content')->setDescription(_t(
             'Push.USEDMAINBODY',
@@ -148,24 +194,50 @@ class PushNotification extends DataObject
                 ]
             );
         }
-        if ($this->ID && ! $this->HasExternalProvider()) {
-            $possibleRecipientsIds = Subscriber::get()->columnUnique('MemberID') + [-1 => -1];
+        if ($this->ID) {
+            $recipientCount = $this->getRecipients()->count();
+            $groupCount = $this->RecipientGroups()->count();
+            $allCount = $recipientCount + $groupCount;
+            if($groupCount === 0 || $allCount === 0) {
+                $possibleRecipientsIds = Subscriber::get()->columnUnique('MemberID') + [-1 => -1];
+                $fields->addFieldsToTab(
+                    'Root.Recipients',
+                    [
+                        CheckboxSetField::create(
+                            'RecipientMembers',
+                            _t('Push.RECIPIENTMEMBERS', 'Recipient Members'),
+                            Member::get()
+                                ->filter(['ID' => $possibleRecipientsIds])
+                                ->map()
+                        )->setDescription(_t(
+                            'Push.RECIPIENTMEMBERSDESCRIPTION',
+                            'If you select individual members, then recipient groups will be ignored!'
+                        )),
+
+                    ]
+                );
+            }
+            if($recipientCount === 0 || $allCount === 0) {
+                $fields->addFieldsToTab(
+                    'Root.Recipients',
+                    [
+                        CheckboxSetField::create(
+                            'RecipientGroups',
+                            'Recipients'.PHP_EOL.'SELECT WITH CARE!',
+                            PushNotificationPage::get_one()->SignupGroups()
+                                ->map('ID', 'BreadcrumbsSimple'),
+                        )->setDescription(_t(
+                            'Push.RECIPIENTGROUPSDESCRIPTION',
+                            'If you select recipeitn groups, then individual recipient members will be ignored!'
+                        )),
+
+                        ReadonlyField::create('RecipientsCount', _t('Push.RECIPIENTCOUNT', 'Recipient Count')),
+                    ]
+                );
+            }
             $fields->addFieldsToTab(
-                'Root.Main',
+                'Root.Recipients',
                 [
-                    HeaderField::create('RecipientsHeader', _t('Push.RECIPIENTS', 'Recipients')),
-                    new CheckboxSetField(
-                        'RecipientMembers',
-                        _t('Push.RECIPIENTMEMBERS', 'Recipient Members'),
-                        Member::get()
-                            ->filter(['ID' => $possibleRecipientsIds])
-                            ->map()
-                    ),
-                    new TreeMultiselectField(
-                        'RecipientGroups',
-                        _t('Push.RECIPIENTGROUPS', 'Recipient Groups'),
-                        Group::class
-                    ),
                     ReadonlyField::create('RecipientsCount', _t('Push.RECIPIENTCOUNT', 'Recipient Count')),
                 ]
             );
@@ -176,10 +248,20 @@ class PushNotification extends DataObject
             ReadonlyField::create('Created', _t('Push.CREATED', 'Created')),
             ReadonlyField::create('LastEdited', _t('Push.LASTEDITED', 'Last Edited')),
         ]);
+
+        // dont allow adding new subscribers!
         $subscriberField = $fields->dataFieldByName('SubscriberMessages');
         if($subscriberField) {
             $subscriberField->getConfig()->removeComponentsByType(GridFieldAddExistingAutocompleter::class);
         }
+        // OneSignal connection
+        $fields->addFieldsToTab(
+            'Root.OneSignal',
+            [
+                ReadonlyField::create('OneSignalNotificationID', 'OneSignal Notification ID'),
+                ReadonlyField::create('OneSignalNotificationNote', 'OneSignal Notification Note'),
+            ]
+        );
         return $fields;
     }
 
@@ -213,19 +295,19 @@ class PushNotification extends DataObject
             $member = Security::getCurrentUser();
         }
 
-        if (Permission::checkMember($member, 'ADMIN')) {
+        $testIndividuals = $this->RecipientMembers()->filter('ID', $member->ID)->count() > 0;
+        if ($testIndividuals) {
             return true;
-        }
-        if($this->HasExternalProvider()) {
-            return true;
-        }
-        if ($this->RecipientMembers()->filter('ID', $member->ID)->exists()) {
-            return true;
-        }
-        $recipientGroups = $this->RecipientGroups()->column('ID');
-        $memberGroups = $member->Groups()->columnUnique('ID');
+        } else {
+            $recipientGroups = $this->RecipientGroups()->column('ID');
+            $memberGroups = $member->Groups()->columnUnique('ID');
 
-        return (bool) count(array_intersect($recipientGroups, $memberGroups)) > 0;
+            $testGroups = count(array_intersect($recipientGroups, $memberGroups)) > 0;
+            if ($testGroups) {
+                return true;
+            }
+        }
+        return parent::canView($member);
     }
 
     public function canSend($member = null)
@@ -239,6 +321,11 @@ class PushNotification extends DataObject
     }
 
     public function getRecipientsCount(): int
+    {
+        return $this->getRecipients()->count();
+    }
+
+    public function getGroupsSummary(): int
     {
         return $this->getRecipients()->count();
     }
@@ -338,6 +425,21 @@ class PushNotification extends DataObject
         }
     }
 
+    public function canCreate($member = null, $context = [])
+    {
+        return $this->isOverMaxOfNumberOfUnsentNotifications() ? false : parent::canCreate($member, $context);
+    }
+
+    protected function isOverMaxOfNumberOfUnsentNotifications(): bool
+    {
+        return $this->numberOfUnsentNotifications() > self::MAX_UNSENT_MESSAGES;
+    }
+
+    protected function numberOfUnsentNotifications()
+    {
+        return self::get()->filter(['Sent' => false])->count();
+    }
+
     public function canEdit($member = null)
     {
         return ! $this->Sent && parent::canEdit($member);
@@ -386,20 +488,22 @@ class PushNotification extends DataObject
     /**
      * Returns all member recipient objects.
      *
-     * @return ArrayList
      */
-    public function getRecipients()
+    public function getRecipients(): DataList
     {
         $set = new ArrayList();
-        $set->merge($this->RecipientMembers());
-
-        /** @var Group $group */
-        foreach ($this->RecipientGroups() as $group) {
-            $set->merge($group->Members());
+        $members = $this->RecipientMembers();
+        $set->merge([0 => 0]);
+        if($members->count() > 0) {
+            $set->merge($members);
+        } else {
+            /** @var Group $group */
+            foreach ($this->RecipientGroups() as $group) {
+                $set->merge($group->Members());
+            }
         }
 
-        $set->removeDuplicates();
-        return $set;
+        return Member::get()->filter(['ID' => $set->columnUnique('ID')]);
     }
 
     /**
@@ -442,5 +546,10 @@ class PushNotification extends DataObject
     public function HasExternalProvider(): bool
     {
         return (bool) PushNotificationPage::get_one()?->HasExternalProvider();
+    }
+
+    public function OneSignalTargetChannel(): string
+    {
+        return 'push';
     }
 }

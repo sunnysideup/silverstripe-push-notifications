@@ -144,6 +144,7 @@ class Subscriber extends DataObject
         if($this->OneSignalUserID) {
             $member = $this->Member();
             if($member && $member->exists()) {
+                /** @var OneSignalSignupApi $api */
                 $api = Injector::inst()->get(OneSignalSignupApi::class);
                 $outcome = $api->addExternalUserIdToUser($this->OneSignalUserID, $member);
                 if(OneSignalSignupApi::test_success($outcome)) {
@@ -169,6 +170,7 @@ class Subscriber extends DataObject
     {
         parent::onBeforeDelete();
         if($this->OneSignalUserID) {
+            /** @var OneSignalSignupApi $api */
             $api = Injector::inst()->get(OneSignalSignupApi::class);
             $api->deleteDevice($this->OneSignalUserID);
         }

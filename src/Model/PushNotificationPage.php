@@ -27,7 +27,7 @@ use SilverStripe\Security\Group;
 
 class PushNotificationPage extends Page
 {
-    public const ONE_SIGNAL_INIT_FILE_NAME = 'OneSignalSDKWorker.js';
+    public const ONESIGNAL_INIT_FILE_NAME = 'OneSignalSDKWorker.js';
 
     private static $table_name = 'PushNotificationPage';
 
@@ -140,9 +140,9 @@ class PushNotificationPage extends Page
                     [
                         LiteralField::create(
                             'OneSignalInfo',
-                            '<h2>One Signal</h2>
+                            '<h2>OneSignal</h2>
                             <p>
-                                Please access one signal to manage your push notifications:
+                                Please access OneSignal to manage your push notifications:
                                 <br />
                                 <a href="https://app.onesignal.com/apps/new" target="_blank">Create a new app</a>
                                 </p>
@@ -156,9 +156,9 @@ class PushNotificationPage extends Page
                     [
                         LiteralField::create(
                             'OneSignalInfo',
-                            '<h2>One Signal</h2>
+                            '<h2>OneSignal</h2>
                             <p>
-                                Please access one signal to manage your push notifications:
+                                Please access OneSignal to manage your push notifications:
                                 <br />
                                 <a href="https://dashboard.onesignal.com/apps/'.$this->getOneSignalKey().'/settings/webpush/configure" target="_blank" rel="noopener noreferrer">Configure (with care!)</a>
                                 <br />
@@ -182,7 +182,7 @@ class PushNotificationPage extends Page
                         'OneSignalWorkerInfo',
                         '
                         <p class="message warning">
-                            Please make sure to review your <a href="/'.self::ONE_SIGNAL_INIT_FILE_NAME.'">'.self::ONE_SIGNAL_INIT_FILE_NAME.'</a> file and adjust as required.
+                            Please make sure to review your <a href="/'.self::ONESIGNAL_INIT_FILE_NAME.'">'.self::ONESIGNAL_INIT_FILE_NAME.'</a> file and adjust as required.
                             This page may write to this file. This file currently is '.($accessible ? '' : 'not').' writeable.
                         </p>'
                     )
@@ -241,7 +241,7 @@ class PushNotificationPage extends Page
 
     protected function OneSignalSDKWorkerPath(): string
     {
-        return Controller::join_links(BASE_PATH, 'public', self::ONE_SIGNAL_INIT_FILE_NAME);
+        return Controller::join_links(BASE_PATH, 'public', self::ONESIGNAL_INIT_FILE_NAME);
     }
     protected function removeGetVariables(string $url): string
     {
@@ -331,11 +331,11 @@ class PushNotificationPage extends Page
                     Controller::join_links(
                         Director::baseFolder(),
                         '/vendor/sunnysideup/push-notifications/client/dist/third-party/',
-                        self::ONE_SIGNAL_INIT_FILE_NAME
+                        self::ONESIGNAL_INIT_FILE_NAME
                     ),
                     Controller::join_links(
                         PUBLIC_PATH,
-                        self::ONE_SIGNAL_INIT_FILE_NAME
+                        self::ONESIGNAL_INIT_FILE_NAME
                     ),
                 );
             } catch (Exception $e) {

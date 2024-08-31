@@ -9,6 +9,7 @@ use SilverStripe\Forms\GridField\GridFieldConfig_RecordViewer;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\ORM\DataExtension;
 use Sunnysideup\PushNotifications\Api\OneSignalSignupApi;
+use Sunnysideup\PushNotifications\Model\PushNotification;
 use Sunnysideup\PushNotifications\Model\PushNotificationPage;
 
 /**
@@ -33,28 +34,50 @@ class GroupExtension extends DataExtension
         'getBreadcrumbsSimple' => 'Varchar',
     ];
 
-    public function getBreadcrumbsSimple()
+    private static $belongs_many_many = [
+        'PushNotifications' => PushNotification::class,
+    ];
+
+    public function getBreadcrumbsSimple(): string
     {
-        return $this->getOwner()->getBreadcrumbs(' » ');
+        return $this->getOwner()->getBreadcrumbs(' » ') . ' (' . $this->getOwner()->Members()->count() . ')';
     }
 
     public function onBeforeWrite()
     {
         $owner = $this->getOwner();
-        $api = Injector::inst()->get(OneSignalSignupApi::class);
-        $outcome = $api->createSegmentBasedOnGroup($owner);
-        if(OneSignalSignupApi::test_success($outcome)) {
-            $owner->OneSignalSegmentID = $outcome['id'] ?? '';
-            $owner->OneSignalSegmentNote = 'Successfully added segment for group ' . $owner->Title;
-        } else {
-            $owner->OneSignalSegmentNote = OneSignalSignupApi::get_error($outcome);
+        if($owner->hasOneSignalSegment()) {
+            if($owner->hasUnsentOneSignalMessages()) {
+                /** @var OneSignalSignupApi $api */
+                $api = Injector::inst()->get(OneSignalSignupApi::class);
+                $outcome = $api->createSegmentBasedOnGroup($owner);
+                if(OneSignalSignupApi::test_success($outcome)) {
+                    $owner->OneSignalSegmentID = OneSignalSignupApi::test_id($outcome);
+                    $owner->OneSignalSegmentNote = 'Succesfully connected to OneSignal';
+                } else {
+                    $owner->OneSignalSegmentID = '';
+                    $owner->OneSignalSegmentNote = OneSignalSignupApi::get_error($outcome);
+                }
+            } else {
+                $this->removeOneSignalSegment();
+            }
         }
+
     }
 
 
     public function onBeforeDelete()
     {
+        $this->removeOneSignalSegment();
+
+    }
+
+    protected function removeOneSignalSegment()
+    {
         $owner = $this->getOwner();
+        $owner->OneSignalSegmentID = '';
+        $owner->OneSignalSegmentNote = '';
+        /** @var OneSignalSignupApi $api */
         $api = Injector::inst()->get(OneSignalSignupApi::class);
         $api->deleteSegmentBasedOnGroup($owner);
     }
@@ -75,4 +98,18 @@ class GroupExtension extends DataExtension
         );
         return $fields;
     }
+
+    public function hasOneSignalSegment(): bool
+    {
+        $owner = $this->getOwner();
+        return $owner->OneSignalSegmentID ? true : false;
+    }
+
+    public function hasUnsentOneSignalMessages(): bool
+    {
+        $owner = $this->getOwner();
+        return $owner->PushNotifications()->filter(['Sent' => 0])->count() ? true : false;
+    }
+
+
 }
