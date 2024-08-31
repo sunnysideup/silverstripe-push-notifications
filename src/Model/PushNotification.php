@@ -90,6 +90,7 @@ class PushNotification extends DataObject
 
     private static $field_labels = [
         'Title' => 'Title',
+        'TestOnly' => 'Only used as test',
         'Content' => 'Short message',
         'AdditionalInfo' => 'Website only info',
         'ProviderClass' => 'How it is send',
@@ -148,15 +149,33 @@ class PushNotification extends DataObject
         $fields = parent::getCMSFields();
         if($this->isOverMaxOfNumberOfUnsentNotifications()) {
             $fields->unshift(
-                HeaderField::create(
+                LiteralField::create(
                     'MaxUnsentMessages',
                     _t(
                         'Push.MAXUNSENTMESSAGES',
-                        '
+                        '<p class="message warning">
                             You have reached the maximum number of unsent messages.
                             Please send some before creating more.
                             This is a safety measure to prevent spamming.
-                        '
+                        </p>'
+                    )
+                )
+            );
+        }
+        if($this->canEdit() && ! $this->canSend()) {
+            $fields->unshift(
+                LiteralField::create(
+                    'CanEditCanSendInfo',
+                    _t(
+                        'Push.CANINFOCANSENDINFO',
+                        '<p class="message warning">
+                            To send this message, you need to have the following:
+
+                            (1). A valid provider configured.
+                            (2). You have selected at least one recipient.
+                            (3). The message is not blank (Title and Short Message are required).
+                            (4). The message is not scheduled in the past.
+                        </p>'
                     )
                 )
             );
@@ -359,7 +378,7 @@ class PushNotification extends DataObject
 
     public function canSend($member = null)
     {
-        return ! $this->HasExternalProvider() && ! $this->Sent && $this->canEdit($member) && $this->getProvider() && $this->HasRecipients();
+        return ! $this->Sent && $this->canEdit($member) && $this->getProvider() && $this->HasRecipients();
     }
 
     public function HasRecipients(): bool
@@ -404,7 +423,7 @@ class PushNotification extends DataObject
     {
         $result = parent::validate();
 
-        if (! $this->Sent && $this->ScheduledAt && strtotime($this->ScheduledAt) < time()) {
+        if (! $this->Sent && $this->IsScheduledInThePast()) {
             $result->addFieldError(
                 'ScheduledAt',
                 _t(
@@ -413,7 +432,7 @@ class PushNotification extends DataObject
                 )
             );
         }
-        if (! $this->HasExternalProvider() && ! $this->getProvider()) {
+        if (! $this->getProvider()) {
             $result->addFieldError(
                 'Provider',
                 _t(
@@ -435,6 +454,12 @@ class PushNotification extends DataObject
     }
 
     private $resave = false;
+
+    protected function IsScheduledInThePast(): bool
+    {
+
+        return $this->ScheduledAt && strtotime($this->ScheduledAt) < time();
+    }
 
     protected function onBeforeWrite()
     {
@@ -619,14 +644,19 @@ class PushNotification extends DataObject
     public function ScheduledAtNice(?string $alternativeTime = ''): string
     {
         $date = $this->ScheduledAtDateTimeInterface($alternativeTime);
-
+        if($date) {
+            return $date->format('D M d Y H:i:s \G\M\TO (T)');
+        }
+        return 'No date set';
         // Format the timestamp
-        return $date->format('D M d Y H:i:s \G\M\TO (T)');
     }
 
-    public function ScheduledAtDateTimeInterface(?string $alternativeTime = ''): DateTimeInterface
+    public function ScheduledAtDateTimeInterface(?string $alternativeTime = ''): ?DateTimeInterface
     {
         $timeAsString = $alternativeTime ?: $this->ScheduledAt;
+        if(! $timeAsString) {
+            return null;
+        }
         return new DateTime($timeAsString);
 
     }

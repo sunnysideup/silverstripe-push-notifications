@@ -26,18 +26,18 @@ class UpdateOneSignal extends BuildTask
     {
         Environment::increaseTimeLimitTo(3600);
         Environment::increaseMemoryLimitTo('512M');
-        // $this->header('WRITING GROUPS');
-        // $groups = Group::get()->filter(['OneSignalSegmentID:not' => ['', null, 0]]);
-        // foreach($groups as $group) {
-        //     $this->outcome('Group: ' . $group->getBreadcrumbsSimple());
-        //     $group->write();
-        // }
-        // $this->header('WRITING SUBSCRIPTIONS');
-        // $subscribers = Subscriber::get()->filter(['OneSignalUserID:not' => ['', null, 0]]);
-        // foreach($subscribers as $subscriber) {
-        //     $this->outcome('Writing: ' . $subscriber->Member()?->Email, ' - '. $subscriber->OneSignalUserID);
-        //     $subscriber->write();
-        // }
+        $this->header('WRITING GROUPS');
+        $groups = Group::get()->filter(['OneSignalSegmentID:not' => ['', null, 0]]);
+        foreach($groups as $group) {
+            $this->outcome('Group: ' . $group->getBreadcrumbsSimple());
+            $group->write();
+        }
+        $this->header('WRITING SUBSCRIPTIONS');
+        $subscribers = Subscriber::get()->filter(['OneSignalUserID:not' => ['', null, 0]]);
+        foreach($subscribers as $subscriber) {
+            $this->outcome('Writing: ' . $subscriber->Member()?->Email, ' - '. $subscriber->OneSignalUserID);
+            $subscriber->write();
+        }
         $this->header('WRITING NOTIFICATIONS');
         /** @var OneSignalSignupApi $api */
         $api = Injector::inst()->get(OneSignalSignupApi::class);
@@ -49,7 +49,7 @@ class UpdateOneSignal extends BuildTask
                 $this->outcome('ERROR: ' . ' no id for '.print_r($oneSignalNotification, 1));
                 continue;
             }
-            $this->outcome('Notification: ' . $oneSignalNotification['id']);
+            $this->outcome('Checking Notification: ' . $oneSignalNotification['id']);
             $filter = ['OneSignalNotificationID' => $oneSignalNotification['id']];
             $notification = PushNotification::get()->filter($filter)->first();
             if(! $notification) {

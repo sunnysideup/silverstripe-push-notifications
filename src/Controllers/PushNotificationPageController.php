@@ -118,7 +118,14 @@ class PushNotificationPageController extends ContentController
     }
     public function getPushNotifications()
     {
-        $notifications = PushNotification::get()->filter('Sent', 1)->sort('SentAt', 'DESC');
+        $notifications = PushNotification::get()
+            ->filter(
+                [
+                    'Sent' => true,
+                    'TestOnly' => false,
+                ]
+            )
+            ->sort('SentAt', 'DESC');
         $output = ArrayList::create();
 
         foreach ($notifications as $notification) {

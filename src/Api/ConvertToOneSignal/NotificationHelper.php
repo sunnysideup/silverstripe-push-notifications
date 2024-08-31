@@ -88,6 +88,7 @@ class NotificationHelper
         $oneSignalNotification['hasErrors'] = (bool) ($oneSignalNotification['errored'] ?? true);
         $oneSignalNotification['successfulDeliveries'] = (int) ($oneSignalNotification['successful'] ?? 0);
         $oneSignalNotification['completedAt'] = $localDateTime;
+        $oneSignalNotification['sent'] = (bool) ($localDateTime ? true : false);
         // $oneSignalNotification['includedSegments'] = implode(',', $oneSignalNotification['included_segments'] ?? []);
         // $oneSignalNotification['excludedSegments'] = implode(',', $oneSignalNotification['excluded_segments'] ?? []);
         // $transformedArray = $this->flattenArray($oneSignalNotification);
@@ -108,6 +109,7 @@ class NotificationHelper
         'hasErrors' => 'HasSendingErrors',
         'successfulDeliveries' => 'OneSignalNumberOfDeliveries',
         'completedAt' => 'SentAt',
+        'sent' => 'Sent',
     ];
 
 
