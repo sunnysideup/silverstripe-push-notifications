@@ -266,6 +266,7 @@ class PushNotificationPage extends Page
     {
         return Controller::join_links(BASE_PATH, 'public', self::ONESIGNAL_INIT_FILE_NAME);
     }
+
     protected function removeGetVariables(string $url): string
     {
         $parsedUrl = parse_url($url);

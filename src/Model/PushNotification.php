@@ -169,12 +169,7 @@ class PushNotification extends DataObject
                     _t(
                         'Push.CANINFOCANSENDINFO',
                         '<p class="message warning">
-                            To send this message, you need to have the following:
-
-                            (1). A valid provider configured.
-                            (2). You have selected at least one recipient.
-                            (3). The message is not blank (Title and Short Message are required).
-                            (4). The message is not scheduled in the past.
+                            To send this message, you need to have at least one valid recipient selected.
                         </p>'
                     )
                 )

@@ -31,6 +31,9 @@ abstract class PushNotificationProvider
     abstract public function sendPushNotification(PushNotification $notification): bool;
     public function sendingComplete(PushNotification $notification): bool
     {
+        if($notification->Sent) {
+            return true;
+        }
         return $notification->SubscriberMessages()->count() >= $notification->getRecipientsCount();
     }
 
