@@ -28,7 +28,7 @@ class SubscriberMessage extends DataObject
         $obj = self::create();
         $obj->MemberID = $member->ID;
         $obj->PushNotificationID = $pushNotification->ID;
-        if ($subscriber instanceof \Sunnysideup\PushNotifications\Model\Subscriber) {
+        if ($subscriber instanceof Subscriber) {
             $obj->SubscriberID = $subscriber->ID;
         }
         $obj->write();

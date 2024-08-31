@@ -8,6 +8,7 @@ use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridFieldConfig_RecordViewer;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\ORM\DataExtension;
+use Sunnysideup\PushNotifications\Api\ConvertToOneSignal\GroupHelper;
 use Sunnysideup\PushNotifications\Api\OneSignalSignupApi;
 use Sunnysideup\PushNotifications\Model\PushNotification;
 use Sunnysideup\PushNotifications\Model\PushNotificationPage;
@@ -51,13 +52,13 @@ class GroupExtension extends DataExtension
                 /** @var OneSignalSignupApi $api */
                 $api = Injector::inst()->get(OneSignalSignupApi::class);
                 $outcome = $api->createSegmentBasedOnGroup($owner);
-                if(OneSignalSignupApi::test_success($outcome)) {
-                    $owner->OneSignalSegmentID = OneSignalSignupApi::get_id_from_outcome($outcome);
-                    $owner->OneSignalSegmentNote = 'Succesfully connected to OneSignal';
-                } else {
-                    $owner->OneSignalSegmentID = '';
-                    $owner->OneSignalSegmentNote = OneSignalSignupApi::get_error($outcome);
-                }
+                $goodResult = $api->processResults(
+                    $owner,
+                    $outcome,
+                    'OneSignalSegmentID',
+                    'OneSignalSegmentNote',
+                    'Could not add OneSignal segment'
+                );
             } else {
                 $this->removeOneSignalSegment();
             }
@@ -94,6 +95,8 @@ class GroupExtension extends DataExtension
             [
                 ReadonlyField::create('OneSignalSegmentID', 'OneSignal Segment ID'),
                 ReadonlyField::create('OneSignalSegmentNote', 'OneSignal Segment Note'),
+                ReadonlyField::create('NameInOneSignal', 'Name in OneSignal', $owner->getNameInOneSignal()),
+                ReadonlyField::create('CodeInOneSignal', 'Code in OneSignal', $owner->getCodeInOneSignal()),
             ]
         );
         return $fields;
@@ -111,5 +114,15 @@ class GroupExtension extends DataExtension
         return $owner->PushNotifications()->filter(['Sent' => 0])->count() ? true : false;
     }
 
+
+    public function getNameInOneSignal(): string
+    {
+        return GroupHelper::singleton()->group2oneSignalName($this->getOwner());
+    }
+
+    public function getCodeInOneSignal(): string
+    {
+        return GroupHelper::singleton()->group2oneSignalCode($this->getOwner());
+    }
 
 }

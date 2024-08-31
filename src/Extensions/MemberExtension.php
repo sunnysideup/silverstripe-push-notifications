@@ -7,7 +7,9 @@ use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridFieldAddNewButton;
 use SilverStripe\Forms\GridField\GridFieldConfig_RecordEditor;
 use SilverStripe\Forms\GridField\GridFieldConfig_RecordViewer;
+use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\ORM\DataExtension;
+use Sunnysideup\PushNotifications\Api\ConvertToOneSignal\MemberHelper;
 use Sunnysideup\PushNotifications\Model\PushNotificationPage;
 use Sunnysideup\PushNotifications\Model\Subscriber;
 use Sunnysideup\PushNotifications\Model\SubscriberMessage;
@@ -61,7 +63,6 @@ class MemberExtension extends DataExtension
     public function updateCMSFields(FieldList $fields)
     {
         $owner = $this->getOwner();
-        $page = PushNotificationPage::get_one();
         $fields->removeFieldFromTab('Root', 'PushNotificationSubscribers');
         $fields->removeFieldFromTab('Root', 'SubscriberMessages');
         $fields->addFieldsToTab(
@@ -79,8 +80,23 @@ class MemberExtension extends DataExtension
                     $owner->SubscriberMessages(),
                     GridFieldConfig_RecordViewer::create()
                 ),
+                ReadonlyField::create('CodeInOneSignal', 'Code in OneSignal', $owner->getCodeInOneSignal()),
+                ReadonlyField::create('TagsInOneSignal', 'Tags in OneSignal', $owner->getTagsInOneSignal()),
             ]
         );
         return $fields;
+    }
+
+    public function getCodeInOneSignal(): string
+    {
+        $owner = $this->getOwner();
+        return MemberHelper::singleton()->member2externalUserId($owner);
+    }
+
+    public function getTagsInOneSignal(): string
+    {
+        $owner = $this->getOwner();
+        $array = MemberHelper::singleton()->memberGroups2tagCodes($owner);
+        return implode(', ', array_keys($array));
     }
 }

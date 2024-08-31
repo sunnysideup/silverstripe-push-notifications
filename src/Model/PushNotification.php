@@ -19,6 +19,7 @@ use SilverStripe\ORM\ValidationResult;
 use SilverStripe\Security\Group;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Security;
+use Sunnysideup\PushNotifications\Api\ConvertToOneSignal\LinkHelper;
 use Sunnysideup\PushNotifications\Api\Providers\PushNotificationOneSignal;
 use Sunnysideup\PushNotifications\Api\PushNotificationProvider;
 use Sunnysideup\PushNotifications\ErrorHandling\PushException;
@@ -139,7 +140,11 @@ class PushNotification extends DataObject
                     'MaxUnsentMessages',
                     _t(
                         'Push.MAXUNSENTMESSAGES',
-                        'You have reached the maximum number of unsent messages. Please send some before creating more.'
+                        '
+                            You have reached the maximum number of unsent messages.
+                            Please send some before creating more.
+                            This is a safety measure to prevent spamming.
+                        '
                     )
                 )
             );
@@ -269,14 +274,28 @@ class PushNotification extends DataObject
         if($subscriberField) {
             $subscriberField->getConfig()->removeComponentsByType(GridFieldAddExistingAutocompleter::class);
         }
-        // OneSignal connection
-        $fields->addFieldsToTab(
-            'Root.OneSignal',
-            [
-                ReadonlyField::create('OneSignalNotificationID', 'OneSignal Notification ID'),
-                ReadonlyField::create('OneSignalNotificationNote', 'OneSignal Notification Note'),
-            ]
-        );
+        if($this->IsOneSignal()) {
+            // OneSignal connection
+            $fields->addFieldsToTab(
+                'Root.OneSignal',
+                [
+                    ReadonlyField::create('OneSignalNotificationID', 'OneSignal Notification ID'),
+                    ReadonlyField::create('OneSignalNotificationNote', 'OneSignal Notification Note'),
+                ]
+            );
+            if($this->OneSignalNotificationID) {
+                $fields->addFieldToTab(
+                    'Root.OneSignal',
+                    LiteralField::create(
+                        'OneSignalLink',
+                        LinkHelper::singleton()->createHtmlLink(
+                            $this->getOneSignalLink(),
+                            'View on OneSignal',
+                        )
+                    )
+                );
+            }
+        }
         return $fields;
     }
 
@@ -551,8 +570,21 @@ class PushNotification extends DataObject
 
     public function Link()
     {
-        $link = PushNotificationPage::get()->first()?->Link() ?: '/';
+        $link = PushNotificationPage::get_one()?->Link() ?: '/';
         return Director::absoluteURL($link);
+    }
+
+    public function AbsoluteLink()
+    {
+        return $this->Link();
+    }
+
+    public function getOneSignalLink(): string
+    {
+        if($this->OneSignalNotificationID) {
+            return LinkHelper::singleton()->notificationLink($this->OneSignalNotificationID);
+        }
+        return '';
     }
 
     public function getCMSValidator()
@@ -571,12 +603,18 @@ class PushNotification extends DataObject
         return 'push';
     }
 
-    public function ScheduledAtNice(): string
+    public function ScheduledAtNice(?string $alternativeTime = ''): string
     {
-        $date = new DateTime($this->ScheduledAt);
+        $timeAsString = $alternativeTime ?: $this->ScheduledAt;
+        $date = new DateTime($timeAsString);
 
         // Format the timestamp
         return $date->format('D M d Y H:i:s \G\M\TO (T)');
+    }
+
+    public function IsOneSignal(): bool
+    {
+        return $this->ProviderClass === PushNotificationOneSignal::class;
     }
 
 }

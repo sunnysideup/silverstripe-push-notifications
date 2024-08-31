@@ -14,6 +14,8 @@ class NotificationHelper
 
     private static string $default_scheduled_at_string = '1 hour';
 
+    private static bool $use_segments_to_target_groups = false;
+
     public function notification2oneSignal(PushNotification $pushNotification): array
     {
         $targetChannel = $pushNotification->OneSignalTargetChannel();
@@ -30,7 +32,7 @@ class NotificationHelper
             ],
             // 'data' => ['foo' => 'bar'],
             // 'isChrome' => true,
-            'send_after' => new DateTime($sendAfterString),
+            'send_after' => $pushNotification->ScheduledAtNice($sendAfterString),
             "target_channel" => $targetChannel,
             "url" => $pushNotification->AbsoluteLink(),
         ];
@@ -40,17 +42,22 @@ class NotificationHelper
                 'external_id' => $aliases,
             ];
         } else {
-            $filter = GroupHelper::singleton()->groups2oneSignalFilter($pushNotification->RecipientGroups());
-            if(! empty($filter)) {
-                $dataForNotification['filters'] = $filter;
-            } else {
+            if($this->config()->use_segments_to_target_groups) {
                 $segments = GroupHelper::singleton()->groups2oneSignalSegmentFilter($pushNotification->RecipientGroups());
                 if(! empty($segments)) {
                     $dataForNotification['included_segments'] = $segments;
                 } else {
-                    user_error('No recipients found for push notification');
+                    $dataForNotification['included_segments'] = ['do not send to anybody'];
+                }
+            } else {
+                $filters = GroupHelper::singleton()->groups2oneSignalFilter($pushNotification->RecipientGroups());
+                if(! empty($filters)) {
+                    $dataForNotification['filters'] = $filters;
+                } else {
+                    $dataForNotification['included_segments'] = ['do not send to anybody'];
                 }
             }
+
         }
         return $dataForNotification;
     }

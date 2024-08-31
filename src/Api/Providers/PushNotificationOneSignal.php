@@ -28,13 +28,22 @@ class PushNotificationOneSignal extends PushNotificationProvider
         /** @var OneSignalSignupApi $api */
         $api = Injector::inst()->get(OneSignalSignupApi::class);
         $outcome = $api->doSendNotification($notification);
-        return $api->processResults(
+        $isGoodResult = $api->processResults(
             $notification,
             $outcome,
             'OneSignalNotificationID',
             'OneSignalNotificationNote',
             'Could not add OneSignal notification'
         );
+        foreach ($notification->getRecipients() as $recipient) {
+            $subscriptions = $recipient->PushNotificationSubscribers();
+            foreach ($subscriptions as $subscriber) {
+                $log = SubscriberMessage::create_new($recipient, $notification, $subscriber);
+                $log->Success = $isGoodResult;
+                $log->write();
+            }
+        }
+        return $isGoodResult;
     }
 
 

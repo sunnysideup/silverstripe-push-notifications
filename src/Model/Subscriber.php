@@ -72,7 +72,7 @@ class Subscriber extends DataObject
 
     public function getIsOneSignalUser(): DBBoolean
     {
-        return DBBoolean::create_field('Boolean', $this->OneSignalUserID ? true : false);
+        return DBBoolean::create_field('Boolean', $this->IsOneSignalSubscription());
     }
 
     /**
@@ -103,14 +103,7 @@ class Subscriber extends DataObject
     public function getCMSFields()
     {
         $fields = parent::getCMSFields();
-        if(! Director::isDev()) {
-            foreach(['OneSignalUserID', 'OneSignalUserNote', 'OneSignalUserTagsNote'] as $fieldName) {
-                $fields->replaceField(
-                    $fieldName,
-                    ReadonlyField::create($fieldName, $fields->dataFieldByName($fieldName)->Title())
-                );
-            }
-        }
+
         // $fields->removeByName('Subscription');
         $fields->replaceField(
             'Subscribed',
@@ -127,12 +120,28 @@ class Subscriber extends DataObject
             ],
             'OneSignalUserID'
         );
+        if($this->IsOneSignalSubscription()) {
+            foreach(['OneSignalUserID', 'OneSignalUserNote', 'OneSignalUserTagsNote'] as $fieldName) {
+                $fields->replaceField(
+                    $fieldName,
+                    ReadonlyField::create($fieldName, $fields->dataFieldByName($fieldName)->Title())
+                );
+            }
+            $fields->addFieldsToTab(
+                'Root.RelatedMember',
+                [
+                    ReadonlyField::create('OneSignalUserTagsNote', 'Update Notes'),
+                ]
+            );
+        } else {
+            $fields->removeByName('OneSignalUserID');
+            $fields->removeByName('OneSignalUserNote');
+            $fields->removeByName('OneSignalUserTagsNote');
+        }
         $fields->addFieldsToTab(
-            'Root.Main',
+            'Root.RelatedMember',
             [
-                HeaderField::create('OneSignalUserHeader', 'Related Member'),
-                ReadonlyField::create('Groups', 'Groups', implode(', ', $this->Member()->Groups()->column('Title'))),
-                ReadonlyField::create('OneSignalUserTagsNote', 'Update Notes'),
+                ReadonlyField::create('Groups', 'Member Groups', implode(', ', $this->Member()->Groups()->column('Title'))),
             ]
         );
         return $fields;
@@ -169,10 +178,15 @@ class Subscriber extends DataObject
     protected function onBeforeDelete()
     {
         parent::onBeforeDelete();
-        if($this->OneSignalUserID) {
+        if($this->IsOneSignalSubscription()) {
             /** @var OneSignalSignupApi $api */
             $api = Injector::inst()->get(OneSignalSignupApi::class);
             $api->deleteDevice($this->OneSignalUserID);
         }
+    }
+
+    public function IsOneSignalSubscription(): bool
+    {
+        return $this->OneSignalUserID ? true : false;
     }
 }
