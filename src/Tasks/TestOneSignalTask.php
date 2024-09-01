@@ -87,32 +87,39 @@ class TestOneSignalTask extends BuildTask
         $count = $notifications['total_count'] ?? 0;
         $this->outcome('There are ' . $count . ' notifications');
         if($count > 0) {
-            $id = $notifications['notifications'][0]['id'];
-            if($id) {
-                $this->header('getOneNotification - first one - with id: '.$id);
-                $this->outcome($this->api->getOneNotification($id));
-            }
-            $id = $notifications['notifications'][$count - 1]['id'];
-            if($id) {
-                $this->header('getOneNotification - last one - with id first one: '.$id);
-                $this->outcome($this->api->getOneNotification($id));
+            $shown = 0;
+            $tries = 0;
+            while($shown < 3 && $tries < 3) {
+                $pos = rand(0, $count - 1);
+                $id = $notifications['notifications'][$pos]['id'] ?? '';
+                if($id) {
+                    $shown++;
+                    $this->header('getOneNotification - position '.($pos + 1).' - with id: '.$id);
+                    $this->outcome($this->api->getOneNotification($id));
+                } else {
+                    $tries++;
+                }
             }
         }
 
         $this->header('getAllDevices');
         $devices = $this->api->getAllDevices();
+        $shown++;
         $count = $devices['total_count'] ?? 0;
-        $this->outcome('There are ' . $count . ' devices');
+        $this->outcome('There are ' . $count . ' devices subscribed');
         if($count > 0) {
-            $id = $devices['players'][0]['id'];
-            if($id) {
-                $this->header('getOneDevice - first one - with id: '.$id);
-                $this->outcome($this->api->getOneDevice($id));
-            }
-            $id = $notifications['players'][$count - 1]['id'];
-            if($id) {
-                $this->header('getOneDevice - last one - with id first one: '.$id);
-                $this->outcome($this->api->getOneDevice($id));
+            $shown = 0;
+            $tries = 0;
+            while($shown < 3 && $tries < 3) {
+                $pos = rand(0, $count - 1);
+                $id = $devices['players'][$pos]['id'] ?? '';
+                if($id) {
+                    $shown++;
+                    $this->header('getOneDevice - position '.($pos + 1).' - with id: '.$id);
+                    $this->outcome($this->api->getOneDevice($id));
+                } else {
+                    $tries++;
+                }
             }
         }
 

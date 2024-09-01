@@ -175,7 +175,7 @@ class Subscriber extends DataObject
             $api = Injector::inst()->get(OneSignalSignupApi::class);
             $outcome =  $api->getOneDevice($this->OneSignalUserID);
             if(OneSignalSignupApi::test_success($outcome)) {
-                $this->OneSignalUserNote;
+                $this->Subscribed = $outcome['invalid_identifier'] ? false : true;
             }
             if($member && $member->exists()) {
                 $outcome = $api->addExternalUserIdToUser($this->OneSignalUserID, $member);
