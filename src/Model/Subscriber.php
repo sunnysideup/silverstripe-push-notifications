@@ -12,6 +12,7 @@ use SilverStripe\ORM\FieldType\DBBoolean;
 use SilverStripe\ORM\FieldType\DBHTMLText;
 use SilverStripe\Security\Member;
 use Sunnysideup\PushNotifications\Api\ConvertToOneSignal\LinkHelper;
+use Sunnysideup\PushNotifications\Api\ConvertToOneSignal\MemberHelper;
 use Sunnysideup\PushNotifications\Api\OneSignalSignupApi;
 
 /**
@@ -32,7 +33,7 @@ class Subscriber extends DataObject
 
     private static $db = [
         'Subscription' => 'Text',
-        'Subscribed' => 'Boolean',
+        'Subscribed' => 'Boolean(1)',
         'OneSignalUserID' => 'Varchar(64)',
         'OneSignalUserNote' => 'Varchar(255)',
         'OneSignalUserTagsNote' => 'Varchar(255)',
@@ -175,21 +176,29 @@ class Subscriber extends DataObject
             $api = Injector::inst()->get(OneSignalSignupApi::class);
             $outcome =  $api->getOneDevice($this->OneSignalUserID);
             if(OneSignalSignupApi::test_success($outcome)) {
-                $this->Subscribed = $outcome['invalid_identifier'] ? false : true;
+                $isInvalid = $outcome['invalid_identifier'] ?? false;
+                $this->Subscribed = $isInvalid ? false : true;
             }
+            $externalUserId = $outcome['external_user_id'] ?? '';
             if($member && $member->exists()) {
-                $outcome = $api->addExternalUserIdToUser($this->OneSignalUserID, $member);
-                if(OneSignalSignupApi::test_success($outcome)) {
-                    $this->OneSignalUserNote = 'Succesfully connected to OneSignal';
+                $expectedExternalUserId = MemberHelper::singleton()->member2externalUserId($member);
+                if($externalUserId !== $expectedExternalUserId) {
+                    $outcome = $api->addExternalUserIdToUser($this->OneSignalUserID, $member);
+                    if(OneSignalSignupApi::test_success($outcome)) {
+                        $this->OneSignalUserNote = 'Succesfully connected to OneSignal';
+                        $externalUserId = $expectedExternalUserId;
+                    } else {
+                        $this->OneSignalUserNote = OneSignalSignupApi::get_error($outcome);
+                        $this->OneSignalUserTagsNote = 'Error: could not add external user id so could not add tags';
+                    }
+                }
+                if($externalUserId == $expectedExternalUserId) {
                     $outcome = $api->addTagsToUserBasedOnGroups($member);
                     if(OneSignalSignupApi::test_success($outcome)) {
                         $this->OneSignalUserTagsNote = 'Sucessfully added group tags to user';
                     } else {
                         $this->OneSignalUserTagsNote = OneSignalSignupApi::get_error($outcome);
                     }
-                } else {
-                    $this->OneSignalUserNote = OneSignalSignupApi::get_error($outcome);
-                    $this->OneSignalUserTagsNote = 'Error: could not add external user id so could not add tags';
                 }
             } else {
                 $this->OneSignalUserNote = 'Error: No member found';
