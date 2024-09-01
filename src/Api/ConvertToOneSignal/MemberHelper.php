@@ -8,6 +8,7 @@ use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\ManyManyList;
 use SilverStripe\Security\Group;
 use SilverStripe\Security\Member;
+use Sunnysideup\PushNotifications\Model\Subscriber;
 
 class MemberHelper
 {
@@ -43,7 +44,9 @@ class MemberHelper
 
     public function members2oneSignalAliases(DataList|ManyManyList $members): array
     {
-        $includedAliases = [];
+        $memberListIdCondensed = $this->ValidSubscribersBasedOneMemberList($members)
+            ->columnUnique('MemberID');
+        $members = $members->filter(['ID' => $memberListIdCondensed]);
         if($members->count() > 2000) {
             user_error('You are trying to send a message to more than 2000 members. This is not allowed.');
         }
@@ -56,16 +59,21 @@ class MemberHelper
 
     public function members2oneSignalSubscriptionIds(DataList|ManyManyList $members): array
     {
-        $includedSubscriptions = [];
-        if($members->count() > 2000) {
-            user_error('You are trying to send a message to more than 2000 members. This is not allowed.');
-        }
         // note that OneSignal limits tags to 10 per user!
-        foreach($members as $member) {
-            foreach($member->PushNotificationSubscribers() as $subscriber) {
-                $includedSubscriptions[] = $subscriber->OneSignalUserID;
-            }
-        }
+        $includedSubscriptions = $this->ValidSubscribersBasedOneMemberList($members)
+            ->columnUnique('OneSignalUserID');
         return array_filter(array_unique($includedSubscriptions));
+    }
+
+    public function ValidSubscribersBasedOneMemberList(DataList|ManyManyList $members): DataList|ManyManyList
+    {
+        return Subscriber::get()
+            ->filter(
+                [
+                    'MemberID' => $members->columnUnique('ID'),
+                    'OneSignalUserID:not' => [null, '', 0],
+                    'Subscribed' => true,
+                ]
+            )->limit(2000);
     }
 }

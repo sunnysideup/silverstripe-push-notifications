@@ -89,7 +89,7 @@ class PushNotificationVapid extends PushNotificationProvider
         // $subscriptionJsons = [];
 
         foreach ($notification->getRecipients() as $recipient) {
-            $subscriptions = $recipient->PushNotificationSubscribers();
+            $subscriptions = $recipient->ValidForVapidPushNotificationSubscribers();
             foreach ($subscriptions as $subscriber) {
                 $log = SubscriberMessage::create_new($recipient, $notification, $subscriber);
                 if(! $log) {

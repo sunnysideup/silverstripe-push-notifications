@@ -39,7 +39,7 @@ class PushNotificationOneSignal extends PushNotificationProvider
             'Could not add OneSignal notification'
         );
         foreach ($notification->getRecipients() as $recipient) {
-            $subscriptions = $recipient->PushNotificationSubscribers();
+            $subscriptions = $recipient->ValidForOneSignalPushNotificationSubscribers();
             foreach ($subscriptions as $subscriber) {
                 $log = SubscriberMessage::create_new($recipient, $notification, $subscriber);
                 if($log) {

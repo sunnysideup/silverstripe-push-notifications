@@ -7,6 +7,8 @@ use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridFieldConfig_RecordViewer;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\ORM\DataExtension;
+use SilverStripe\ORM\DataList;
+use SilverStripe\ORM\ManyManyList;
 use SilverStripe\Security\Member;
 use Sunnysideup\PushNotifications\Api\ConvertToOneSignal\MemberHelper;
 use Sunnysideup\PushNotifications\Model\Subscriber;
@@ -34,7 +36,7 @@ class MemberExtension extends DataExtension
     {
         $owner = $this->getOwner();
         if($owner->exists()) {
-            $subscribers = $owner->PushNotificationSubscribers();
+            $subscribers = $owner->ValidForOneSignalPushNotificationSubscribers();
             /** @var Subscriber $subscriber */
             foreach ($subscribers as $subscriber) {
                 $subscriber->write();
@@ -83,6 +85,20 @@ class MemberExtension extends DataExtension
             ]
         );
         return $fields;
+    }
+
+    public function ValidForOneSignalPushNotificationSubscribers(): DataList|ManyManyList
+    {
+        $owner = $this->getOwner();
+        return $owner->PushNotificationSubscribers()
+            ->filter(['OneSignalUserID:not' => [null, '', 0], 'Subscribed' => true]);
+    }
+
+    public function ValidForVapidPushNotificationSubscribers(): DataList|ManyManyList
+    {
+        $owner = $this->getOwner();
+        return $owner->PushNotificationSubscribers()
+            ->filter(['OneSignalUserID' => [null, '', 0], 'Subscribed' => true]);
     }
 
     public function getCodeInOneSignal(): string
