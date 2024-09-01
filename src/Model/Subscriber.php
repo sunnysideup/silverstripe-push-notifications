@@ -42,7 +42,7 @@ class Subscriber extends DataObject
     private static $field_labels = [
         'Subscription' => 'Code for subscription',
         'Subscribed' => 'Is Subscribed',
-        'OneSignalUserID' => 'OneSignal User ID',
+        'OneSignalUserID' => 'Subscription ID',
         'OneSignalUserNote' => 'OneSignal User Connection Note',
         'OneSignalUserTagsNote' => 'OneSignal User Tags (Groups) Added',
     ];
@@ -136,7 +136,8 @@ class Subscriber extends DataObject
             $fields->addFieldsToTab(
                 'Root.OneSignal',
                 [
-                    $fields->dataFieldByName('OneSignalUserID')->setReadonly(true),
+                    $fields->dataFieldByName('OneSignalUserID')->setReadonly(true)
+                        ->setTitle('Subscription ID'),
                     $fields->dataFieldByName('OneSignalUserNote')->setReadonly(true),
                     $fields->dataFieldByName('OneSignalUserTagsNote')->setReadonly(true),
                 ]
