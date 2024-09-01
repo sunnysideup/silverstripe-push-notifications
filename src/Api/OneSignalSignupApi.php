@@ -71,6 +71,9 @@ class OneSignalSignupApi
             return true;
         }
         $statusCode = (int) ($outcome['_status_code'] ?? 0);
+        if ($statusCode > 199 && $statusCode < 300) {
+            return true;
+        }
         return false;
     }
 
