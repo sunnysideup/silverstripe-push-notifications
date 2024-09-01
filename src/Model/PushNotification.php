@@ -201,6 +201,7 @@ class PushNotification extends DataObject
                 ))),
             );
         } else {
+            $fields->removeByName('HasSendingErrors');
             if (interface_exists(QueuedJob::class) || $this->HasExternalProvider()) {
                 $fields->insertBefore(
                     'Title',
