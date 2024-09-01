@@ -5,11 +5,13 @@ namespace Sunnysideup\PushNotifications\Model;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Forms\HeaderField;
+use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBBoolean;
 use SilverStripe\ORM\FieldType\DBHTMLText;
 use SilverStripe\Security\Member;
+use Sunnysideup\PushNotifications\Api\ConvertToOneSignal\LinkHelper;
 use Sunnysideup\PushNotifications\Api\OneSignalSignupApi;
 
 /**
@@ -125,18 +127,26 @@ class Subscriber extends DataObject
             'OneSignalUserID'
         );
         if($this->IsOneSignalSubscription()) {
-            foreach(['OneSignalUserID', 'OneSignalUserNote', 'OneSignalUserTagsNote'] as $fieldName) {
-                $fields->replaceField(
-                    $fieldName,
-                    ReadonlyField::create($fieldName, $fields->dataFieldByName($fieldName)->Title())
-                );
-            }
             $fields->addFieldsToTab(
-                'Root.RelatedMember',
+                'Root.OneSignal',
                 [
-                    ReadonlyField::create('OneSignalUserTagsNote', 'Update Notes'),
+                    $fields->dataFieldByName('OneSignalUserID')->setReadonly(true),
+                    $fields->dataFieldByName('OneSignalUserNote')->setReadonly(true),
+                    $fields->dataFieldByName('OneSignalUserTagsNote')->setReadonly(true),
                 ]
             );
+            if($this->OneSignalUserID) {
+                $fields->addFieldToTab(
+                    'Root.OneSignal',
+                    LiteralField::create(
+                        'OneSignalLink',
+                        LinkHelper::singleton()->createHtmlLink(
+                            $this->getOneSignalLink(),
+                            'View on OneSignal',
+                        )
+                    )
+                );
+            }
         } else {
             $fields->removeByName('OneSignalUserID');
             $fields->removeByName('OneSignalUserNote');
@@ -149,6 +159,11 @@ class Subscriber extends DataObject
             ]
         );
         return $fields;
+    }
+
+    public function getOneSignalLink(): string
+    {
+        return LinkHelper::singleton()->subscriberLink($this->OneSignalUserID);
     }
 
     protected function onBeforeWrite()

@@ -38,11 +38,10 @@ class NotificationHelper
             "target_channel" => $targetChannel,
             "url" => $pushNotification->AbsoluteLink(),
         ];
-        $aliases = MemberHelper::singleton()->members2oneSignalAliases($pushNotification->RecipientMembers());
-        if(! empty($aliases)) {
-            $dataForNotification['include_aliases'] = [
-                'external_id' => $aliases,
-            ];
+        // $aliases = MemberHelper::singleton()->members2oneSignalAliases($pushNotification->RecipientMembers());
+        $subscribtionIds = MemberHelper::singleton()->members2oneSignalSubscriptionIds($pushNotification->RecipientMembers());
+        if(! empty($subscribtionIds)) {
+            $dataForNotification['include_subscription_ids'] = $subscribtionIds;
         } else {
             if($this->config()->use_segments_to_target_groups) {
                 $segments = GroupHelper::singleton()->groups2oneSignalSegmentFilter($pushNotification->RecipientGroups());

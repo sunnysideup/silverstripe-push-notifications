@@ -71,6 +71,17 @@ class LinkHelper
         );
     }
 
+    public function subscriberLink(string $id): string
+    {
+        return Controller::join_links(
+            $this->baseLink(),
+            'apps',
+            Environment::getEnv('SS_ONESIGNAL_APP_ID'),
+            'subscriptions',
+            $id
+        );
+    }
+
     public function sendPushNotificationLink(): string
     {
         return Controller::join_links(

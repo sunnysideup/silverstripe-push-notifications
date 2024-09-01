@@ -53,4 +53,19 @@ class MemberHelper
         }
         return $includedAliases;
     }
+
+    public function members2oneSignalSubscriptionIds(DataList|ManyManyList $members): array
+    {
+        $includedSubscriptions = [];
+        if($members->count() > 2000) {
+            user_error('You are trying to send a message to more than 2000 members. This is not allowed.');
+        }
+        // note that OneSignal limits tags to 10 per user!
+        foreach($members as $member) {
+            foreach($member->PushNotificationSubscribers() as $subscriber) {
+                $includedSubscriptions[] = $subscriber->OneSignalUserID;
+            }
+        }
+        return array_filter(array_unique($includedSubscriptions));
+    }
 }
