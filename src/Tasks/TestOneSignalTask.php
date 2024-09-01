@@ -32,19 +32,22 @@ class TestOneSignalTask extends BuildTask
 
 
         $member = Security::getCurrentUser();
-        $subscription = Subscriber::get()
+        $subscriptions = Subscriber::get()
             ->filter(['OneSignalUserID:not' => ['', null, 0], 'MemberID' => $member->ID])
-            ->sort(['ID' => 'ASC'])
-            ->first();
+            ->sort(['ID' => 'ASC']);
         $group = Group::get()->first();
 
-        if($subscription && $member) {
+        if($subscriptions && $member) {
+            foreach($subscriptions as $subscription) {
+                $this->header('addExternalUserIdToUser: '.$subscription->OneSignalUserID.' - '.$member->Email);
+                $this->outcome($this->api->addExternalUserIdToUser($subscription->OneSignalUserID, $member));
 
-            $this->header('addExternalUserIdToUser: '.$subscription->OneSignalUserID.' - '.$member->Email);
-            $this->outcome($this->api->addExternalUserIdToUser($subscription->OneSignalUserID, $member));
+                $this->header('updateDevice: '.$subscription->OneSignalUserID);
+                $this->outcome($this->api->updateDevice($subscription->OneSignalUserID, ['amount_spent' => 999999.99]));
 
-            $this->header('updateDevice: '.$subscription->OneSignalUserID);
-            $this->outcome($this->api->updateDevice($subscription->OneSignalUserID, ['amount_spent' => 999999.99]));
+                $this->header('getOneDevice: '.$subscription->OneSignalUserID);
+                $this->outcome($this->api->getOneDevice($subscription->OneSignalUserID));
+            }
 
             $this->header('createSegment: test segment');
             $this->outcome($this->api->createSegment('test segment', ['test KEY' => 'test Value']));
@@ -85,8 +88,23 @@ class TestOneSignalTask extends BuildTask
         $this->outcome('There are ' . $count . ' notifications');
         if($count > 0) {
             $id = $notifications['notifications'][0]['id'];
-            $this->header('getOneNotification with id: '.$id);
-            $this->outcome($this->api->getOneNotification($id));
+            if($id) {
+                $this->header('getOneNotification - first one - with id: '.$id);
+                $this->outcome($this->api->getOneNotification($id));
+            }
+            $id = $notifications['notifications'][$count - 1]['id'];
+            if($id) {
+                $this->header('getOneNotification - last one - with id first one: '.$id);
+                $this->outcome($this->api->getOneNotification($id));
+            }
+        }
+
+        $this->header('getAllDevices');
+        $devices = $this->api->getAllDevices();
+        $count = $devices['total_count'] ?? 0;
+        $this->outcome('There are ' . $count . ' devices');
+        if($count > 0) {
+            print_r($devices);
         }
 
         $this->header('THE END');

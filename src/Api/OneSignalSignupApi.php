@@ -273,6 +273,16 @@ class OneSignalSignupApi
     }
 
 
+    public function getAllDevices(): array
+    {
+        return $this->oneSignal->devices()->getAll();
+    }
+
+    public function getOneDevice(string $id): array
+    {
+        return $this->oneSignal->devices()->getOne($id);
+    }
+
     public function getAllNotifications(): array
     {
         return $this->oneSignal->notifications()->getAll();
@@ -281,7 +291,6 @@ class OneSignalSignupApi
     public function getOneNotification(string $id): array
     {
         return $this->oneSignal->notifications()->getOne($id);
-        ;
     }
 
 
