@@ -96,14 +96,14 @@ class Subscriber extends DataObject
     public function canEdit($member = null)
     {
         if(Director::isDev()) {
-            return true;
+            return parent::canEdit($member);
         }
         return false;
     }
 
     public function canDelete($member = null)
     {
-        return true;
+        return parent::canDelete($member);
     }
 
     public function getCMSFields()
