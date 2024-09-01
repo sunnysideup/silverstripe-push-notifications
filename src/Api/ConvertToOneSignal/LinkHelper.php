@@ -15,9 +15,13 @@ class LinkHelper
     private const BASE_LINK = 'https://dashboard.onesignal.com';
 
 
-    public function createHtmlLink(string $link, string $title): string
+    public function createHtmlLink(string $link, string $title, ?bool $isWarning = false): string
     {
-        return '<a href="'.$link.'" target="_blank"  rel="noopener noreferrer">'.$title.'</a>';
+        $link = '<a href="'.$link.'" target="_blank"  rel="noopener noreferrer">'.$title.'</a>';
+        if($isWarning) {
+            $link = '<p class="message warning"><span style="color:red;">'.$link.'</span></ap>';
+        }
+        return $link;
     }
 
     public function createNewAppLink(): string

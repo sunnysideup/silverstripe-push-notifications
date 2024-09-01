@@ -301,6 +301,18 @@ class PushNotification extends DataObject
             $subscriberField->getConfig()->removeComponentsByType(GridFieldAddExistingAutocompleter::class);
         }
         if($this->IsOneSignal()) {
+            if($this->IsScheduledInThePast() === false && $this->OneSignalNotificationID) {
+                $fields->unshift(
+                    LiteralField::create(
+                        'OneSignalLink',
+                        LinkHelper::singleton()->createHtmlLink(
+                            $this->getOneSignalLink(),
+                            'Head to OneSignal now to edit your message before it is sent!',
+                            true
+                        )
+                    )
+                );
+            }
             // OneSignal connection
             $fields->addFieldsToTab(
                 'Root.OneSignal',
