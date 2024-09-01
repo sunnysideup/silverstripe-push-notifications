@@ -165,6 +165,11 @@ class Subscriber extends DataObject
                 ReadonlyField::create('Groups', 'Member Groups', implode(', ', $this->Member()->Groups()->column('Title'))),
             ]
         );
+        $fields->addFieldsToTab('Root.History', [
+            ReadonlyField::create('Created', _t('Push.CREATED', 'Created')),
+            ReadonlyField::create('LastEdited', _t('Push.LASTEDITED', 'Last Edited')),
+        ]);
+
         return $fields;
     }
 

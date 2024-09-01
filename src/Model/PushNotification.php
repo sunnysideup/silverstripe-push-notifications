@@ -90,7 +90,7 @@ class PushNotification extends DataObject
 
     private static $field_labels = [
         'Title' => 'Title',
-        'TestOnly' => 'Only used as test',
+        'TestOnly' => 'Only used as test; make sure you set this before you send so that it can be hidden from a list of notifications.',
         'Content' => 'Short message',
         'AdditionalInfo' => 'Website only info',
         'ProviderClass' => 'How it is send',
@@ -290,8 +290,7 @@ class PushNotification extends DataObject
             );
         }
 
-        $fields->addFieldsToTab('Root.Main', [
-            HeaderField::create('Editing History', _t('Push.EDITING_HISTORY', 'Editing History')),
+        $fields->addFieldsToTab('Root.History', [
             ReadonlyField::create('Created', _t('Push.CREATED', 'Created')),
             ReadonlyField::create('LastEdited', _t('Push.LASTEDITED', 'Last Edited')),
         ]);

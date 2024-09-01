@@ -30,7 +30,7 @@ class SubscriberMessage extends DataObject
 
     public static function create_new(Member $member, PushNotification $pushNotification, ?Subscriber $subscriber = null)
     {
-        if(self::subscriber_message_exists($member, $pushNotification, $subscriber)) {
+        if (self::subscriber_message_exists($member, $pushNotification, $subscriber)) {
             return null;
         }
         $obj = self::create(self::get_filter_for_new($member, $pushNotification, $subscriber));
@@ -44,7 +44,7 @@ class SubscriberMessage extends DataObject
             'MemberID' => $member->ID,
             'PushNotificationID' => $pushNotification->ID,
         ];
-        if($subscriber instanceof Subscriber) {
+        if ($subscriber instanceof Subscriber) {
             $filter['SubscriberID'] = $subscriber->ID;
         }
         return $filter;
@@ -140,6 +140,10 @@ class SubscriberMessage extends DataObject
                 ReadonlyField::create('Created', 'When'),
             ]
         );
+        $fields->addFieldsToTab('Root.History', [
+            ReadonlyField::create('Created', _t('Push.CREATED', 'Created')),
+            ReadonlyField::create('LastEdited', _t('Push.LASTEDITED', 'Last Edited')),
+        ]);
         return $fields;
     }
 }
