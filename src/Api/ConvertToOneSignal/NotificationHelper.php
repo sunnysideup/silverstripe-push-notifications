@@ -21,11 +21,12 @@ class NotificationHelper
     public function notification2oneSignal(PushNotification $pushNotification): array
     {
         $targetChannel = $pushNotification->OneSignalTargetChannel();
-        if(! in_array($targetChannel, ['push', 'email', 'sms'])) {
+        if (! in_array($targetChannel, ['push', 'email', 'sms'])) {
             user_error('Target channel must be one of the following: push, email, sms');
         }
         $sendAfterString = $pushNotification->ScheduledAt ?: $this->config()->default_scheduled_at_string;
         $dataForNotification = [
+            'name' => 'Recipients: '.$pushNotification->getRecipientsDescription(),
             'headings' => [
                 'en' => $pushNotification->Title,
             ],
@@ -40,19 +41,19 @@ class NotificationHelper
         ];
         // $aliases = MemberHelper::singleton()->members2oneSignalAliases($pushNotification->RecipientMembers());
         $subscribtionIds = MemberHelper::singleton()->members2oneSignalSubscriptionIds($pushNotification->RecipientMembers());
-        if(! empty($subscribtionIds)) {
+        if (! empty($subscribtionIds)) {
             $dataForNotification['include_subscription_ids'] = $subscribtionIds;
         } else {
-            if($this->config()->use_segments_to_target_groups) {
+            if ($this->config()->use_segments_to_target_groups) {
                 $segments = GroupHelper::singleton()->groups2oneSignalSegmentFilter($pushNotification->RecipientGroups());
-                if(! empty($segments)) {
+                if (! empty($segments)) {
                     $dataForNotification['included_segments'] = $segments;
                 } else {
                     $dataForNotification['included_segments'] = ['do not send to anybody'];
                 }
             } else {
                 $filters = GroupHelper::singleton()->groups2oneSignalFilter($pushNotification->RecipientGroups());
-                if(! empty($filters)) {
+                if (! empty($filters)) {
                     $dataForNotification['filters'] = $filters;
                 } else {
                     $dataForNotification['included_segments'] = ['do not send to anybody'];
@@ -68,7 +69,7 @@ class NotificationHelper
         $array = [];
         $title = $oneSignalNotification['id'] ?? ' ERROR - NO ID PROVIDED';
         $localDateTime = null;
-        if(! empty($oneSignalNotification['completed_at'])) {
+        if (! empty($oneSignalNotification['completed_at'])) {
             $utcDateTime = (new DateTime())
                 ->setTimestamp($oneSignalNotification['completed_at'])
                 ->setTimezone(new DateTimeZone('UTC'));
@@ -91,9 +92,9 @@ class NotificationHelper
         // $oneSignalNotification['includedSegments'] = implode(',', $oneSignalNotification['included_segments'] ?? []);
         // $oneSignalNotification['excludedSegments'] = implode(',', $oneSignalNotification['excluded_segments'] ?? []);
         // $transformedArray = $this->flattenArray($oneSignalNotification);
-        foreach(self::TRANSFORMATION_ID as $key => $silverstripeFieldName) {
-            if($silverstripeFieldName) {
-                if(isset($oneSignalNotification[$key])) {
+        foreach (self::TRANSFORMATION_ID as $key => $silverstripeFieldName) {
+            if ($silverstripeFieldName) {
+                if (isset($oneSignalNotification[$key])) {
                     $array[$silverstripeFieldName] = $oneSignalNotification[$key];
                 }
             }

@@ -398,6 +398,29 @@ class PushNotification extends DataObject
         return $this->getRecipients()->count();
     }
 
+    public function getRecipientsDescription(): string
+    {
+        $members = $this->RecipientMembers();
+        $membersCount = $members->count();
+        if ($membersCount > 0) {
+            if ($membersCount > 3) {
+                return 'Msg to '.$membersCount.' website members: '.implode(', ', $members->limit(3)->column('Email')).'...';
+            } else {
+                return 'Msg to '.implode(', ', $members->column('Email'));
+            }
+        } else {
+            $groupsCount = $this->RecipientGroups()->count();
+            if ($groupsCount > 0) {
+                if ($groupsCount > 3) {
+                    return 'Msg to '.$groupsCount.' groups: '.implode(', ', $this->RecipientGroups()->limit(3)->column('Title')).'...';
+                } else {
+                    return 'Msg to '.implode(', ', $this->RecipientGroups()->column('Title'));
+                }
+            }
+        }
+        return 'Msg to all website members';
+    }
+
     public function getGroupsSummary(): int
     {
         return $this->getRecipients()->count();
@@ -572,9 +595,9 @@ class PushNotification extends DataObject
     {
         $array = [0 => 0];
         $members = $this->RecipientMembers();
-        if ($members->count() > 0) {
+        if ($members->exists()) {
             $array = array_merge($array, $members->columnUnique('ID'));
-        } else {
+        } elseif ($this->RecipientGroups()->exists()) {
             /** @var Group $group */
             foreach ($this->RecipientGroups() as $group) {
                 $array = array_merge($array, $group->Members()->columnUnique('ID'));
