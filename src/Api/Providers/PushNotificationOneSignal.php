@@ -25,7 +25,7 @@ class PushNotificationOneSignal extends PushNotificationProvider
 
     public function sendPushNotification(PushNotification $notification): bool
     {
-        if($this->sendingComplete($notification)) {
+        if ($this->sendingComplete($notification)) {
             return false;
         }
         /** @var OneSignalSignupApi $api */
@@ -38,11 +38,13 @@ class PushNotificationOneSignal extends PushNotificationProvider
             'OneSignalNotificationNote',
             'Could not add OneSignal notification'
         );
+        // important to write results
+        $notification->write();
         foreach ($notification->getRecipients() as $recipient) {
             $subscriptions = $recipient->ValidForOneSignalPushNotificationSubscribers();
             foreach ($subscriptions as $subscriber) {
                 $log = SubscriberMessage::create_new($recipient, $notification, $subscriber);
-                if($log) {
+                if ($log) {
                     $log->Success = $isGoodResult;
                     $log->write();
                 }

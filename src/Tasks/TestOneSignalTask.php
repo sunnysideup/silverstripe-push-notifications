@@ -84,6 +84,8 @@ class TestOneSignalTask extends BuildTask
                 'OneSignalNotificationNote',
                 'Could not add OneSignal notification'
             );
+            // important to write results
+            $testPushNotification->write();
         } else {
             $this->header('User functions');
             $this->outcome('Error: To test the user functions, please make sure you are signed up for push notifications!');

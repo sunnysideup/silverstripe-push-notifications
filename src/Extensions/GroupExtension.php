@@ -66,6 +66,7 @@ class GroupExtension extends DataExtension
                     'OneSignalSegmentNote',
                     'Could not add OneSignal segment'
                 );
+                // we do not need to write the owner here, because this is an onBeforeWrite call!
             } elseif ($this->removeUnusedSegmentsFromOneSignal()) {
                 $this->removeOneSignalSegment();
             }

@@ -138,6 +138,17 @@ class OneSignalSignupApi
     }
 
 
+    /**
+     * Process the results of an API call.
+     * Returns true if the outcome is a success.
+     * We can not write here as this maybe called onBeforeWrite
+     * @param mixed $obj
+     * @param array $outcome
+     * @param mixed $idStoredInFieldName
+     * @param mixed $noteStoredInFieldName
+     * @param mixed $alternativeError
+     * @return bool
+     */
     public function processResults(
         $obj,
         array $outcome,
@@ -152,6 +163,7 @@ class OneSignalSignupApi
             if ($noteStoredInFieldName) {
                 $obj->$noteStoredInFieldName = 'Succesfully connected to OneSignal';
             }
+            // intended exit point
             return true;
         } else {
             if ($idStoredInFieldName) {
@@ -161,6 +173,7 @@ class OneSignalSignupApi
                 $obj->$noteStoredInFieldName = OneSignalSignupApi::get_error($outcome, $alternativeError);
             }
         }
+        // alterntive exit point
         return false;
     }
 
