@@ -89,7 +89,7 @@ class TestOneSignalTask extends BuildTask
         if($count > 0) {
             $shown = 0;
             $tries = 0;
-            while($shown < 3 && $tries < 3) {
+            while($shown < 3 && $tries < 10) {
                 $pos = rand(0, $count - 1);
                 $id = $notifications['notifications'][$pos]['id'] ?? '';
                 if($id) {
@@ -97,6 +97,7 @@ class TestOneSignalTask extends BuildTask
                     $this->header('getOneNotification - position '.($pos + 1).' - with id: '.$id);
                     $this->outcome($this->api->getOneNotification($id));
                 } else {
+                    $this->outcome('ERROR: Could not notification with pos ' . $pos . '');
                     $tries++;
                 }
             }
@@ -104,13 +105,12 @@ class TestOneSignalTask extends BuildTask
 
         $this->header('getAllDevices');
         $devices = $this->api->getAllDevices();
-        $shown++;
         $count = $devices['total_count'] ?? 0;
         $this->outcome('There are ' . $count . ' devices subscribed');
         if($count > 0) {
             $shown = 0;
             $tries = 0;
-            while($shown < 3 && $tries < 3) {
+            while($shown < 3 && $tries < 10) {
                 $pos = rand(0, $count - 1);
                 $id = $devices['players'][$pos]['id'] ?? '';
                 if($id) {
@@ -118,6 +118,7 @@ class TestOneSignalTask extends BuildTask
                     $this->header('getOneDevice - position '.($pos + 1).' - with id: '.$id);
                     $this->outcome($this->api->getOneDevice($id));
                 } else {
+                    $this->outcome('ERROR: Could not device with pos ' . $pos . '');
                     $tries++;
                 }
             }
