@@ -52,6 +52,7 @@ class Subscriber extends DataObject
     ];
 
     private static $summary_fields = [
+        'Created' => 'Created',
         'Member.Title' => 'Who',
         'Subscribed.Nice' => 'Subscribed',
         'IsOneSignalUser.Nice' => 'Is OneSignal User',
@@ -70,6 +71,10 @@ class Subscriber extends DataObject
     private static $indexes = [
         'Subscribed' => true,
         'OneSignalUserID' => true,
+    ];
+
+    private static $default_sort = [
+        'ID' => 'DESC',
     ];
 
     public function getSubscriptionReadable(): DBHTMLText
@@ -96,7 +101,7 @@ class Subscriber extends DataObject
 
     public function canEdit($member = null)
     {
-        if(Director::isDev()) {
+        if (Director::isDev()) {
             return parent::canEdit($member);
         }
         return false;
@@ -127,7 +132,7 @@ class Subscriber extends DataObject
             ],
             'OneSignalUserID'
         );
-        if($this->IsOneSignalSubscription()) {
+        if ($this->IsOneSignalSubscription()) {
             $fields->addFieldsToTab(
                 'Root.OneSignal',
                 [
@@ -136,7 +141,7 @@ class Subscriber extends DataObject
                     $fields->dataFieldByName('OneSignalUserTagsNote')->setReadonly(true),
                 ]
             );
-            if($this->OneSignalUserID) {
+            if ($this->OneSignalUserID) {
                 $fields->addFieldToTab(
                     'Root.OneSignal',
                     LiteralField::create(
@@ -170,21 +175,21 @@ class Subscriber extends DataObject
     protected function onBeforeWrite()
     {
         parent::onBeforeWrite();
-        if($this->OneSignalUserID) {
+        if ($this->OneSignalUserID) {
             $member = $this->Member();
             /** @var OneSignalSignupApi $api */
             $api = Injector::inst()->get(OneSignalSignupApi::class);
             $outcome =  $api->getOneDevice($this->OneSignalUserID);
-            if(OneSignalSignupApi::test_success($outcome)) {
+            if (OneSignalSignupApi::test_success($outcome)) {
                 $isInvalid = $outcome['invalid_identifier'] ?? false;
                 $this->Subscribed = $isInvalid ? false : true;
             }
             $externalUserId = $outcome['external_user_id'] ?? '';
-            if($member && $member->exists()) {
+            if ($member && $member->exists()) {
                 $expectedExternalUserId = MemberHelper::singleton()->member2externalUserId($member);
-                if($externalUserId !== $expectedExternalUserId) {
+                if ($externalUserId !== $expectedExternalUserId) {
                     $outcome = $api->addExternalUserIdToUser($this->OneSignalUserID, $member);
-                    if(OneSignalSignupApi::test_success($outcome)) {
+                    if (OneSignalSignupApi::test_success($outcome)) {
                         $this->OneSignalUserNote = 'Succesfully connected to OneSignal';
                         $externalUserId = $expectedExternalUserId;
                     } else {
@@ -192,9 +197,9 @@ class Subscriber extends DataObject
                         $this->OneSignalUserTagsNote = 'Error: could not add external user id so could not add tags';
                     }
                 }
-                if($externalUserId == $expectedExternalUserId) {
+                if ($externalUserId == $expectedExternalUserId) {
                     $outcome = $api->addTagsToUserBasedOnGroups($member);
-                    if(OneSignalSignupApi::test_success($outcome)) {
+                    if (OneSignalSignupApi::test_success($outcome)) {
                         $this->OneSignalUserTagsNote = 'Sucessfully added group tags to user';
                     } else {
                         $this->OneSignalUserTagsNote = OneSignalSignupApi::get_error($outcome);
@@ -210,7 +215,7 @@ class Subscriber extends DataObject
     protected function onBeforeDelete()
     {
         parent::onBeforeDelete();
-        if($this->IsOneSignalSubscription()) {
+        if ($this->IsOneSignalSubscription()) {
             /** @var OneSignalSignupApi $api */
             $api = Injector::inst()->get(OneSignalSignupApi::class);
             $api->deleteDevice($this->OneSignalUserID);

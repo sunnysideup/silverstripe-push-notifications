@@ -7,7 +7,6 @@ use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Environment;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
-
 use OneSignal\OneSignal;
 use Symfony\Component\HttpClient\Psr18Client;
 use Nyholm\Psr7\Factory\Psr17Factory;
@@ -64,10 +63,10 @@ class OneSignalSignupApi
 
     public static function test_success($outcome): bool
     {
-        if(! is_array($outcome)) {
+        if (! is_array($outcome)) {
             return false;
         }
-        if(isset($outcome['success']) && (int) $outcome['success'] === 1) {
+        if (isset($outcome['success']) && (int) $outcome['success'] === 1) {
             return true;
         }
         return false;
@@ -76,8 +75,8 @@ class OneSignalSignupApi
 
     public static function is_enabled(): bool
     {
-        foreach(self::REQUIRED_ENV_VARS as $key) {
-            if(! Environment::getEnv($key)) {
+        foreach (self::REQUIRED_ENV_VARS as $key) {
+            if (! Environment::getEnv($key)) {
                 return false;
             }
         }
@@ -92,7 +91,7 @@ class OneSignalSignupApi
      */
     public static function get_id_from_outcome($outcome): string
     {
-        if(! is_array($outcome)) {
+        if (! is_array($outcome)) {
             return '';
         }
         return (string) $outcome['id'] ?? '';
@@ -100,13 +99,20 @@ class OneSignalSignupApi
 
     public static function get_error($outcome, ?string $alternativeError = ''): string
     {
-        if(!$alternativeError) {
+        if (!$alternativeError) {
             $alternativeError = 'ERROR IN: '.get_called_class().'.';
         }
-        if(! is_array($outcome)) {
+        if (! is_array($outcome)) {
             return $alternativeError.' Outcome is not an array: ' . print_r($outcome, 1);
         }
-        return implode(',', $outcome['errors']) ?? $alternativeError;
+        if (! empty($outcome['errors'])) {
+            foreach ($outcome['errors'] as $key => $error) {
+                $outcome['errors'][$key] = print_r($error, 1);
+            }
+            return implode(',', $outcome['errors']);
+        } else {
+            return $alternativeError;
+        }
     }
 
     public static function notification_id_to_onesignal_link($id): string
@@ -134,19 +140,19 @@ class OneSignalSignupApi
         ?string $noteStoredInFieldName = '',
         ?string $alternativeError = ''
     ): bool {
-        if(OneSignalSignupApi::test_success($outcome)) {
-            if($idStoredInFieldName) {
+        if (OneSignalSignupApi::test_success($outcome)) {
+            if ($idStoredInFieldName) {
                 $obj->$idStoredInFieldName = OneSignalSignupApi::get_id_from_outcome($outcome);
             }
-            if($noteStoredInFieldName) {
+            if ($noteStoredInFieldName) {
                 $obj->$noteStoredInFieldName = 'Succesfully connected to OneSignal';
             }
             return true;
         } else {
-            if($idStoredInFieldName) {
+            if ($idStoredInFieldName) {
                 $obj->$idStoredInFieldName = '';
             }
-            if($noteStoredInFieldName) {
+            if ($noteStoredInFieldName) {
                 $obj->$noteStoredInFieldName = OneSignalSignupApi::get_error($outcome, $alternativeError);
             }
         }
@@ -211,8 +217,8 @@ class OneSignalSignupApi
 
     public function updateDevice(string $deviceID, array $data): array
     {
-        foreach(array_keys($data) as $key) {
-            if(! in_array($key, self::ACCEPTED_USER_SETTING, true)) {
+        foreach (array_keys($data) as $key) {
+            if (! in_array($key, self::ACCEPTED_USER_SETTING, true)) {
                 user_error('Key ' . $key . ' is not accepted. Please use one of the following: ' . implode(', ', self::ACCEPTED_USER_SETTING));
             }
         }
@@ -257,7 +263,7 @@ class OneSignalSignupApi
 
     public function deleteSegmentBasedOnGroup(Group $group): array
     {
-        if($group->OneSignalSegmentID) {
+        if ($group->OneSignalSegmentID) {
             return $this->deleteSegment($group->OneSignalSegmentID);
         } else {
             return ['success' => 1, ['_status_code' => 200]];
@@ -307,8 +313,8 @@ class OneSignalSignupApi
     protected function checkAndGetCredentials(): array
     {
         $array = [];
-        foreach(self::REQUIRED_ENV_VARS as $key) {
-            if(! Environment::getEnv($key)) {
+        foreach (self::REQUIRED_ENV_VARS as $key) {
+            if (! Environment::getEnv($key)) {
                 user_error('Please add ' . $key . ' to your .env file');
             } else {
                 $array[] = Environment::getEnv($key);

@@ -4,6 +4,7 @@ namespace Sunnysideup\PushNotifications\Extensions;
 
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\GridField\GridField;
+use SilverStripe\Forms\GridField\GridFieldConfig_RecordEditor;
 use SilverStripe\Forms\GridField\GridFieldConfig_RecordViewer;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\ORM\DataExtension;
@@ -35,7 +36,7 @@ class MemberExtension extends DataExtension
     public function onBeforeWrite()
     {
         $owner = $this->getOwner();
-        if($owner->exists()) {
+        if ($owner->exists()) {
             $subscribers = $owner->ValidForOneSignalPushNotificationSubscribers();
             /** @var Subscriber $subscriber */
             foreach ($subscribers as $subscriber) {
@@ -72,13 +73,13 @@ class MemberExtension extends DataExtension
                     'PushNotificationSubscribers',
                     'Push Subscriptions',
                     $owner->PushNotificationSubscribers(),
-                    GridFieldConfig_RecordViewer::create()
+                    GridFieldConfig_RecordEditor::create()
                 ),
                 GridField::create(
                     'SubscriberMessages',
                     'Push Messages Sent',
                     $owner->SubscriberMessages(),
-                    GridFieldConfig_RecordViewer::create()
+                    GridFieldConfig_RecordEditor::create()
                 ),
                 ReadonlyField::create('CodeInOneSignal', 'Code in OneSignal', $owner->getCodeInOneSignal()),
                 ReadonlyField::create('TagsInOneSignal', 'Tags in OneSignal', $owner->getTagsInOneSignal()),
