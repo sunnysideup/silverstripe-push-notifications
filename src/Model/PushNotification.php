@@ -138,7 +138,7 @@ class PushNotification extends DataObject
 
     public function populateDefaults()
     {
-        if(PushNotificationPage::get_one()->UseOneSignal) {
+        if (PushNotificationPage::get_one()->UseOneSignal) {
             $this->ProviderClass = PushNotificationOneSignal::class;
         }
         return $this;
@@ -147,7 +147,7 @@ class PushNotification extends DataObject
     public function getCMSFields()
     {
         $fields = parent::getCMSFields();
-        if($this->isOverMaxOfNumberOfUnsentNotifications()) {
+        if ($this->isOverMaxOfNumberOfUnsentNotifications()) {
             $fields->unshift(
                 LiteralField::create(
                     'MaxUnsentMessages',
@@ -162,7 +162,7 @@ class PushNotification extends DataObject
                 )
             );
         }
-        if($this->canEdit() && ! $this->canSend()) {
+        if ($this->canEdit() && ! $this->canSend()) {
             $fields->unshift(
                 LiteralField::create(
                     'CanEditCanSendInfo',
@@ -182,7 +182,7 @@ class PushNotification extends DataObject
         $fields->removeByName('RecipientGroups');
         $fields->removeByName('SendJobID');
         $fields->removeByName('SentAt');
-        if($this->HasExternalProvider()) {
+        if ($this->HasExternalProvider()) {
             // $fields->removeByName('ScheduledAt');
             $fields->dataFieldByName('Sent')
                 ->setDescription('Careful! Once ticked and saved, you can not edit this message.');
@@ -201,7 +201,7 @@ class PushNotification extends DataObject
                 ))),
             );
         } else {
-            if(interface_exists(QueuedJob::class) || $this->HasExternalProvider()) {
+            if (interface_exists(QueuedJob::class) || $this->HasExternalProvider()) {
                 $fields->insertBefore(
                     'Title',
                     $fields->dataFieldByName('ScheduledAt')
@@ -229,7 +229,7 @@ class PushNotification extends DataObject
             'Push.USEDMAINBODY',
             '(Used as the main body of the notification)'
         ));
-        if(! $this->HasExternalProvider()) {
+        if (! $this->HasExternalProvider()) {
             $fields->addFieldsToTab(
                 'Root.Main',
                 [
@@ -244,8 +244,8 @@ class PushNotification extends DataObject
             $recipientCount = $this->getRecipients()->count();
             $groupCount = $this->RecipientGroups()->count();
             $allCount = $recipientCount + $groupCount;
-            if($groupCount === 0 || $allCount === 0) {
-                $possibleRecipientsIds = Subscriber::get()->columnUnique('MemberID') + [-1 => -1];
+            if ($groupCount === 0 || $allCount === 0) {
+                $possibleRecipientsIds = Subscriber::get()->filter(['Subscribed' => true])->columnUnique('MemberID') + [-1 => -1];
                 $fields->addFieldsToTab(
                     'Root.Recipients',
                     [
@@ -263,7 +263,7 @@ class PushNotification extends DataObject
                     ]
                 );
             }
-            if($recipientCount === 0 || $allCount === 0) {
+            if ($recipientCount === 0 || $allCount === 0) {
                 $fields->addFieldsToTab(
                     'Root.Recipients',
                     [
@@ -297,11 +297,11 @@ class PushNotification extends DataObject
 
         // dont allow adding new subscribers!
         $subscriberField = $fields->dataFieldByName('SubscriberMessages');
-        if($subscriberField) {
+        if ($subscriberField) {
             $subscriberField->getConfig()->removeComponentsByType(GridFieldAddExistingAutocompleter::class);
         }
-        if($this->IsOneSignal()) {
-            if($this->IsScheduledInThePast() === false && $this->OneSignalNotificationID) {
+        if ($this->IsOneSignal()) {
+            if ($this->IsScheduledInThePast() === false && $this->OneSignalNotificationID) {
                 $fields->unshift(
                     LiteralField::create(
                         'OneSignalLink',
@@ -322,7 +322,7 @@ class PushNotification extends DataObject
                     ReadonlyField::create('OneSignalNumberOfDeliveries', 'Number of Delivery Attempts'),
                 ]
             );
-            if($this->OneSignalNotificationID) {
+            if ($this->OneSignalNotificationID) {
                 $fields->addFieldToTab(
                     'Root.OneSignal',
                     LiteralField::create(
@@ -341,7 +341,7 @@ class PushNotification extends DataObject
     public function getCMSActions()
     {
         $actions = parent::getCMSActions();
-        if($this->canSend()) {
+        if ($this->canSend()) {
             $actions->push($action = new CustomAction("doSendCMSAction", "Send"));
             $action
                 ->addExtraClass('ss-ui-action btn btn-primary font-icon-block-email action--new discard-confirmation')
@@ -354,7 +354,7 @@ class PushNotification extends DataObject
 
     public function doSendCMSAction()
     {
-        if($this->canSend()) {
+        if ($this->canSend()) {
             $this->doSend();
             return 'Sent!';
         } else {
@@ -405,7 +405,7 @@ class PushNotification extends DataObject
 
     public function getValidator()
     {
-        if($this->HasExternalProvider()) {
+        if ($this->HasExternalProvider()) {
             return RequiredFields::create(['Title','Content']);
         } else {
             return RequiredFields::create(['Title', 'Content', 'ProviderClass']);
@@ -448,7 +448,7 @@ class PushNotification extends DataObject
                 )
             );
         }
-        if(! $this->Content) {
+        if (! $this->Content) {
             $result->addFieldError(
                 'Content',
                 _t(
@@ -471,7 +471,7 @@ class PushNotification extends DataObject
     protected function onBeforeWrite()
     {
         parent::onBeforeWrite();
-        if($this->Sent && ! $this->SentAt) {
+        if ($this->Sent && ! $this->SentAt) {
             $this->SentAt = date('Y-m-d H:i:s');
         }
         if (! interface_exists(QueuedJob::class)) {
@@ -572,7 +572,7 @@ class PushNotification extends DataObject
     {
         $array = [0 => 0];
         $members = $this->RecipientMembers();
-        if($members->count() > 0) {
+        if ($members->count() > 0) {
             $array = array_merge($array, $members->columnUnique('ID'));
         } else {
             /** @var Group $group */
@@ -606,7 +606,7 @@ class PushNotification extends DataObject
         $outcome = $provider->sendPushNotification($this);
 
         $this->Sent = true;
-        if(! $outcome) {
+        if (! $outcome) {
             $this->HasSendingErrors = true;
         }
         $this->SentAt = date('Y-m-d H:i:s');
@@ -626,7 +626,7 @@ class PushNotification extends DataObject
 
     public function getOneSignalLink(): string
     {
-        if($this->OneSignalNotificationID) {
+        if ($this->OneSignalNotificationID) {
             return LinkHelper::singleton()->notificationLink($this->OneSignalNotificationID);
         }
         return '';
@@ -651,7 +651,7 @@ class PushNotification extends DataObject
     public function ScheduledAtNice(?string $alternativeTime = ''): string
     {
         $date = $this->ScheduledAtDateTimeInterface($alternativeTime);
-        if($date) {
+        if ($date) {
             return $date->format('D M d Y H:i:s \G\M\TO (T)');
         }
         return 'No date set';
@@ -661,7 +661,7 @@ class PushNotification extends DataObject
     public function ScheduledAtDateTimeInterface(?string $alternativeTime = ''): ?DateTimeInterface
     {
         $timeAsString = $alternativeTime ?: $this->ScheduledAt;
-        if(! $timeAsString) {
+        if (! $timeAsString) {
             return null;
         }
         return new DateTime($timeAsString);

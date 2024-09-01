@@ -19,8 +19,6 @@ use SilverStripe\Assets\Image;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Core\Environment;
 use SilverStripe\Forms\CheckboxSetField;
-use SilverStripe\Forms\GridField\GridFieldConfig_RecordViewer;
-use SilverStripe\Forms\GridField\GridFieldConfig_RelationEditor;
 use SilverStripe\Forms\HTMLEditor\HTMLEditorField;
 use SilverStripe\Forms\TreeDropdownField;
 use SilverStripe\Security\Group;
@@ -147,8 +145,8 @@ class PushNotificationPage extends Page
                 )
             ]
         );
-        if($this->UseOneSignal) {
-            if(!$this->getOneSignalKey()) {
+        if ($this->UseOneSignal) {
+            if (!$this->getOneSignalKey()) {
                 // $fields->removeByName('PushNotifications');
                 $fields->addFieldsToTab(
                     'Root.Provider',
@@ -243,7 +241,7 @@ class PushNotificationPage extends Page
 
     public function canAccessOrCreateFile(?string $filePath = ''): bool
     {
-        if(! $filePath) {
+        if (! $filePath) {
             $filePath = $this->getManifestPath();
         }
         if (file_exists($filePath)) {
@@ -304,10 +302,10 @@ class PushNotificationPage extends Page
     protected function writeManifestAndIconFiles()
     {
 
-        if($this->canAccessOrCreateFile()) {
+        if ($this->canAccessOrCreateFile()) {
             $icon = $this->ManifestIconID ? $this->ManifestIcon() : null;
             $icons = [];
-            if($icon && $icon->exists()) {
+            if ($icon && $icon->exists()) {
                 $icons = [
                     [
                         "src" => $this->ManifestIcon()->ScaleWidth(192)->getAbsoluteURL(),
@@ -349,7 +347,7 @@ class PushNotificationPage extends Page
 
     protected function copyOneSignalFile()
     {
-        if($this->UseOneSignal) {
+        if ($this->UseOneSignal) {
             try {
                 copy(
                     Controller::join_links(
@@ -388,7 +386,7 @@ class PushNotificationPage extends Page
         }
 
         // Modify the value
-        if($overwrite) {
+        if ($overwrite) {
             $data[$key] = $newValue;
         } else {
             // Check if the key exists in the data
