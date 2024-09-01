@@ -37,8 +37,8 @@ class TestOneSignalTask extends BuildTask
             ->sort(['ID' => 'ASC']);
         $group = Group::get()->first();
 
-        if($subscriptions && $member) {
-            foreach($subscriptions as $subscription) {
+        if ($subscriptions && $member) {
+            foreach ($subscriptions as $subscription) {
                 $this->header('addExternalUserIdToUser: '.$subscription->OneSignalUserID.' - '.$member->Email);
                 $this->outcome($this->api->addExternalUserIdToUser($subscription->OneSignalUserID, $member));
 
@@ -63,7 +63,7 @@ class TestOneSignalTask extends BuildTask
             $this->outcome($segmentOutcome);
 
             $segmentId = OneSignalSignupApi::get_id_from_outcome($segmentOutcome);
-            if($segmentId) {
+            if ($segmentId) {
                 $this->header('deleteSegment with id: '.$segmentId);
                 $this->outcome($this->api->deleteSegment($segmentId));
             }
@@ -73,10 +73,17 @@ class TestOneSignalTask extends BuildTask
             $testPushNotification->Content = 'Content for Test Push Notification created '.date('Y-m-d H:i:s');
             $testPushNotification->RecipientMembers()->add($member);
             $testPushNotification->write();
-            $testPushNotification->doSend();
-            $this->header('doSendNotification');
-            $this->outcome($this->api->doSendNotification($testPushNotification));
-
+            $api = Injector::inst()->get(OneSignalSignupApi::class);
+            $outcome = $api->doSendNotification($testPushNotification);
+            $this->header('Test push notification');
+            $this->outcome($outcome);
+            $api->processResults(
+                $testPushNotification,
+                $outcome,
+                'OneSignalNotificationID',
+                'OneSignalNotificationNote',
+                'Could not add OneSignal notification'
+            );
         } else {
             $this->header('User functions');
             $this->outcome('Error: To test the user functions, please make sure you are signed up for push notifications!');
@@ -86,13 +93,13 @@ class TestOneSignalTask extends BuildTask
         $notifications = $this->api->getAllNotifications();
         $count = $notifications['total_count'] ?? 0;
         $this->outcome('There are ' . $count . ' notifications');
-        if($count > 0) {
+        if ($count > 0) {
             $shown = 0;
             $tries = 0;
-            while($shown < 3 && $tries < 10) {
+            while ($shown < 3 && $tries < 10) {
                 $pos = rand(0, $count - 1);
                 $id = $notifications['notifications'][$pos]['id'] ?? '';
-                if($id) {
+                if ($id) {
                     $shown++;
                     $this->header('getOneNotification - position '.($pos + 1).' - with id: '.$id);
                     $this->outcome($this->api->getOneNotification($id));
@@ -107,13 +114,13 @@ class TestOneSignalTask extends BuildTask
         $devices = $this->api->getAllDevices();
         $count = $devices['total_count'] ?? 0;
         $this->outcome('There are ' . $count . ' devices subscribed');
-        if($count > 0) {
+        if ($count > 0) {
             $shown = 0;
             $tries = 0;
-            while($shown < 3 && $tries < 10) {
+            while ($shown < 3 && $tries < 10) {
                 $pos = rand(0, $count - 1);
                 $id = $devices['players'][$pos]['id'] ?? '';
-                if($id) {
+                if ($id) {
                     $shown++;
                     $this->header('getOneDevice - position '.($pos + 1).' - with id: '.$id);
                     $this->outcome($this->api->getOneDevice($id));
@@ -130,7 +137,7 @@ class TestOneSignalTask extends BuildTask
 
     protected function header($message)
     {
-        if(Director::is_cli()) {
+        if (Director::is_cli()) {
             echo PHP_EOL;
             echo PHP_EOL;
             echo '========================='.PHP_EOL;
@@ -145,7 +152,7 @@ class TestOneSignalTask extends BuildTask
 
     protected function outcome($mixed)
     {
-        if(Director::is_cli()) {
+        if (Director::is_cli()) {
             echo PHP_EOL;
             echo '========================='.PHP_EOL;
             print_r($mixed).PHP_EOL;
