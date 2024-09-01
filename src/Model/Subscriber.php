@@ -171,9 +171,13 @@ class Subscriber extends DataObject
         parent::onBeforeWrite();
         if($this->OneSignalUserID) {
             $member = $this->Member();
+            /** @var OneSignalSignupApi $api */
+            $api = Injector::inst()->get(OneSignalSignupApi::class);
+            $outcome =  $api->getOneDevice($this->OneSignalUserID);
+            if(OneSignalSignupApi::test_success($outcome)) {
+                $this->OneSignalUserNote;
+            }
             if($member && $member->exists()) {
-                /** @var OneSignalSignupApi $api */
-                $api = Injector::inst()->get(OneSignalSignupApi::class);
                 $outcome = $api->addExternalUserIdToUser($this->OneSignalUserID, $member);
                 if(OneSignalSignupApi::test_success($outcome)) {
                     $this->OneSignalUserNote = 'Succesfully connected to OneSignal';

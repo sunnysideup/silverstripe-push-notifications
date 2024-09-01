@@ -104,7 +104,16 @@ class TestOneSignalTask extends BuildTask
         $count = $devices['total_count'] ?? 0;
         $this->outcome('There are ' . $count . ' devices');
         if($count > 0) {
-            print_r($devices);
+            $id = $devices['players'][0]['id'];
+            if($id) {
+                $this->header('getOneDevice - first one - with id: '.$id);
+                $this->outcome($this->api->getOneDevice($id));
+            }
+            $id = $notifications['players'][$count - 1]['id'];
+            if($id) {
+                $this->header('getOneDevice - last one - with id first one: '.$id);
+                $this->outcome($this->api->getOneDevice($id));
+            }
         }
 
         $this->header('THE END');
