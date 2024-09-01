@@ -54,12 +54,20 @@ class GroupExtension extends DataExtension
     public function onBeforeWrite()
     {
         $owner = $this->getOwner();
+        if ($owner->exists()) {
+            $owner->OneSignalComms(false);
+        }
+    }
+
+    public function OneSignalComms(?bool $write = false)
+    {
+        $owner = $this->getOwner();
         if ($owner->hasOneSignalSegment()) {
             if ($owner->hasUnsentOneSignalMessages() && $this->useOneSignalSegmentsForSending()) {
                 /** @var OneSignalSignupApi $api */
                 $api = Injector::inst()->get(OneSignalSignupApi::class);
                 $outcome = $api->createSegmentBasedOnGroup($owner);
-                $goodResult = $api->processResults(
+                $api->processResults(
                     $owner,
                     $outcome,
                     'OneSignalSegmentID',
@@ -69,7 +77,12 @@ class GroupExtension extends DataExtension
                 // we do not need to write the owner here, because this is an onBeforeWrite call!
             } elseif ($this->removeUnusedSegmentsFromOneSignal()) {
                 $this->removeOneSignalSegment();
+                $owner->OneSignalSegmentID = '';
+                $owner->OneSignalSegmentNote = '';
             }
+        }
+        if ($write) {
+            $owner->write();
         }
 
     }
@@ -81,11 +94,14 @@ class GroupExtension extends DataExtension
 
     }
 
+    /**
+     * no write here!
+     *
+     * @return void
+     */
     protected function removeOneSignalSegment()
     {
         $owner = $this->getOwner();
-        $owner->OneSignalSegmentID = '';
-        $owner->OneSignalSegmentNote = '';
         /** @var OneSignalSignupApi $api */
         $api = Injector::inst()->get(OneSignalSignupApi::class);
         $api->deleteSegmentBasedOnGroup($owner);

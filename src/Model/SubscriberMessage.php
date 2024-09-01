@@ -73,6 +73,10 @@ class SubscriberMessage extends DataObject
         'ErrorMessage.Summary' => 'Error',
     ];
 
+    private static $casting = [
+        'Title' => 'Varchar',
+    ];
+
     /**
      * DataObject create permissions
      * @param Member $member
@@ -117,11 +121,14 @@ class SubscriberMessage extends DataObject
     public function onBeforeWrite()
     {
         parent::onBeforeWrite();
-        $this->Title =
-            $this->PushNotification()?->Title .
-            '--- TO: ' .
-            $this->Subscriber()?->Member()?->Email
-            . '--- ON: ' .
+    }
+
+    public function getTitle()
+    {
+        return $this->PushNotification()?->Title .
+            ', TO: ' .
+            $this->Subscriber()?->Member()?->getTitle()
+            . ', ON: ' .
             $this->Created;
     }
 

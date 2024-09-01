@@ -36,14 +36,22 @@ class MemberExtension extends DataExtension
     {
         $owner = $this->getOwner();
         if ($owner->exists()) {
-            $subscribers = $owner->ValidForOneSignalPushNotificationSubscribers();
-            /** @var Subscriber $subscriber */
-            foreach ($subscribers as $subscriber) {
-                $subscriber->write();
-            }
+            $owner->OneSignalComms(false);
         }
     }
 
+    public function OneSignalComms(?bool $write = false)
+    {
+        $owner = $this->getOwner();
+        $subscribers = $owner->ValidForOneSignalPushNotificationSubscribers();
+        /** @var Subscriber $subscriber */
+        foreach ($subscribers as $subscriber) {
+            $subscriber->OneSignalComms(true);
+        }
+        if ($write) {
+            $owner->write();
+        }
+    }
 
 
     public function onBeforeDelete()
