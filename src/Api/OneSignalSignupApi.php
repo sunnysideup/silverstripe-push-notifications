@@ -66,9 +66,11 @@ class OneSignalSignupApi
         if (! is_array($outcome)) {
             return false;
         }
-        if (isset($outcome['success']) && (int) $outcome['success'] === 1) {
+        $success = (int) ($outcome['success'] ?? 0);
+        if ($success) {
             return true;
         }
+        $statusCode = (int) ($outcome['_status_code'] ?? 0);
         return false;
     }
 
