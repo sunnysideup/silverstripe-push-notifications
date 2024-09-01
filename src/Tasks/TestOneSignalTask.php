@@ -69,8 +69,8 @@ class TestOneSignalTask extends BuildTask
             }
 
             $testPushNotification = PushNotification::create();
-            $testPushNotification->Title = 'Test Push Notification created '.date('Y-m-d H:i:s');
-            $testPushNotification->Content = 'Content for Test Push Notification created '.date('Y-m-d H:i:s');
+            $testPushNotification->Title = 'Header for Test created '.date('Y-m-d H:i:s');
+            $testPushNotification->Content = 'Content for Test created '.date('Y-m-d H:i:s');
             $testPushNotification->RecipientMembers()->add($member);
             $testPushNotification->write();
             $api = Injector::inst()->get(OneSignalSignupApi::class);
