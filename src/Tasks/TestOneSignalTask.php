@@ -39,13 +39,13 @@ class TestOneSignalTask extends BuildTask
 
         if ($subscriptions && $member) {
             foreach ($subscriptions as $subscription) {
-                $this->header('addExternalUserIdToUser: '.$subscription->OneSignalUserID.' - '.$member->Email);
+                $this->header('addExternalUserIdToUser: '.$subscription->getTitle() . ' - ' .$subscription->OneSignalUserID);
                 $this->outcome($this->api->addExternalUserIdToUser($subscription->OneSignalUserID, $member));
 
-                $this->header('updateDevice: '.$subscription->OneSignalUserID);
+                $this->header('updateDevice: '.$subscription->getTitle() . ' - ' .$subscription->OneSignalUserID);
                 $this->outcome($this->api->updateDevice($subscription->OneSignalUserID, ['amount_spent' => 999999.99]));
 
-                $this->header('getOneDevice: '.$subscription->OneSignalUserID);
+                $this->header('getOneDevice: '.$subscription->getTitle() . ' - ' .$subscription->OneSignalUserID);
                 $this->outcome($this->api->getOneDevice($subscription->OneSignalUserID));
             }
 
