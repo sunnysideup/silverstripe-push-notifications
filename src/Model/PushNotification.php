@@ -312,7 +312,7 @@ class PushNotification extends DataObject
                     LiteralField::create(
                         'OneSignalLink',
                         LinkHelper::singleton()->createHtmlLink(
-                            $this->getOneSignalLink(),
+                            LinkHelper::singleton()->notificationLinkEdit($this->OneSignalNotificationID),
                             'Head to OneSignal now to review / send your message!',
                             true
                         )
@@ -507,7 +507,10 @@ class PushNotification extends DataObject
             return false;
         }
         if (! $this->ScheduledAt) {
-            return false;
+            if ($this->OneSignalNotificationID) {
+                // created more than a day go, forget it.
+                return strtotime($this->Created) < strtotime(' -1 day');
+            }
         }
         return strtotime($this->ScheduledAt) < time();
     }

@@ -18,7 +18,7 @@ class LinkHelper
     public function createHtmlLink(string $link, string $title, ?bool $isWarning = false): string
     {
         $link = '<a href="'.$link.'" target="_blank"  rel="noopener noreferrer">'.$title.'</a>';
-        if($isWarning) {
+        if ($isWarning) {
             $link = '<p class="message warning"><span style="color:red;">'.$link.'</span></ap>';
         }
         return $link;
@@ -115,6 +115,17 @@ class LinkHelper
             Environment::getEnv('SS_ONESIGNAL_APP_ID'),
             'notifications',
             $id
+        );
+    }
+
+    public function notificationLinkEdit(string $id): string
+    {
+        return Controller::join_links(
+            $this->baseLink(),
+            'apps',
+            Environment::getEnv('SS_ONESIGNAL_APP_ID'),
+            'notifications',
+            $id,
         );
     }
 
