@@ -1,9 +1,11 @@
 <?php
 
 use SilverStripe\Control\Director;
+use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Environment;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\BuildTask;
+use SilverStripe\ORM\DataObject;
 use SilverStripe\Security\Group;
 use SilverStripe\Security\Member;
 use Sunnysideup\PushNotifications\Api\ConvertToOneSignal\NotificationHelper;
@@ -26,9 +28,11 @@ class UpdateOneSignal extends BuildTask
     {
         Environment::increaseTimeLimitTo(3600);
         Environment::increaseMemoryLimitTo('512M');
+        Config::modify()->set(DataObject::class, 'validation_enabled', false);
         $this->syncGroups();
         $this->syncSubscribers();
-        $this->syncNotifications();
+        $this->syncNotificationsFromOneSignal();
+        $this->syncNotificationsFromWebsite();
 
     }
 
@@ -47,14 +51,14 @@ class UpdateOneSignal extends BuildTask
         $this->header('WRITING SUBSCRIPTIONS');
         $subscribers = Subscriber::get()->filter(['OneSignalUserID:not' => ['', null, 0]]);
         foreach ($subscribers as $subscriber) {
-            $this->outcome('Writing: ' . $subscriber->Member()?->Email. ' - '. $subscriber->OneSignalUserID);
+            $this->outcome('Writing: ' . $subscriber->getTitle(). ' - '. $subscriber->OneSignalUserID);
             $subscriber->OneSignalComms(true);
         }
     }
 
-    protected function syncNotifications()
+    protected function syncNotificationsFromOneSignal()
     {
-        $this->header('WRITING NOTIFICATIONS');
+        $this->header('WRITING NOTIFICATIONS FROM ONE SIGNAL');
         /** @var OneSignalSignupApi $api */
         $api = Injector::inst()->get(OneSignalSignupApi::class);
         $allNotifications = $api->getAllNotifications();
@@ -85,6 +89,20 @@ class UpdateOneSignal extends BuildTask
                 $notification->{$key} = $value;
             }
             $notification->write();
+        }
+
+    }
+
+    protected function syncNotificationsFromWebsite()
+    {
+        $this->header('WRITING NOTIFICATIONS FROM WEBSITE');
+        /** @var OneSignalSignupApi $api */
+        $notifications = PushNotification::get()
+            ->filter(['OneSignalNotificationID:not' => ['', null, 0]]);
+        /** @var PushNotification $notification */
+        foreach ($notifications as $notification) {
+            $this->outcome('Writing: ' . $notification->getTitle());
+            $notification->OneSignalComms(true);
         }
 
     }

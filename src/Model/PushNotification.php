@@ -493,7 +493,7 @@ class PushNotification extends DataObject
 
     protected function IsScheduledInThePast(): bool
     {
-        if(!$this->exists()) {
+        if (!$this->exists()) {
             return false;
         }
         $scheduledAt = $this->ScheduledAt ?: $this->Created;
@@ -542,9 +542,13 @@ class PushNotification extends DataObject
     public function OneSignalComms(?bool $write = false)
     {
         if ($this->OneSignalNotificationID) {
+            // dont bother about things that are old!
+            if (strtotime($this->LastEdited) < strtotime(' -1 month')) {
+                return;
+            }
             /** @var OneSignalSignupApi $api */
             $api = Injector::inst()->get(OneSignalSignupApi::class);
-            $outcome = $this->api->getOneNotification($this->OneSignalNotificationID);
+            $outcome = $api->getOneNotification($this->OneSignalNotificationID);
             if (OneSignalSignupApi::test_success($outcome)) {
                 $valuesForNotificationDataOneObject = NotificationHelper::singleton()
                     ->getValuesForNotificationDataOneObject($outcome);

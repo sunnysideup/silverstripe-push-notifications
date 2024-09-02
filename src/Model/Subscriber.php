@@ -199,6 +199,11 @@ class Subscriber extends DataObject
     public function OneSignalComms(?bool $write = false)
     {
         if ($this->OneSignalUserID) {
+            // dont bother about things that are old!
+            if (strtotime($this->LastEdited) < strtotime(' -12 month')) {
+                return;
+            }
+
             /** @var OneSignalSignupApi $api */
             $api = Injector::inst()->get(OneSignalSignupApi::class);
             $outcome =  $api->getOneDevice($this->OneSignalUserID);

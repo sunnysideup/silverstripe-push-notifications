@@ -44,12 +44,20 @@ class MemberExtension extends DataExtension
     {
         $owner = $this->getOwner();
         $subscribers = $owner->ValidForOneSignalPushNotificationSubscribers();
-        /** @var Subscriber $subscriber */
-        foreach ($subscribers as $subscriber) {
-            $subscriber->OneSignalComms(true);
-        }
-        if ($write) {
-            $owner->write();
+        $defaultGroup = GroupExtension::get_all_subscribers_group();
+        $memberGroups = $owner->Groups();
+        if ($subscribers->exists()) {
+            /** @var Subscriber $subscriber */
+            foreach ($subscribers as $subscriber) {
+                $subscriber->OneSignalComms(true);
+            }
+
+            $memberGroups->add($defaultGroup);
+            if ($write) {
+                $owner->write();
+            }
+        } else {
+            $memberGroups->remove($defaultGroup);
         }
     }
 
