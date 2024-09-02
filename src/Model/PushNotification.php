@@ -543,7 +543,7 @@ class PushNotification extends DataObject
     {
         if ($this->OneSignalNotificationID) {
             // dont bother about things that are old!
-            if (strtotime($this->LastEdited) < strtotime(' -1 month')) {
+            if (strtotime($this->LastEdited) < strtotime(' -1 week')) {
                 return;
             }
             /** @var OneSignalSignupApi $api */
