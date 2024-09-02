@@ -166,9 +166,10 @@ class OneSignalSignupApi
             // intended exit point
             return true;
         } else {
-            if ($idStoredInFieldName) {
-                $obj->$idStoredInFieldName = '';
-            }
+            // in case there is a comms error!
+            // if ($idStoredInFieldName) {
+            //     $obj->$idStoredInFieldName = '';
+            // }
             if ($noteStoredInFieldName) {
                 $obj->$noteStoredInFieldName = OneSignalSignupApi::get_error($outcome, $alternativeError);
             }

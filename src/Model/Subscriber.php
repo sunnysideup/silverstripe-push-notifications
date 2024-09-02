@@ -23,7 +23,7 @@ use Sunnysideup\PushNotifications\Api\OneSignalSignupApi;
  * @property string $OneSignalUserID
  * @property string $OneSignalUserNote
  * @property string $OneSignalUserTagsNote
- * @property int $OneSignalSubscriptionNotFoundCount
+ * @property int $OneSignalCommsError
  * @property int $MemberID
  * @method Member Member()
  * @method DataList|SubscriberMessage[] SubscriberMessages()
@@ -38,7 +38,7 @@ class Subscriber extends DataObject
         'OneSignalUserID' => 'Varchar(64)',
         'OneSignalUserNote' => 'Varchar(255)',
         'OneSignalUserTagsNote' => 'Varchar(255)',
-        'OneSignalSubscriptionNotFoundCount' => 'Int',
+        'OneSignalCommsError' => 'Int',
     ];
 
     private static $field_labels = [
@@ -47,7 +47,7 @@ class Subscriber extends DataObject
         'OneSignalUserID' => 'Subscription ID',
         'OneSignalUserNote' => 'OneSignal User Connection Note',
         'OneSignalUserTagsNote' => 'OneSignal User Tags (Groups) Added',
-        'OneSignalSubscriptionNotFoundCount' => 'Number of communication errors',
+        'OneSignalCommsError' => 'Number of Comms Errors',
     ];
 
     private static $has_one = [
@@ -144,7 +144,7 @@ class Subscriber extends DataObject
                         ->setTitle('Subscription ID'),
                     $fields->dataFieldByName('OneSignalUserNote')->setReadonly(true),
                     $fields->dataFieldByName('OneSignalUserTagsNote')->setReadonly(true),
-                    $fields->dataFieldByName('OneSignalSubscriptionNotFoundCount')->setReadonly(true),
+                    $fields->dataFieldByName('OneSignalCommsError')->setReadonly(true),
                 ]
             );
             if ($this->OneSignalUserID) {
@@ -205,10 +205,10 @@ class Subscriber extends DataObject
             if (OneSignalSignupApi::test_success($outcome)) {
                 $isInvalid = $outcome['invalid_identifier'] ?? false;
                 $this->Subscribed = $isInvalid ? false : true;
-                $this->OneSignalSubscriptionNotFoundCount = 0;
+                $this->OneSignalCommsError = 0;
             } else {
-                $this->OneSignalSubscriptionNotFoundCount = $this->OneSignalSubscriptionNotFoundCount + 1;
-                if ($this->OneSignalSubscriptionNotFoundCount > 10) {
+                $this->OneSignalCommsError++;
+                if ($this->OneSignalCommsError > 10) {
                     $this->OneSignalUserID = '';
                     $this->OneSignalUserNote = 'Subscription not found';
                     $this->OneSignalUserTagsNote = 'Subscription not found';

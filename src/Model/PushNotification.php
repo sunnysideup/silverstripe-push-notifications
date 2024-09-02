@@ -7,6 +7,7 @@ use DateTimeInterface;
 use Exception;
 use LeKoala\CmsActions\CustomAction;
 use SilverStripe\Control\Director;
+use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Forms\CheckboxSetField;
 use SilverStripe\Forms\GridField\GridFieldAddExistingAutocompleter;
 use SilverStripe\Forms\HeaderField;
@@ -22,6 +23,8 @@ use SilverStripe\Security\Group;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Security;
 use Sunnysideup\PushNotifications\Api\ConvertToOneSignal\LinkHelper;
+use Sunnysideup\PushNotifications\Api\ConvertToOneSignal\NotificationHelper;
+use Sunnysideup\PushNotifications\Api\OneSignalSignupApi;
 use Sunnysideup\PushNotifications\Api\Providers\PushNotificationOneSignal;
 use Sunnysideup\PushNotifications\Api\PushNotificationProvider;
 use Sunnysideup\PushNotifications\ErrorHandling\PushException;
@@ -73,6 +76,7 @@ class PushNotification extends DataObject
         'OneSignalNotificationID' => 'Varchar(64)',
         'OneSignalNotificationNote' => 'Varchar(255)',
         'OneSignalNumberOfDeliveries' => 'Int',
+        'OneSignalCommsError' => 'Int',
     ];
 
     private static $has_one = [
@@ -102,6 +106,7 @@ class PushNotification extends DataObject
         'OneSignalNotificationID' => 'OneSignal Notification ID',
         'OneSignalNotificationNote' => 'Any notes around connection to OneSignal',
         'OneSignalNumberOfDeliveries' => 'Number of delivery attempts',
+        'OneSignalCommsError' => 'Number of Comms Errors',
     ];
 
     private static $summary_fields = [
@@ -317,9 +322,10 @@ class PushNotification extends DataObject
             $fields->addFieldsToTab(
                 'Root.OneSignal',
                 [
-                    ReadonlyField::create('OneSignalNotificationID', 'Notification ID'),
-                    ReadonlyField::create('OneSignalNotificationNote', 'Notification Note'),
-                    ReadonlyField::create('OneSignalNumberOfDeliveries', 'Number of Delivery Attempts'),
+                    $fields->dataFieldByName('OneSignalNotificationID')->setReadonly(true),
+                    $fields->dataFieldByName('OneSignalNotificationNote')->setReadonly(true),
+                    $fields->dataFieldByName('OneSignalNumberOfDeliveries')->setReadonly(true),
+                    $fields->dataFieldByName('OneSignalCommsError')->setReadonly(true),
                 ]
             );
             if ($this->OneSignalNotificationID) {
@@ -487,8 +493,11 @@ class PushNotification extends DataObject
 
     protected function IsScheduledInThePast(): bool
     {
-
-        return $this->ScheduledAt && strtotime($this->ScheduledAt) < time();
+        if(!$this->exists()) {
+            return false;
+        }
+        $scheduledAt = $this->ScheduledAt ?: $this->Created;
+        return strtotime($scheduledAt) < time();
     }
 
     protected function onBeforeWrite()
@@ -497,25 +506,63 @@ class PushNotification extends DataObject
         if ($this->Sent && ! $this->SentAt) {
             $this->SentAt = date('Y-m-d H:i:s');
         }
-        if (! interface_exists(QueuedJob::class)) {
-            return;
+        if (! $this->ID) {
+            $this->resave = true;
+        } else {
+            $this->scheduleJob();
+            $this->OneSignalComms(false);
         }
+    }
 
-        if ($this->ScheduledAt) {
-            if (! $this->ID) {
-                $this->resave = true;
-            } elseif ($this->SendJobID) {
-                $job = $this->SendJob();
-                $job->StartAfter = $this->ScheduledAt;
-                $job->write();
-            } else {
-                $this->SendJobID = singleton(QueuedJobService::class)->queueJob(
-                    new SendPushNotificationsJob($this),
-                    $this->ScheduledAt
-                );
+    protected function scheduleJob()
+    {
+        if ($this->exists()) {
+            if (!$this->HasExternalProvider()) {
+                if (interface_exists(QueuedJob::class)) {
+                    if ($this->ScheduledAt) {
+                        if ($this->SendJobID) {
+                            $job = $this->SendJob();
+                            $job->StartAfter = $this->ScheduledAt;
+                            $job->write();
+                        } else {
+                            $this->SendJobID = singleton(QueuedJobService::class)->queueJob(
+                                new SendPushNotificationsJob($this),
+                                $this->ScheduledAt
+                            );
+                        }
+                    } elseif ($this->SendJobID) {
+                        $this->SendJob()->delete();
+                    }
+                }
             }
-        } elseif ($this->SendJobID) {
-            $this->SendJob()->delete();
+
+        }
+    }
+
+    public function OneSignalComms(?bool $write = false)
+    {
+        if ($this->OneSignalNotificationID) {
+            /** @var OneSignalSignupApi $api */
+            $api = Injector::inst()->get(OneSignalSignupApi::class);
+            $outcome = $this->api->getOneNotification($this->OneSignalNotificationID);
+            if (OneSignalSignupApi::test_success($outcome)) {
+                $valuesForNotificationDataOneObject = NotificationHelper::singleton()
+                    ->getValuesForNotificationDataOneObject($outcome);
+                foreach ($valuesForNotificationDataOneObject as $key => $value) {
+                    $this->{$key} = $value;
+                }
+                $this->OneSignalCommsError = 0;
+            } else {
+                $this->OneSignalNotificationNote = 'Could not get OneSignal notification. This has happpened '.$this->OneSignalCommsError.' times.';
+                $this->OneSignalCommsError++;
+                if ($this->OneSignalCommsError > 10) {
+                    $this->OneSignalNotificationID = '';
+                    $this->OneSignalNotificationNote = 'There were more than 10 errors in a row. The notification ID has been removed.';
+                }
+            }
+            if ($write) {
+                $this->write();
+            }
         }
     }
 
