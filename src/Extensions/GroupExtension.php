@@ -59,6 +59,12 @@ class GroupExtension extends DataExtension
         'PushNotifications' => PushNotification::class,
     ];
 
+    public function updateSummaryFields(&$fields)
+    {
+        unset($fields['Title']);
+        $fields = ['getBreadcrumbsSimpleWithCount' => 'getBreadcrumbsSimpleWithCount'] + $fields;
+    }
+
     public function getBreadcrumbsSimple(): string
     {
         return $this->getOwner()->getBreadcrumbs(' » ');
