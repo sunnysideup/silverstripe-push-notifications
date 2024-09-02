@@ -24,10 +24,15 @@ use Sunnysideup\PushNotifications\Model\PushNotification;
  */
 class GroupExtension extends DataExtension
 {
+    protected static $subscriber_group = null;
+
     public static function get_all_subscribers_group(): Group
     {
-        $defaultSubscriberGroupDetails = Config::inst()->get(self::class, 'all_subscribers_group_details');
-        return Group::get()->filter(['Code' => $defaultSubscriberGroupDetails['Code']])->first();
+        if (! isset(self::$subscriber_group)) {
+            $defaultSubscriberGroupDetails = Config::inst()->get(self::class, 'all_subscribers_group_details');
+            self::$subscriber_group = Group::get()->filter(['Code' => $defaultSubscriberGroupDetails['Code']])->first();
+        }
+        return self::$subscriber_group;
     }
 
     private static $all_subscribers_group_details = [
