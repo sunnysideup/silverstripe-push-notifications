@@ -164,12 +164,32 @@ class Subscriber extends DataObject
             $fields->removeByName('OneSignalUserNote');
             $fields->removeByName('OneSignalUserTagsNote');
         }
-        $fields->addFieldsToTab(
-            'Root.RelatedMember',
-            [
-                ReadonlyField::create('Groups', 'Member Groups', implode(', ', $this->Member()->Groups()->column('Title'))),
-            ]
-        );
+        $fields->removeByName('MemberID');
+        $member = $this->Member();
+        if ($member) {
+            $fields->addFieldsToTab(
+                'Root.RelatedMember',
+                [
+                    ReadonlyField::create('Groups', 'Member Groups', implode(', ', $this->Member()->Groups()->column('Title'))),
+                    ReadonlyField::create(
+                        'MemberNice',
+                        'Member',
+                        DBHTMLText::create_field('HTMLText', '<a href="'.$this->Member()->CMSEditLink().'">'.$this->Member()->getTitle().'</a>')
+                    ),
+                ]
+            );
+        } else {
+            $fields->addFieldsToTab(
+                'Root.RelatedMember',
+                [
+                    ReadonlyField::create(
+                        'MemberNice',
+                        'Member',
+                        'Not linked to any member'
+                    ),
+                ]
+            );
+        }
         $fields->addFieldsToTab('Root.History', [
             ReadonlyField::create('Created', _t('Push.CREATED', 'Created')),
             ReadonlyField::create('LastEdited', _t('Push.LASTEDITED', 'Last Edited')),
