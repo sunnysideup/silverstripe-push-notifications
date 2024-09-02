@@ -21,6 +21,7 @@ use SilverStripe\Core\Environment;
 use SilverStripe\Forms\CheckboxSetField;
 use SilverStripe\Forms\HTMLEditor\HTMLEditorField;
 use SilverStripe\Forms\TreeDropdownField;
+use SilverStripe\ORM\DataList;
 use SilverStripe\Security\Group;
 use SilverStripe\Security\Security;
 use Sunnysideup\PushNotifications\Api\ConvertToOneSignal\LinkHelper;
@@ -42,6 +43,44 @@ use Sunnysideup\PushNotifications\Extensions\GroupExtension;
  */
 class PushNotificationPage extends Page
 {
+    /**
+     * the list that the ADMIN can use to select subscrible list from
+     * @return \SilverStripe\ORM\DataList
+     */
+    public static function get_list_as_subscribable_groups(): DataList
+    {
+        $allSubscribersGroup = GroupExtension::get_all_subscribers_group();
+        return Group::get()
+            ->filter(
+                [
+                    'Code:not' => [
+                        'administrators',
+                        ($allSubscribersGroup ? $allSubscribersGroup->Code : 'nothing-here')
+                    ]
+                ]
+            );
+    }
+
+
+    /**
+     * the list that the ADMIN can use to send push notification to
+     * @return \SilverStripe\ORM\DataList
+     */
+    public static function get_list_of_recipient_groups(): DataList
+    {
+        $allSubscribersGroup = GroupExtension::get_all_subscribers_group();
+        return Group::get()
+            ->filter(
+                [
+                    'ID' => array_merge(
+                        PushNotificationPage::get()->SignupGroups()->columnUnique(),
+                        [$allSubscribersGroup->ID]
+                    )
+                ]
+            );
+    }
+
+
     public const ONESIGNAL_INIT_FILE_NAME = 'OneSignalSDKWorker.js';
 
     private static $table_name = 'PushNotificationPage';
@@ -223,7 +262,7 @@ class PushNotificationPage extends Page
                 )
             ]
         );
-        $allSubscribersGroup = GroupExtension::get_all_subscribers_group();
+
         $fields->addFieldsToTab(
             'Root.SignupGroups',
             [
@@ -231,13 +270,7 @@ class PushNotificationPage extends Page
                 CheckboxSetField::create(
                     'SignupGroups',
                     'Joinable Groups'.PHP_EOL.'CAREFUL SEE BELOW',
-                    Group::get()
-                        ->filter([
-                            'Code:not' => [
-                                'administrators',
-                                ($allSubscribersGroup ? $allSubscribersGroup->Code : 'nothing-here')
-                            ]
-                        ])
+                    self::get_list_as_subscribable_groups()
                         ->map('ID', 'BreadcrumbsSimpleWithCount'),
                 )
                     ->setDescription('CAREFUL: only select groups without any special permissions as otherwise users can grant themselves those permissions.')
@@ -256,7 +289,7 @@ class PushNotificationPage extends Page
             }
             $memberGroups = $member->Groups->columnUnique();
             if ($memberGroups) {
-                $signupGroups = $this->SignupGroups()->columnUnique();
+                $signupGroups = self::get_list_of_recipient_groups()->columnUnique();
                 if (array_intersect($memberGroups, $signupGroups)) {
                     return true;
                 }

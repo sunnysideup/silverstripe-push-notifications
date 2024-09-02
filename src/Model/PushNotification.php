@@ -277,7 +277,7 @@ class PushNotification extends DataObject
                         CheckboxSetField::create(
                             'RecipientGroups',
                             'Recipients'.PHP_EOL.'SELECT WITH CARE!',
-                            PushNotificationPage::get_one()->SignupGroups()
+                            PushNotificationPage::get_list_of_recipient_groups()
                                 ->map('ID', 'BreadcrumbsSimpleWithCount'),
                         )->setDescription(_t(
                             'Push.RECIPIENTGROUPSDESCRIPTION',
