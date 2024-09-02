@@ -313,7 +313,7 @@ class PushNotification extends DataObject
                         'OneSignalLink',
                         LinkHelper::singleton()->createHtmlLink(
                             $this->getOneSignalLink(),
-                            'Head to OneSignal now to edit your message before it is sent!',
+                            'Head to OneSignal now to review / send your message!',
                             true
                         )
                     )
@@ -392,7 +392,16 @@ class PushNotification extends DataObject
 
     public function canSend($member = null)
     {
-        return ! $this->Sent && $this->canEdit($member) && $this->getProvider() && $this->HasRecipients();
+        if ($this->OneSignalNotificationID) {
+            return false;
+        }
+        if ($this->Sent) {
+            return false;
+        }
+        if ($this->HasRecipients() && $this->canEdit($member) && $this->getProvider() && $this->getProvider()->isEnabled()) {
+            return true;
+        }
+        return false;
     }
 
     public function HasRecipients(): bool
@@ -497,8 +506,10 @@ class PushNotification extends DataObject
         if (!$this->exists()) {
             return false;
         }
-        $scheduledAt = $this->ScheduledAt ?: $this->Created;
-        return strtotime($scheduledAt) < time();
+        if (! $this->ScheduledAt) {
+            return false;
+        }
+        return strtotime($this->ScheduledAt) < time();
     }
 
     protected function onBeforeWrite()
