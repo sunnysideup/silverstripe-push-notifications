@@ -50,6 +50,7 @@ use Symbiote\QueuedJobs\Services\QueuedJobService;
  * @property string $OneSignalNotificationID
  * @property string $OneSignalNotificationNote
  * @property int $OneSignalNumberOfDeliveries
+ * @property int $OneSignalCommsError
  * @property int $SendJobID
  * @method QueuedJobDescriptor SendJob()
  * @method DataList|SubscriberMessage[] SubscriberMessages()

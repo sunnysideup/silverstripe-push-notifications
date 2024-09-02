@@ -49,7 +49,10 @@ class UpdateOneSignal extends BuildTask
     protected function syncSubscribers()
     {
         $this->header('WRITING SUBSCRIPTIONS');
-        $subscribers = Subscriber::get()->filter(['OneSignalUserID:not' => ['', null, 0]]);
+        $subscribers = Subscriber::get()
+            ->filter(['OneSignalUserID:not' => ['', null, 0]])
+            ->sort(['ID' => 'DESC'])
+            ->limit(2000);
         foreach ($subscribers as $subscriber) {
             $this->outcome('Writing: ' . $subscriber->getTitle(). ' - '. $subscriber->OneSignalUserID);
             $subscriber->OneSignalComms(true);
@@ -98,7 +101,8 @@ class UpdateOneSignal extends BuildTask
         $this->header('WRITING NOTIFICATIONS FROM WEBSITE');
         /** @var OneSignalSignupApi $api */
         $notifications = PushNotification::get()
-            ->filter(['OneSignalNotificationID:not' => ['', null, 0]]);
+            ->filter(['OneSignalNotificationID:not' => ['', null, 0]])
+            ->limit(200);
         /** @var PushNotification $notification */
         foreach ($notifications as $notification) {
             $this->outcome('Writing: ' . $notification->getTitle());
