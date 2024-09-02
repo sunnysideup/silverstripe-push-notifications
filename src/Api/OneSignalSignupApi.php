@@ -120,10 +120,6 @@ class OneSignalSignupApi
         }
     }
 
-    public static function notification_id_to_onesignal_link($id): string
-    {
-        return LinkHelper::singleton()->notificationLink($id);
-    }
 
     public function __construct()
     {

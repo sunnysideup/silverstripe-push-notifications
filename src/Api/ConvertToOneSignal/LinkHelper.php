@@ -126,6 +126,7 @@ class LinkHelper
             Environment::getEnv('SS_ONESIGNAL_APP_ID'),
             'notifications',
             $id,
+            'edit'
         );
     }
 

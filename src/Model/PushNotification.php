@@ -511,6 +511,7 @@ class PushNotification extends DataObject
                 // created more than a day go, forget it.
                 return strtotime($this->Created) < strtotime(' -1 day');
             }
+            return false;
         }
         return strtotime($this->ScheduledAt) < time();
     }
