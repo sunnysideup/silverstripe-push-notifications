@@ -17,6 +17,7 @@ use SilverStripe\ORM\ArrayList;
 use SilverStripe\Security\Group;
 use SilverStripe\Security\Security;
 use SilverStripe\View\Requirements;
+use Sunnysideup\PushNotifications\Extensions\GroupExtension;
 use Sunnysideup\PushNotifications\Model\PushNotification;
 use Sunnysideup\PushNotifications\Model\Subscriber;
 
@@ -87,7 +88,7 @@ class PushNotificationPageController extends ContentController
         HTTPCacheControlMiddleware::singleton()->disableCache();
         $userId = (string) $request->postVar('userId');
         $token = (string) $request->postVar('token');
-        if(!$userId) {
+        if (!$userId) {
             return HTTPResponse::create(json_encode(['success' => false, 'error' => 'No user ID provided']))
                 ->addHeader('Content-Type', 'application/json')
                 ->setStatusCode(404);
@@ -99,7 +100,7 @@ class PushNotificationPageController extends ContentController
                 'OneSignalUserID' => $userId,
             ];
             $subscriber = Subscriber::get()->filter($filter)->first();
-            if(! $subscriber) {
+            if (! $subscriber) {
                 $subscriber = Subscriber::create($filter);
             }
             $subscriber->Subscribed = $subscribed;
@@ -145,13 +146,13 @@ class PushNotificationPageController extends ContentController
         Requirements::customScript('window.push_notification_url="'.$link.'";', "push_notification_url");
         Requirements::javascript('sunnysideup/push-notifications: client/dist/javascript/add-to-home-screen.js');
         // Requirements::themedCSS('client/dist/css/push');
-        if($this->owner->UseOneSignal) {
+        if ($this->owner->UseOneSignal) {
             Requirements::javascript('sunnysideup/push-notifications: client/dist/javascript/one-signal.js');
             return;
         }
         $key = Environment::getEnv('SS_VAPID_PUBLIC_KEY');
         Requirements::javascript('sunnysideup/push-notifications: client/dist/javascript/service-worker-start.js');
-        if($key && ! $this->UseOneSignal) {
+        if ($key && ! $this->UseOneSignal) {
             Requirements::customScript('let vapid_public_key="'.$key.'";', "VapidPublicKey");
         }
     }
@@ -162,7 +163,7 @@ class PushNotificationPageController extends ContentController
         $memberGroups = (array) $member->Groups()->columnUnique();
         $signupableGroups = (array) $this->SignupGroups()->columnUnique();
         $groupOptions = Group::get()
-            ->filter(['ID' => array_merge([-1], $signupableGroups, $memberGroups)])
+            ->filter(['ID' => array_merge([-1], $signupableGroups)])
             ->map('ID', 'BreadcrumbsSimple');
         $fields = FieldList::create(
             CheckboxSetField::create('Groups', 'Select Your Groups', $groupOptions)
@@ -188,30 +189,60 @@ class PushNotificationPageController extends ContentController
 
     public function doSelectGroupsForm(array $data, Form $form)
     {
+        // member stuff
         $member = Security::getCurrentUser();
-        $oldGroups = $member->Groups()->columnUnique();
-        $oldGroups = array_combine($oldGroups, $oldGroups);
-        $signupableGroups = (array) $this->SignupGroups()->columnUnique();
-        foreach($data['Groups'] as $groupID) {
-            // IMPORTANT SECURITY CHECK!!!
-            if(in_array($groupID, $signupableGroups) || in_array($groupID, $oldGroups)) {
-                $group = Group::get()->byID((int) $groupID);
-                if(! $group) {
-                    continue;
-                }
-                $member->Groups()->add($group);
-                $group->write();
-                unset($oldGroups[$groupID]);
-            }
+        $memberGroups = $member->Groups();
+
+        // old Groups
+        $oldGroups = (array) $memberGroups->columnUnique();
+        // ....
+        // deal with default group
+        $defaultGroup = GroupExtension::get_all_subscribers_group();
+        if (isset($oldGroups[$defaultGroup->ID])) {
+            unset($oldGroups[$defaultGroup->ID]);
+        } else {
+            $memberGroups->add($defaultGroup);
         }
-        foreach($oldGroups as $groupID) {
-            $group = Group::get()->byID((int) $groupID);
-            if(! $group) {
+        // filter for values you can change!
+        if (!isset($data['Groups']) || ! is_array($data['Groups'])) {
+            $data['Groups'] = [];
+        }
+        // IMPORTANT SECURITY CHECK!!!
+        // YOU EITHER ARE ALREADY SUBSCRIBED TO THE GROUP OR THE GROUP IS SIGNUPABLE
+        $signupableGroups = (array) $this->SignupGroups()->columnUnique();
+        $newGroups = array_intersect($data['Groups'], $signupableGroups);
+        $oldGroups = array_intersect($oldGroups, $signupableGroups);
+
+        // make it easy to unset old groups
+        $oldGroups = array_combine($oldGroups, $oldGroups);
+        // add new groups
+        foreach ($newGroups as $groupID) {
+            $groupID = (int) $groupID;
+            // already subscribed, nothing more to do.
+            if (in_array($groupID, $oldGroups)) {
+                unset($oldGroups[$groupID]);
                 continue;
             }
-            $member->Groups()->remove($group);
+            $group = Group::get()->byID((int) $groupID);
+            if (! $group) {
+                continue;
+            }
+            $memberGroups->add($group);
+            $group->write();
+            unset($oldGroups[$groupID]);
+        }
+
+        // remove remaining old groups
+        foreach ($oldGroups as $groupID) {
+            $group = Group::get()->byID((int) $groupID);
+            if (! $group) {
+                continue;
+            }
+            $memberGroups->remove($group);
             $group->write();
         }
+
+        // update member
         $member->write();
         $this->redirectBack();
     }

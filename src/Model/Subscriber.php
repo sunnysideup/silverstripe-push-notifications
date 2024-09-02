@@ -23,6 +23,7 @@ use Sunnysideup\PushNotifications\Api\OneSignalSignupApi;
  * @property string $OneSignalUserID
  * @property string $OneSignalUserNote
  * @property string $OneSignalUserTagsNote
+ * @property int $OneSignalSubscriptionNotFoundCount
  * @property int $MemberID
  * @method Member Member()
  * @method DataList|SubscriberMessage[] SubscriberMessages()

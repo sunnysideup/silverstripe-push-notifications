@@ -7,6 +7,7 @@ use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\ORM\DataExtension;
+use SilverStripe\ORM\DB;
 use SilverStripe\Security\Group;
 use Sunnysideup\PushNotifications\Api\ConvertToOneSignal\GroupHelper;
 use Sunnysideup\PushNotifications\Api\ConvertToOneSignal\NotificationHelper;
@@ -23,6 +24,18 @@ use Sunnysideup\PushNotifications\Model\PushNotification;
  */
 class GroupExtension extends DataExtension
 {
+    public static function get_all_subscribers_group(): Group
+    {
+        $defaultSubscriberGroupDetails = Config::inst()->get(self::class, 'all_subscribers_group_details');
+        return Group::get()->filter(['Code' => $defaultSubscriberGroupDetails['Code']])->first();
+    }
+
+    private static $all_subscribers_group_details = [
+        'Code' => 'allsubscribers',
+        'Title' => 'All Push Notification Subscribers',
+        'Description' => 'All subscribers to push notifications and similar.',
+    ];
+
     private static $db = [
         'OneSignalSegmentID' => 'Varchar(64)',
         'OneSignalSegmentNote' => 'Varchar(255)',
@@ -49,6 +62,15 @@ class GroupExtension extends DataExtension
     public function getBreadcrumbsSimpleWithCount(): string
     {
         return $this->getOwner()->getBreadcrumbsSimple() . ' (' . $this->getOwner()->Members()->count() . ')';
+    }
+
+    public function canDelete($member)
+    {
+        $owner = $this->getOwner();
+        $defaultSubscriberGroupDetails = Config::inst()->get(self::class, 'all_subscribers_group_details');
+        if ($owner->Code === $defaultSubscriberGroupDetails['Code']) {
+            return false;
+        }
     }
 
     public function onBeforeWrite()
@@ -159,5 +181,28 @@ class GroupExtension extends DataExtension
     {
         return GroupHelper::singleton()->group2oneSignalCode($this->getOwner());
     }
+
+    public function requireDefaultRecords()
+    {
+        $defaultSubscriberGroupDetails = Config::inst()->get(self::class, 'all_subscribers_group_details');
+        if (! isset($defaultSubscriberGroupDetails['Code'])) {
+            user_error('Please add a Code to the default subscriber group details');
+        }
+        if (! Group::get()->filter(['Code' => $defaultSubscriberGroupDetails['Code']])->exists()) {
+            if (! isset($defaultSubscriberGroupDetails['Title'])) {
+                user_error('Please add a Title to the default subscriber group details');
+            }
+            if (! isset($defaultSubscriberGroupDetails['Description'])) {
+                user_error('Please add a Description to the default subscriber group details');
+            }
+            DB::alteration_message('Creating default subscriber group', 'created');
+            $group = Group::create($defaultSubscriberGroupDetails);
+            $group->write();
+            if ($group->Code !== $defaultSubscriberGroupDetails['Code']) {
+                user_error('Code does not match for default subscriber group. Please check the code.');
+            }
+        }
+    }
+
 
 }
