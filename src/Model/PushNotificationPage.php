@@ -22,6 +22,7 @@ use SilverStripe\Forms\CheckboxSetField;
 use SilverStripe\Forms\HTMLEditor\HTMLEditorField;
 use SilverStripe\Forms\TreeDropdownField;
 use SilverStripe\Security\Group;
+use SilverStripe\Security\Security;
 use Sunnysideup\PushNotifications\Api\ConvertToOneSignal\LinkHelper;
 
 /**
@@ -236,6 +237,34 @@ class PushNotificationPage extends Page
         );
 
 
+        return $fields;
+    }
+
+    public function canView($member = null)
+    {
+        if (! $this->canEdit($member)) {
+            if (! $member) {
+                $member = Security::getCurrentUser();
+            }
+            $memberGroups = $member->Groups->columnUnique();
+            if ($memberGroups) {
+                $signupGroups = $this->SignupGroups()->columnUnique();
+                if (array_intersect($memberGroups, $signupGroups)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        return parent::canView($member);
+    }
+
+    public function getSettingsFields()
+    {
+        $fields = parent::getSettingsFields();
+        $fields->dataFieldByName('CanViewType')
+            ->setDescription('Members who are in any of the subscriber groups can view this page. Members not in these groups need to have special permissions to see this page.');
+        // $fields->dataFieldByName('URLSegment')
+        //     ->setDescription('This is the URL segment that the page is available on.');
         return $fields;
     }
 
