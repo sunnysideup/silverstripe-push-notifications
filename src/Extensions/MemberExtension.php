@@ -82,7 +82,7 @@ class MemberExtension extends DataExtension
         $fields->removeFieldFromTab('Root', 'PushNotificationSubscribers');
         $fields->removeFieldFromTab('Root', 'SubscriberMessages');
         $fields->addFieldsToTab(
-            'Root.Push',
+            'Root.OneSignal',
             [
                 GridField::create(
                     'PushNotificationSubscribers',

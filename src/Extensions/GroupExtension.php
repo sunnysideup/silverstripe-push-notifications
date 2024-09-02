@@ -142,7 +142,7 @@ class GroupExtension extends DataExtension
     {
         $owner = $this->getOwner();
         $fields->addFieldsToTab(
-            'Root.Push',
+            'Root.OneSignal',
             [
                 ReadonlyField::create('OneSignalSegmentID', 'OneSignal Segment ID'),
                 ReadonlyField::create('OneSignalSegmentNote', 'OneSignal Segment Note'),
