@@ -26,7 +26,7 @@ class NotificationHelper
         }
         $sendAfterString = $pushNotification->ScheduledAt ?: $this->config()->default_scheduled_at_string;
         $dataForNotification = [
-            'name' => 'Recipients: '.$pushNotification->getRecipientsDescription(),
+            'name' => $pushNotification->getRecipientsDescription(),
             'headings' => [
                 'en' => $pushNotification->Title,
             ],
