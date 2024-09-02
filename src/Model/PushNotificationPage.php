@@ -24,6 +24,7 @@ use SilverStripe\Forms\TreeDropdownField;
 use SilverStripe\Security\Group;
 use SilverStripe\Security\Security;
 use Sunnysideup\PushNotifications\Api\ConvertToOneSignal\LinkHelper;
+use Sunnysideup\PushNotifications\Extensions\GroupExtension;
 
 /**
  * Class \Sunnysideup\PushNotifications\Model\PushNotificationPage
@@ -222,6 +223,7 @@ class PushNotificationPage extends Page
                 )
             ]
         );
+        $allSubscribersGroup = GroupExtension::get_all_subscribers_group();
         $fields->addFieldsToTab(
             'Root.SignupGroups',
             [
@@ -229,7 +231,13 @@ class PushNotificationPage extends Page
                 CheckboxSetField::create(
                     'SignupGroups',
                     'Joinable Groups'.PHP_EOL.'CAREFUL SEE BELOW',
-                    Group::get()->filter('Code:not', 'administrators')
+                    Group::get()
+                        ->filter([
+                            'Code:not' => [
+                                'administrators',
+                                ($allSubscribersGroup ? $allSubscribersGroup->Code : 'nothing-here')
+                            ]
+                        ])
                         ->map('ID', 'BreadcrumbsSimpleWithCount'),
                 )
                     ->setDescription('CAREFUL: only select groups without any special permissions as otherwise users can grant themselves those permissions.')
