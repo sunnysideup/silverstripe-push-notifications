@@ -2,6 +2,7 @@
 
 namespace Sunnysideup\PushNotifications\Api;
 
+use Exception;
 use OneSignal\Config;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Environment;
@@ -237,10 +238,19 @@ class OneSignalSignupApi
                 user_error('Key ' . $key . ' is not accepted. Please use one of the following: ' . implode(', ', self::ACCEPTED_USER_SETTING));
             }
         }
-        return $this->oneSignal->devices()->update(
-            $deviceID,
-            $data
-        );
+        try {
+            return $this->oneSignal->devices()->update(
+                $deviceID,
+                $data
+            );
+        } catch (Exception $e) {
+            return [
+                'success' => 0,
+                '_status_code' => 404,
+                'error' => 'Device not found'
+            ];
+        }
+
     }
 
     public function createSegment(string $name, array $filters): array

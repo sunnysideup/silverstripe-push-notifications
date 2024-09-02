@@ -227,11 +227,13 @@ class Subscriber extends DataObject
             /** @var OneSignalSignupApi $api */
             $api = Injector::inst()->get(OneSignalSignupApi::class);
             $outcome =  $api->getOneDevice($this->OneSignalUserID);
+            $error = false;
             if (OneSignalSignupApi::test_success($outcome)) {
                 $isInvalid = $outcome['invalid_identifier'] ?? false;
                 $this->Subscribed = $isInvalid ? false : true;
                 $this->OneSignalCommsError = 0;
             } else {
+                $error = true;
                 $this->OneSignalCommsError++;
                 if ($this->OneSignalCommsError > 10) {
                     $this->OneSignalUserID = '';
@@ -241,32 +243,33 @@ class Subscriber extends DataObject
                 }
             }
             $externalUserId = (string) ($outcome['external_user_id'] ?? '');
-
-            // extra stuff for member
-            $member = $this->Member();
-            if ($member && $member->exists()) {
-                $expectedExternalUserId = (string) MemberHelper::singleton()->member2externalUserId($member);
-                if ($externalUserId !== $expectedExternalUserId) {
-                    $outcome = $api->addExternalUserIdToUser($this->OneSignalUserID, $member);
-                    if (OneSignalSignupApi::test_success($outcome)) {
-                        $this->OneSignalUserNote = 'Succesfully connected to OneSignal with external user id '.$externalUserId;
-                        $externalUserId = $expectedExternalUserId;
-                    } else {
-                        $this->OneSignalUserNote = OneSignalSignupApi::get_error($outcome);
-                        $this->OneSignalUserTagsNote = 'Error: could not add external user id with id '.$externalUserId;
+            if ($error === false && $this->Subcribed) {
+                // extra stuff for member
+                $member = $this->Member();
+                if ($member && $member->exists()) {
+                    $expectedExternalUserId = (string) MemberHelper::singleton()->member2externalUserId($member);
+                    if ($externalUserId !== $expectedExternalUserId) {
+                        $outcome = $api->addExternalUserIdToUser($this->OneSignalUserID, $member);
+                        if (OneSignalSignupApi::test_success($outcome)) {
+                            $this->OneSignalUserNote = 'Succesfully connected to OneSignal with external user id '.$externalUserId;
+                            $externalUserId = $expectedExternalUserId;
+                        } else {
+                            $this->OneSignalUserNote = OneSignalSignupApi::get_error($outcome);
+                            $this->OneSignalUserTagsNote = 'Error: could not add external user id with id '.$externalUserId;
+                        }
                     }
-                }
-                if ($externalUserId === $expectedExternalUserId) {
-                    $outcome = $api->addTagsToUserBasedOnGroups($member);
-                    if (OneSignalSignupApi::test_success($outcome)) {
-                        $this->OneSignalUserTagsNote = 'Sucessfully added group tags to user';
-                    } else {
-                        $this->OneSignalUserTagsNote = OneSignalSignupApi::get_error($outcome);
+                    if ($externalUserId === $expectedExternalUserId) {
+                        $outcome = $api->addTagsToUserBasedOnGroups($member);
+                        if (OneSignalSignupApi::test_success($outcome)) {
+                            $this->OneSignalUserTagsNote = 'Sucessfully added group tags to user';
+                        } else {
+                            $this->OneSignalUserTagsNote = OneSignalSignupApi::get_error($outcome);
+                        }
                     }
+                } else {
+                    $this->OneSignalUserNote = 'Error: No member found';
+                    $this->OneSignalUserTagsNote = 'Error: No member found';
                 }
-            } else {
-                $this->OneSignalUserNote = 'Error: No member found';
-                $this->OneSignalUserTagsNote = 'Error: No member found';
             }
         }
         if ($write) {
