@@ -162,6 +162,7 @@ class PushNotificationPageController extends ContentController
         $member = Security::getCurrentUser();
         $memberGroups = (array) $member->Groups()->columnUnique();
         $signupableGroups = (array) $this->SignupGroups()->columnUnique();
+        $memberGroups = array_intersect($memberGroups, $signupableGroups);
         $groupOptions = Group::get()
             ->filter(['ID' => array_merge([-1], $signupableGroups)])
             ->map('ID', 'BreadcrumbsSimple');
@@ -203,10 +204,11 @@ class PushNotificationPageController extends ContentController
         } else {
             $memberGroups->add($defaultGroup);
         }
-        // filter for values you can change!
+        // check the submitted data
         if (!isset($data['Groups']) || ! is_array($data['Groups'])) {
             $data['Groups'] = [];
         }
+        $data['Groups'] = array_map('intval', $data['Groups']);
         // IMPORTANT SECURITY CHECK!!!
         // YOU EITHER ARE ALREADY SUBSCRIBED TO THE GROUP OR THE GROUP IS SIGNUPABLE
         $signupableGroups = (array) $this->SignupGroups()->columnUnique();
@@ -242,7 +244,7 @@ class PushNotificationPageController extends ContentController
             $group->write();
         }
 
-        // update member
+        // update member - important to comms their OneSignal data
         $member->write();
         $this->redirectBack();
     }
