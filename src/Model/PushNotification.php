@@ -283,8 +283,6 @@ class PushNotification extends DataObject
                             'Push.RECIPIENTGROUPSDESCRIPTION',
                             'If you select recipient groups, then individual recipient members will be ignored!'
                         )),
-
-                        ReadonlyField::create('RecipientsCount', _t('Push.RECIPIENTCOUNT', 'Recipient Count')),
                     ]
                 );
             }
@@ -292,6 +290,8 @@ class PushNotification extends DataObject
                 'Root.Recipients',
                 [
                     ReadonlyField::create('RecipientsCount', _t('Push.RECIPIENTCOUNT', 'Recipient Count')),
+                    ReadonlyField::create('RecipientsCountDevices', _t('Push.RECIPIENTSCOUNTDEVICES', 'Devices Count'), $this->getRecipientsCountDevices()),
+                    ReadonlyField::create('RecipientsDescription', _t('Push.RECIPIENTSDESCRIPTION', 'Message Description'), $this->getRecipientsDescription()),
                 ]
             );
         }
