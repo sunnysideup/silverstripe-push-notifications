@@ -71,6 +71,7 @@ class UpdateOneSignal extends BuildTask
         }
         $allSubcribersGroup = GroupExtension::get_all_subscribers_group();
         foreach ($allSubcribersGroup->Members()->exclude(['ID' => $membersDone]) as $member) {
+            $this->outcome('Checking if : ' . $member->getTitle(). ' still needs to be part of the all subscribers group');
             $member->OneSignalComms(true, false);
         }
     }
