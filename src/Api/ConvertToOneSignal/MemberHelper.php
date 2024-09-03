@@ -34,8 +34,8 @@ class MemberHelper
         $tags = [];
         // note that OneSignal limits tags to 10 per user!
         $memberGroups = $member->Groups()->limit($this->Config()->limit_for_tags)->columnUnique();
-        foreach(Group::get() as $group) {
-            if(in_array($group->ID, $memberGroups, true)) {
+        foreach (Group::get() as $group) {
+            if (in_array($group->ID, $memberGroups, true)) {
                 $tags[GroupHelper::singleton()->group2oneSignalCode($group)] = 'Y';
             }
         }
@@ -47,11 +47,11 @@ class MemberHelper
         $memberListIdCondensed = $this->ValidSubscribersBasedOneMemberList($members)
             ->columnUnique('MemberID');
         $members = $members->filter(['ID' => $memberListIdCondensed]);
-        if($members->count() > 2000) {
+        if ($members->count() > 2000) {
             user_error('You are trying to send a message to more than 2000 members. This is not allowed.');
         }
         // note that OneSignal limits tags to 10 per user!
-        foreach($members as $member) {
+        foreach ($members as $member) {
             $includedAliases[] = $this->member2externalUserId($member);
         }
         return $includedAliases;
@@ -70,7 +70,7 @@ class MemberHelper
         return Subscriber::get()
             ->filter(
                 [
-                    'MemberID' => $members->columnUnique('ID'),
+                    'MemberID' => $members->columnUnique('ID') + [-1 => -1],
                     'OneSignalUserID:not' => [null, '', 0],
                     'Subscribed' => true,
                 ]
