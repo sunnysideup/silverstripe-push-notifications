@@ -275,7 +275,6 @@ class Subscriber extends DataObject
                             $externalUserId = $expectedExternalUserId;
                         } else {
                             $this->OneSignalUserNote = OneSignalSignupApi::get_error($outcome);
-                            $this->OneSignalUserTagsNote = 'Error: could not add external user id with id '.$externalUserId;
                         }
                     } else {
                         $this->OneSignalUserNote = 'Succesfully connected already to OneSignal with external user id '.$externalUserId;
@@ -286,8 +285,9 @@ class Subscriber extends DataObject
                             $this->OneSignalUserTagsNote = 'Sucessfully added group tags to user';
                         } else {
                             $this->OneSignalUserTagsNote = OneSignalSignupApi::get_error($outcome);
-                            $this->OneSignalUserTagsNote = 'Error: could not add tag groups because external user id does not match yet '.$externalUserId;
                         }
+                    } else {
+                        $this->OneSignalUserTagsNote = 'Error: could not add tag groups because external user id does not match yet '.$externalUserId;
                     }
                 } else {
                     $this->OneSignalUserNote = 'Error: No member found';
