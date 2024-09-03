@@ -420,7 +420,7 @@ class PushNotification extends DataObject
         $membersCount = $members->count();
         if ($membersCount > 0) {
             if ($membersCount > 3) {
-                return 'Msg to '.$membersCount.' website members: '.implode(', ', $members->limit(3)->column('Email')).'...';
+                return 'Msg to '.$membersCount.': '.implode(', ', $members->limit(3)->column('Email')).'...';
             } else {
                 return 'Msg to '.implode(', ', $members->column('Email'));
             }

@@ -81,10 +81,10 @@ At the moment, you will need to copy messages on OneSignal to the push-notificat
 To run a sync of all members and groups with OneSignal, you can run the following task from the command line:
 
 ```shell
-`vendor/bin/sake dev/tasks/sync-one-signal`
+`vendor/bin/sake dev/tasks/update-one-signal`
 ```
 
-You could consider running this overnight as a cron job.
+You could consider running as a cron job at regular intervals.
 
 You can also run this from the browser `/dev/tasks/sync-one-signal`.
 
@@ -142,10 +142,10 @@ There is a task that you can run to test the basic connections:
 You can run this from the command line:
 
 ```shell
-`vendor/bin/sake dev/tasks/test-one-signal-task`
+`vendor/bin/sake dev/tasks/test-one-signal`
 ```
 
-Or from the browser `/dev/tasks/test-one-signal-task`.
+Or from the browser `/dev/tasks/test-one-signal`.
 
 ### set up
 
