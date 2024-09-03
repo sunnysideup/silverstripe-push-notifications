@@ -419,22 +419,27 @@ class PushNotification extends DataObject
         $members = $this->RecipientMembers();
         $membersCount = $members->count();
         if ($membersCount > 0) {
+            $recipientCount = Subscriber::get()->filter(['MemberID' => $members->column('ID'), 'Subscribed' => true])->count();
             if ($membersCount > 3) {
-                return 'Msg to '.$membersCount.': '.implode(', ', $members->limit(3)->column('Email')).'...';
+                return 'Msg to '.$membersCount.' members ('.$recipientCount.'): '.implode(', ', $members->limit(3)->column('Email')).'... ';
             } else {
-                return 'Msg to '.implode(', ', $members->column('Email'));
+                return 'Msg to '.implode(', ', $members->column('Email')).' ('.$recipientCount.')';
             }
         } else {
             $groupsCount = $this->RecipientGroups()->count();
             if ($groupsCount > 0) {
-                if ($groupsCount > 3) {
-                    return 'Msg to '.$groupsCount.' groups: '.implode(', ', $this->RecipientGroups()->limit(3)->column('Title')).'...';
-                } else {
-                    return 'Msg to '.implode(', ', $this->RecipientGroups()->column('Title'));
+                $members = $this->getRecipients();
+                if ($members->count() > 0) {
+                    $recipientCount = Subscriber::get()->filter(['MemberID' => $members->column('ID'), 'Subscribed' => true])->count();
+                    if ($groupsCount > 3) {
+                        return 'Msg to '.$groupsCount.' groups  ('.$recipientCount.'): '.implode(', ', $this->RecipientGroups()->limit(3)->column('Title')).'...';
+                    } else {
+                        return 'Msg to '.implode(', ', $this->RecipientGroups()->column('Title')).' ('.$recipientCount.')';
+                    }
                 }
             }
         }
-        return 'Msg to all website members';
+        return 'Msg to no specific members';
     }
 
     public function getGroupsSummary(): int
