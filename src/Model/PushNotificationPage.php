@@ -73,7 +73,7 @@ class PushNotificationPage extends Page
             ->filter(
                 [
                     'ID' => array_merge(
-                        PushNotificationPage::get()->SignupGroups()->columnUnique(),
+                        PushNotificationPage::get_one()->SignupGroups()->columnUnique(),
                         [$allSubscribersGroup->ID]
                     )
                 ]
@@ -290,7 +290,7 @@ class PushNotificationPage extends Page
             return false;
         }
         if (! $this->canEdit($member)) {
-            $memberGroups = $member->Groups->columnUnique();
+            $memberGroups = $member->Groups()->columnUnique();
             if ($memberGroups) {
                 $signupGroups = self::get_list_of_recipient_groups()->columnUnique();
                 if (array_intersect($memberGroups, $signupGroups)) {
