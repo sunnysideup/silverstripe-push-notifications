@@ -416,30 +416,35 @@ class PushNotification extends DataObject
 
     public function getRecipientsDescription(): string
     {
+        $recipientCount = $this->getRecipientsCountDevices();
         $members = $this->RecipientMembers();
         $membersCount = $members->count();
         if ($membersCount > 0) {
-            $recipientCount = Subscriber::get()->filter(['MemberID' => $members->column('ID'), 'Subscribed' => true])->count();
             if ($membersCount > 3) {
-                return 'Msg to '.$membersCount.' members ('.$recipientCount.'): '.implode(', ', $members->limit(3)->column('Email')).'... ';
+                return 'Msg to '.$membersCount.' members (~'.$recipientCount.' devices): '.implode(', ', $members->limit(3)->column('Email')).'... ';
             } else {
-                return 'Msg to '.implode(', ', $members->column('Email')).' ('.$recipientCount.')';
+                return 'Msg to members: '.implode(', ', $members->column('Email')).' (~'.$recipientCount.' devices)';
             }
         } else {
             $groupsCount = $this->RecipientGroups()->count();
             if ($groupsCount > 0) {
-                $members = $this->getRecipients();
-                if ($members->count() > 0) {
-                    $recipientCount = Subscriber::get()->filter(['MemberID' => $members->column('ID'), 'Subscribed' => true])->count();
-                    if ($groupsCount > 3) {
-                        return 'Msg to '.$groupsCount.' groups  ('.$recipientCount.'): '.implode(', ', $this->RecipientGroups()->limit(3)->column('Title')).'...';
-                    } else {
-                        return 'Msg to '.implode(', ', $this->RecipientGroups()->column('Title')).' ('.$recipientCount.')';
-                    }
+                if ($groupsCount > 3) {
+                    return 'Msg to '.$groupsCount.' groups  (~'.$recipientCount.' devices): '.implode(', ', $this->RecipientGroups()->limit(3)->column('Title')).'...';
+                } else {
+                    return 'Msg to groups: '.implode(', ', $this->RecipientGroups()->column('Title')).' (~'.$recipientCount.' devices)';
                 }
             }
         }
-        return 'Msg to no specific members';
+        return 'NO subscribers / devices';
+    }
+
+    public function getRecipientsCountDevices(): int
+    {
+        $members = $this->getRecipients();
+        if ($members->count() > 0) {
+            return Subscriber::get()->filter(['MemberID' => $members->column('ID'), 'Subscribed' => true])->count();
+        }
+        return 0;
     }
 
     public function getGroupsSummary(): int
