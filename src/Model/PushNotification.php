@@ -587,7 +587,7 @@ class PushNotification extends DataObject
                 $this->OneSignalCommsError++;
                 if ($this->OneSignalCommsError > 10) {
                     $this->OneSignalNotificationID = '';
-                    $this->OneSignalNotificationNote = 'There were more than 10 errors in a row. The notification ID has been removed.';
+                    $this->OneSignalNotificationNote = 'There were more than 10 errors in a row. ID was '.$this->OneSignalNotificationID  ;
                 }
             }
             if ($write) {

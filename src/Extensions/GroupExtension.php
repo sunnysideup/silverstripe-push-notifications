@@ -123,7 +123,7 @@ class GroupExtension extends DataExtension
             } elseif ($this->removeUnusedSegmentsFromOneSignal()) {
                 $this->removeOneSignalSegment();
                 $owner->OneSignalSegmentID = '';
-                $owner->OneSignalSegmentNote = '';
+                $owner->OneSignalSegmentNote = 'ID was '.$this->OneSignalSegmentID;
             }
             if ($write) {
                 $this->setNoOneSignalComms();

@@ -257,7 +257,7 @@ class Subscriber extends DataObject
                 $this->OneSignalCommsError++;
                 if ($this->OneSignalCommsError > 10) {
                     $this->OneSignalUserID = '';
-                    $this->OneSignalUserNote = 'Subscription not found';
+                    $this->OneSignalUserNote = 'Subscription not found, id was: '.$this->OneSignalUserID;
                     $this->OneSignalUserTagsNote = 'Subscription not found';
                     $this->Subscribed = false;
                 }
