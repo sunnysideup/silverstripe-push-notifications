@@ -226,15 +226,15 @@ class Subscriber extends DataObject
         return $this;
     }
 
-    public function OneSignalComms(?bool $write = false)
+    public function OneSignalComms(?bool $write = false): bool
     {
         if ($this->noOneSignalComms) {
-            return;
+            return false;
         }
         if ($this->OneSignalUserID) {
             // dont bother about things that are old!
             if (strtotime($this->LastEdited) < strtotime('-12 month')) {
-                return;
+                return false;
             }
 
             /** @var OneSignalSignupApi $api */
@@ -297,10 +297,11 @@ class Subscriber extends DataObject
                 $this->OneSignalUserNote = 'Error: not subscribed';
                 $this->OneSignalUserTagsNote = 'Error: not subscribed';
             }
+            if ($write) {
+                $this->write();
+            }
         }
-        if ($write) {
-            $this->write();
-        }
+        return $this->OneSignalUserID ? true : false;
     }
 
     protected function onBeforeDelete()

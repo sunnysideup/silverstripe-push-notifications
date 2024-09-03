@@ -555,7 +555,7 @@ class PushNotification extends DataObject
         }
     }
 
-    public function OneSignalComms(?bool $write = false)
+    public function OneSignalComms(?bool $write = false) : bool
     {
         if ($this->OneSignalNotificationID) {
             // dont bother about things that are old!
@@ -584,6 +584,7 @@ class PushNotification extends DataObject
                 $this->write();
             }
         }
+        return $this->OneSignalNotificationID ? true : false;
     }
 
     public function onAfterWrite()

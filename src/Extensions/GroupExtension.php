@@ -92,7 +92,7 @@ class GroupExtension extends DataExtension
         }
     }
 
-    public function OneSignalComms(?bool $write = false)
+    public function OneSignalComms(?bool $write = false): bool
     {
         $owner = $this->getOwner();
         if ($owner->hasOneSignalSegment()) {
@@ -113,10 +113,11 @@ class GroupExtension extends DataExtension
                 $owner->OneSignalSegmentID = '';
                 $owner->OneSignalSegmentNote = '';
             }
+            if ($write) {
+                $owner->write();
+            }
         }
-        if ($write) {
-            $owner->write();
-        }
+        return $owner->hasOneSignalSegment();
 
     }
 

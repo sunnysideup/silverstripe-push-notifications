@@ -45,7 +45,8 @@ class UpdateOneSignal extends BuildTask
         $groups = Group::get()->filter(['OneSignalSegmentID:not' => ['', null, 0]]);
         foreach ($groups as $group) {
             $this->outcome('Group: ' . $group->getBreadcrumbsSimpleWithCount());
-            $group->OneSignalComms(true);
+            $groupUpdated = $group->OneSignalComms(true);
+            $this->outcome('... Group '.($groupUpdated ? '' : 'NOT').' updated.');
         }
     }
 
@@ -59,13 +60,15 @@ class UpdateOneSignal extends BuildTask
             ->limit(2000);
         foreach ($subscribers as $subscriber) {
             $this->outcome('Writing: ' . $subscriber->getTitle(). ' - '. $subscriber->OneSignalUserID);
-            $subscriber->OneSignalComms(true);
+            $subcriberUpdated = $subscriber->OneSignalComms(true);
+            $this->outcome('... Subscriber '.($subcriberUpdated ? '' : 'NOT').' updated.');
             if ($subscriber->MemberID && !isset($membersDone[$subscriber->MemberID])) {
                 $membersDone[$subscriber->MemberID] = $subscriber->MemberID;
                 $member = $subscriber->Member();
                 if ($member && $member->exists()) {
                     $this->outcome('Checking if : ' . $member->getTitle(). ' is part of the all subscribers group');
-                    $member->OneSignalComms(true, false);
+                    $memberUpdated = $member->OneSignalComms(true, false);
+                    $this->outcome('... Member '.($memberUpdated ? '' : 'NOT').' updated: ');
                 }
 
             }
@@ -73,7 +76,8 @@ class UpdateOneSignal extends BuildTask
         $allSubcribersGroup = GroupExtension::get_all_subscribers_group();
         foreach ($allSubcribersGroup->Members()->exclude(['ID' => $membersDone]) as $member) {
             $this->outcome('Checking if : ' . $member->getTitle(). ' still needs to be part of the all subscribers group');
-            $member->OneSignalComms(true, false);
+            $memberUpdated = $member->OneSignalComms(true, false);
+            $this->outcome('... Member '.($memberUpdated ? '' : 'NOT').' updated: ');
         }
     }
 
@@ -128,7 +132,8 @@ class UpdateOneSignal extends BuildTask
         /** @var PushNotification $notification */
         foreach ($notifications as $notification) {
             $this->outcome('Writing: ' . $notification->getTitle());
-            $notification->OneSignalComms(true);
+            $notificationUpdatd = $notification->OneSignalComms(true);
+            $this->outcome('... Notification '.($notificationUpdatd ? '' : 'NOT').' updated.');
         }
 
     }
