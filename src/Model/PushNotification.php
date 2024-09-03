@@ -281,7 +281,7 @@ class PushNotification extends DataObject
                                 ->map('ID', 'BreadcrumbsSimpleWithCount'),
                         )->setDescription(_t(
                             'Push.RECIPIENTGROUPSDESCRIPTION',
-                            'If you select recipeitn groups, then individual recipient members will be ignored!'
+                            'If you select recipient groups, then individual recipient members will be ignored!'
                         )),
 
                         ReadonlyField::create('RecipientsCount', _t('Push.RECIPIENTCOUNT', 'Recipient Count')),
