@@ -297,6 +297,7 @@ class PushNotificationPage extends Page
         $fields = parent::getSettingsFields();
         $source = $fields->dataFieldByName('CanViewType')->getSource();
         unset($source['Inherit']);
+        unset($source['Anyone']);
         $fields->dataFieldByName('CanViewType')->setSource($source);
         return $fields;
     }
