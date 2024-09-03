@@ -292,6 +292,15 @@ class PushNotificationPage extends Page
         return parent::canView($member);
     }
 
+    public function getSettingsFields()
+    {
+        $fields = parent::getSettingsFields();
+        $source = $fields->dataFieldByName('CanViewType')->getSource();
+        unset($source['Inherit']);
+        $fields->dataFieldByName('CanViewType')->setSource($source);
+        return $fields;
+    }
+
     public function canAccessOrCreateFile(?string $filePath = ''): bool
     {
         if (! $filePath) {
