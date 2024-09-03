@@ -232,7 +232,7 @@ class PushNotificationPage extends Page
                                 ).'
                                 <br />
                                 <hr />
-                                <h3>Advanced Tools</h3>
+                                <h3>Advanced Tools (use with care)</h3>
                                 <br />'.
                                 LinkHelper::singleton()->createHtmlLink(
                                     '/dev/tasks/update-one-signal',
