@@ -64,6 +64,7 @@ class UpdateOneSignal extends BuildTask
                 $membersDone[$subscriber->MemberID] = $subscriber->MemberID;
                 $member = $subscriber->Member();
                 if ($member && $member->exists()) {
+                    $this->outcome('Checking if : ' . $member->getTitle(). ' is part of the all subscribers group');
                     $member->OneSignalComms(true, false);
                 }
 

@@ -293,6 +293,9 @@ class Subscriber extends DataObject
                     $this->OneSignalUserNote = 'Error: No member found';
                     $this->OneSignalUserTagsNote = 'Error: No member found';
                 }
+            } elseif ($error === false && !$this->Subcribed) {
+                $this->OneSignalUserNote = 'Error: not subscribed';
+                $this->OneSignalUserTagsNote = 'Error: not subscribed';
             }
         }
         if ($write) {
