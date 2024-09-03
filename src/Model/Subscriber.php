@@ -233,7 +233,7 @@ class Subscriber extends DataObject
         }
         if ($this->OneSignalUserID) {
             // dont bother about things that are old!
-            if (strtotime($this->LastEdited) < strtotime(' -12 month')) {
+            if (strtotime($this->LastEdited) < strtotime('-12 month')) {
                 return;
             }
 
@@ -262,11 +262,11 @@ class Subscriber extends DataObject
                     $this->Subscribed = false;
                 }
             }
-            $externalUserId = (string) ($outcome['external_user_id'] ?? '');
             if ($error === false && $this->Subcribed) {
                 // extra stuff for member
                 $member = $this->Member();
                 if ($member && $member->exists()) {
+                    $externalUserId = (string) ($outcome['external_user_id'] ?? '');
                     $expectedExternalUserId = (string) MemberHelper::singleton()->member2externalUserId($member);
                     if ($externalUserId !== $expectedExternalUserId) {
                         $outcome = $api->addExternalUserIdToUser($this->OneSignalUserID, $member);
@@ -277,6 +277,8 @@ class Subscriber extends DataObject
                             $this->OneSignalUserNote = OneSignalSignupApi::get_error($outcome);
                             $this->OneSignalUserTagsNote = 'Error: could not add external user id with id '.$externalUserId;
                         }
+                    } else {
+                        $this->OneSignalUserNote = 'Succesfully connected already to OneSignal with external user id '.$externalUserId;
                     }
                     if ($externalUserId === $expectedExternalUserId) {
                         $outcome = $api->addTagsToUserBasedOnGroups($member);
@@ -284,6 +286,7 @@ class Subscriber extends DataObject
                             $this->OneSignalUserTagsNote = 'Sucessfully added group tags to user';
                         } else {
                             $this->OneSignalUserTagsNote = OneSignalSignupApi::get_error($outcome);
+                            $this->OneSignalUserTagsNote = 'Error: could not add tag groups because external user id does not match yet '.$externalUserId;
                         }
                     }
                 } else {
