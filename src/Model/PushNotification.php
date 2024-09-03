@@ -555,12 +555,12 @@ class PushNotification extends DataObject
         }
     }
 
-    public function OneSignalComms(?bool $write = false) : bool
+    public function OneSignalComms(?bool $write = false): bool
     {
         if ($this->OneSignalNotificationID) {
             // dont bother about things that are old!
             if (strtotime($this->LastEdited) < strtotime(' -1 week')) {
-                return;
+                return false;
             }
             /** @var OneSignalSignupApi $api */
             $api = Injector::inst()->get(OneSignalSignupApi::class);
