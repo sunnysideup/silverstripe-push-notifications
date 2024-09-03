@@ -283,10 +283,13 @@ class PushNotificationPage extends Page
 
     public function canView($member = null)
     {
+        if (! $member) {
+            $member = Security::getCurrentUser();
+        }
+        if (! $member) {
+            return false;
+        }
         if (! $this->canEdit($member)) {
-            if (! $member) {
-                $member = Security::getCurrentUser();
-            }
             $memberGroups = $member->Groups->columnUnique();
             if ($memberGroups) {
                 $signupGroups = self::get_list_of_recipient_groups()->columnUnique();
