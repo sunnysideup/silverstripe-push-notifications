@@ -262,7 +262,7 @@ class Subscriber extends DataObject
                     $this->Subscribed = false;
                 }
             }
-            if ($error === false && $this->Subcribed) {
+            if ($error === false && $this->Subscribed) {
                 // extra stuff for member
                 $member = $this->Member();
                 if ($member && $member->exists()) {
@@ -293,7 +293,7 @@ class Subscriber extends DataObject
                     $this->OneSignalUserNote = 'Error: No member found';
                     $this->OneSignalUserTagsNote = 'Error: No member found';
                 }
-            } elseif ($error === false && !$this->Subcribed) {
+            } elseif ($error === false && !$this->Subscribed) {
                 $this->OneSignalUserNote = 'Error: not subscribed';
                 $this->OneSignalUserTagsNote = 'Error: not subscribed';
             }
