@@ -91,20 +91,22 @@ class GroupExtension extends DataExtension
             $owner->OneSignalComms(false);
         }
     }
-    protected bool $noOneSignalComms = false;
+    protected array $noOneSignalComms = [];
 
     public function setNoOneSignalComms(): static
     {
-        $this->noOneSignalComms = true;
+        $owner = $this->getOwner();
+        $this->noOneSignalComms[$owner->ID] = true;
         return $this;
     }
 
     public function OneSignalComms(?bool $write = false): bool
     {
-        if ($this->noOneSignalComms) {
+        $owner = $this->getOwner();
+        if (! empty($this->noOneSignalComms[$owner->ID])) {
             return false;
         }
-        $owner = $this->getOwner();
+
         if ($owner->hasOneSignalSegment()) {
             if ($owner->hasUnsentOneSignalMessages() && $this->useOneSignalSegmentsForSending()) {
                 /** @var OneSignalSignupApi $api */
