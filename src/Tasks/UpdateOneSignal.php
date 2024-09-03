@@ -35,6 +35,7 @@ class UpdateOneSignal extends BuildTask
         $this->syncSubscribersAndMembers();
         $this->syncNotificationsFromOneSignal();
         $this->syncNotificationsFromWebsite();
+        $this->header('THE END!');
 
     }
 
@@ -113,8 +114,6 @@ class UpdateOneSignal extends BuildTask
             $notification->Sent = true;
             $notification->write();
         }
-        $this->header('DONE WRITING NOTIFICATIONS FROM ONE SIGNAL');
-
     }
 
     protected function syncNotificationsFromWebsite()
