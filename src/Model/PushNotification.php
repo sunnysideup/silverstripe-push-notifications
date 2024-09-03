@@ -248,9 +248,9 @@ class PushNotification extends DataObject
             );
         }
         if ($this->ID) {
-            $recipientCount = $this->getRecipients()->count();
+            $recipientMembers = $this->RecipientMembers()->count();
             $groupCount = $this->RecipientGroups()->count();
-            $allCount = $recipientCount + $groupCount;
+            $allCount = $recipientMembers + $groupCount;
             if ($groupCount === 0 || $allCount === 0) {
                 $possibleRecipientsIds = Subscriber::get()->filter(['Subscribed' => true])->columnUnique('MemberID') + [-1 => -1];
                 $fields->addFieldsToTab(
@@ -270,7 +270,7 @@ class PushNotification extends DataObject
                     ]
                 );
             }
-            if ($recipientCount === 0 || $allCount === 0) {
+            if ($recipientMembers === 0 || $allCount === 0) {
                 $fields->addFieldsToTab(
                     'Root.Recipients',
                     [
