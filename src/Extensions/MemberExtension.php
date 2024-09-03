@@ -39,9 +39,19 @@ class MemberExtension extends DataExtension
             $owner->OneSignalComms(false);
         }
     }
+    protected bool $noOneSignalComms = false;
+
+    public function setNoOneSignalComms(): static
+    {
+        $this->noOneSignalComms = true;
+        return $this;
+    }
 
     public function OneSignalComms(?bool $write = false, ?bool $alsoRunSubscribers = true): bool
     {
+        if ($this->noOneSignalComms) {
+            return false;
+        }
         $owner = $this->getOwner();
         $subscribers = $owner->ValidForOneSignalPushNotificationSubscribers();
         $defaultGroup = GroupExtension::get_all_subscribers_group();
@@ -56,6 +66,7 @@ class MemberExtension extends DataExtension
 
             $memberGroups->add($defaultGroup);
             if ($write) {
+                $this->setNoOneSignalComms();
                 $owner->write();
             }
         } else {

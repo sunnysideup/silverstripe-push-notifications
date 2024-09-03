@@ -91,9 +91,19 @@ class GroupExtension extends DataExtension
             $owner->OneSignalComms(false);
         }
     }
+    protected bool $noOneSignalComms = false;
+
+    public function setNoOneSignalComms(): static
+    {
+        $this->noOneSignalComms = true;
+        return $this;
+    }
 
     public function OneSignalComms(?bool $write = false): bool
     {
+        if ($this->noOneSignalComms) {
+            return false;
+        }
         $owner = $this->getOwner();
         if ($owner->hasOneSignalSegment()) {
             if ($owner->hasUnsentOneSignalMessages() && $this->useOneSignalSegmentsForSending()) {
@@ -114,11 +124,11 @@ class GroupExtension extends DataExtension
                 $owner->OneSignalSegmentNote = '';
             }
             if ($write) {
+                $this->setNoOneSignalComms();
                 $owner->write();
             }
         }
         return $owner->hasOneSignalSegment();
-
     }
 
 

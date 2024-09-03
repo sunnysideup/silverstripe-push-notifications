@@ -298,6 +298,7 @@ class Subscriber extends DataObject
                 $this->OneSignalUserTagsNote = 'Error: not subscribed';
             }
             if ($write) {
+                $this->setNoOneSignalComms();
                 $this->write();
             }
         }

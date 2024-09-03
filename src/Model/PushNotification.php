@@ -554,9 +554,19 @@ class PushNotification extends DataObject
 
         }
     }
+    protected bool $noOneSignalComms = false;
+
+    public function setNoOneSignalComms(): static
+    {
+        $this->noOneSignalComms = true;
+        return $this;
+    }
 
     public function OneSignalComms(?bool $write = false): bool
     {
+        if ($this->noOneSignalComms) {
+            return false;
+        }
         if ($this->OneSignalNotificationID) {
             // dont bother about things that are old!
             if (strtotime($this->LastEdited) < strtotime(' -1 week')) {
@@ -581,6 +591,7 @@ class PushNotification extends DataObject
                 }
             }
             if ($write) {
+                $this->setNoOneSignalComms();
                 $this->write();
             }
         }
