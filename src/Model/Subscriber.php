@@ -215,7 +215,7 @@ class Subscriber extends DataObject
 
     public function getTitle(): string
     {
-        return $this->Member()->getTitle() . ' - ' . $this->Created . ' - ' . ($this->Subscribed ? '' : 'NOT SUBSCRIBED');
+        return $this->Member()->getTitle() . ' - ' . $this->Device . ' - ' . ($this->Subscribed ? '' : 'NOT SUBSCRIBED');
     }
 
     protected bool $noOneSignalComms = false;
