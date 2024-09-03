@@ -86,7 +86,7 @@ To run a sync of all members and groups with OneSignal, you can run the followin
 
 You could consider running as a cron job at regular intervals.
 
-You can also run this from the browser `/dev/tasks/sync-one-signal`.
+You can also run this from the browser `/dev/tasks/update-one-signal`.
 
 # Feature 2: Add to home Screen (PWA)
 
