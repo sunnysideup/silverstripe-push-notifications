@@ -601,7 +601,7 @@ class PushNotification extends DataObject
 
     protected function isOverMaxOfNumberOfUnsentNotifications(): bool
     {
-        return $this->numberOfUnsentNotifications() > self::MAX_UNSENT_MESSAGES;
+        return $this->numberOfUnsentNotifications() > $this->config()->max_unsent_messages;
     }
 
     protected function numberOfUnsentNotifications()
