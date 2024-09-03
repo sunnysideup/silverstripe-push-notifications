@@ -78,7 +78,7 @@ class UpdateOneSignal extends BuildTask
     {
         $this->header('WRITING NOTIFICATIONS FROM ONE SIGNAL');
         if ($this->config()->also_sync_notifications_back !== true) {
-            $this->outcome('skip sync notifications back, this is set in the also_sync_notifications_back variable');
+            $this->outcome('skip sync notifications back, this is set in the also_sync_notifications_back variable.');
             return;
         }
         /** @var OneSignalSignupApi $api */
