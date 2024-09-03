@@ -31,7 +31,7 @@ class UpdateOneSignal extends BuildTask
         Config::modify()->set(DataObject::class, 'validation_enabled', false);
         $this->syncGroups();
         $this->syncSubscribers();
-        $this->syncNotificationsFromOneSignal();
+        // $this->syncNotificationsFromOneSignal();
         $this->syncNotificationsFromWebsite();
 
     }
@@ -68,43 +68,44 @@ class UpdateOneSignal extends BuildTask
         }
     }
 
-    protected function syncNotificationsFromOneSignal()
-    {
-        $this->header('WRITING NOTIFICATIONS FROM ONE SIGNAL');
-        /** @var OneSignalSignupApi $api */
-        $api = Injector::inst()->get(OneSignalSignupApi::class);
-        $allNotifications = $api->getAllNotifications();
-        $notificationList = $allNotifications['notifications'] ?? [];
-        foreach ($notificationList as $oneSignalNotification) {
-            $id = $oneSignalNotification['id'] ?? '';
-            if (! $id) {
-                $this->outcome('ERROR: ' . ' no id for '.print_r($oneSignalNotification, 1));
-                continue;
-            }
-            $this->outcome('Checking Notification: ' . $oneSignalNotification['id']);
-            $filter = ['OneSignalNotificationID' => $oneSignalNotification['id']];
-            $notification = PushNotification::get()->filter($filter)->first();
-            if (! $notification) {
-                $notification = PushNotification::create($filter);
-                $notification->ProviderClass = PushNotificationOneSignal::class;
-                if (! $notification->Title) {
-                    $notification->Title = $oneSignalNotification['headings']['en'] ?? '';
-                }
-                if (! $notification->Content) {
-                    $notification->Content = $oneSignalNotification['contents']['en'] ?? '';
-                }
-                $notification->write();
-            }
-            $valuesForNotificationDataOneObject = NotificationHelper::singleton()
-                ->getValuesForNotificationDataOneObject($oneSignalNotification);
-            foreach ($valuesForNotificationDataOneObject as $key => $value) {
-                $notification->{$key} = $value;
-            }
-            $notification->write();
-        }
-        $this->header('DONE WRITING NOTIFICATIONS FROM ONE SIGNAL');
+    // protected function syncNotificationsFromOneSignal()
+    // {
+    //     $this->header('WRITING NOTIFICATIONS FROM ONE SIGNAL');
+    //     /** @var OneSignalSignupApi $api */
+    //     $api = Injector::inst()->get(OneSignalSignupApi::class);
+    //     $allNotifications = $api->getAllNotifications();
+    //     $notificationList = $allNotifications['notifications'] ?? [];
+    //     foreach ($notificationList as $oneSignalNotification) {
+    //         $id = $oneSignalNotification['id'] ?? '';
+    //         if (! $id) {
+    //             $this->outcome('ERROR: ' . ' no id for '.print_r($oneSignalNotification, 1));
+    //             continue;
+    //         }
+    //         $this->outcome('Checking Notification: ' . $oneSignalNotification['id']);
+    //         $filter = ['OneSignalNotificationID' => $oneSignalNotification['id']];
+    //         $notification = PushNotification::get()->filter($filter)->first();
+    //         if (! $notification) {
+    //             $notification = PushNotification::create($filter);
+    //             $notification->ProviderClass = PushNotificationOneSignal::class;
+    //             if (! $notification->Title) {
+    //                 $notification->Title = $oneSignalNotification['headings']['en'] ?? '';
+    //             }
+    //             if (! $notification->Content) {
+    //                 $notification->Content = $oneSignalNotification['contents']['en'] ?? '';
+    //             }
+    //             $notification->write();
+    //         }
+    //         $valuesForNotificationDataOneObject = NotificationHelper::singleton()
+    //             ->getValuesForNotificationDataOneObject($oneSignalNotification);
+    //         foreach ($valuesForNotificationDataOneObject as $key => $value) {
+    //             $notification->{$key} = $value;
+    //         }
+    //         $notification->Sent = true;
+    //         $notification->write();
+    //     }
+    //     $this->header('DONE WRITING NOTIFICATIONS FROM ONE SIGNAL');
 
-    }
+    // }
 
     protected function syncNotificationsFromWebsite()
     {
