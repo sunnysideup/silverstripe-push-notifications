@@ -59,7 +59,7 @@ use Symbiote\QueuedJobs\Services\QueuedJobService;
  */
 class PushNotification extends DataObject
 {
-    private const MAX_UNSENT_MESSAGES = 3;
+    private static $max_unsent_messages = 50;
 
     private static $table_name = 'PushNotification';
 
