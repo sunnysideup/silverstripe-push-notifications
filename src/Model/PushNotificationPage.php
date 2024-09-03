@@ -289,27 +289,7 @@ class PushNotificationPage extends Page
         if (! $member) {
             return false;
         }
-        if (! $this->canEdit($member)) {
-            $memberGroups = $member->Groups()->columnUnique();
-            if ($memberGroups) {
-                $signupGroups = self::get_list_of_recipient_groups()->columnUnique();
-                if (array_intersect($memberGroups, $signupGroups)) {
-                    return true;
-                }
-            }
-            return false;
-        }
         return parent::canView($member);
-    }
-
-    public function getSettingsFields()
-    {
-        $fields = parent::getSettingsFields();
-        $fields->dataFieldByName('CanViewType')
-            ->setDescription('Members who are in any of the subscriber groups can view this page. Members not in these groups need to have special permissions to see this page.');
-        // $fields->dataFieldByName('URLSegment')
-        //     ->setDescription('This is the URL segment that the page is available on.');
-        return $fields;
     }
 
     public function canAccessOrCreateFile(?string $filePath = ''): bool
