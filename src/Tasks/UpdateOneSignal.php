@@ -102,6 +102,7 @@ class UpdateOneSignal extends BuildTask
             }
             $notification->write();
         }
+        $this->header('DONE WRITING NOTIFICATIONS FROM ONE SIGNAL');
 
     }
 
