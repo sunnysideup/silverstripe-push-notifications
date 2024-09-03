@@ -35,6 +35,7 @@ class Subscriber extends DataObject
     private static $db = [
         'Subscription' => 'Text',
         'Subscribed' => 'Boolean(1)',
+        'Device' => 'Varchar(64)',
         'OneSignalUserID' => 'Varchar(64)',
         'OneSignalUserNote' => 'Varchar(255)',
         'OneSignalUserTagsNote' => 'Varchar(255)',
@@ -240,8 +241,15 @@ class Subscriber extends DataObject
             $outcome =  $api->getOneDevice($this->OneSignalUserID);
             $error = false;
             if (OneSignalSignupApi::test_success($outcome)) {
+                // subscribed
                 $isInvalid = $outcome['invalid_identifier'] ?? false;
                 $this->Subscribed = $isInvalid ? false : true;
+                // device
+                $deviceMo = $outcome['device_model'] ?? 'unknown model';
+                $deviceTy = $outcome['device_type'] ?? 'unknown type';
+                $deviceOs = $outcome['device_os'] ?? 'unknown os';
+                $this->Device = $deviceMo . ' ('.$deviceTy . ') - ' . $deviceOs;
+
                 $this->OneSignalCommsError = 0;
             } else {
                 $error = true;
