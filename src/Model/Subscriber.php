@@ -216,8 +216,19 @@ class Subscriber extends DataObject
         return $this->Member()->getTitle() . ' - ' . $this->Created . ' - ' . ($this->Subscribed ? '' : 'NOT SUBSCRIBED');
     }
 
+    protected bool $noOneSignalComms = false;
+
+    public function setNoOneSignalComms(): static
+    {
+        $this->noOneSignalComms = true;
+        return $this;
+    }
+
     public function OneSignalComms(?bool $write = false)
     {
+        if ($this->noOneSignalComms) {
+            return;
+        }
         if ($this->OneSignalUserID) {
             // dont bother about things that are old!
             if (strtotime($this->LastEdited) < strtotime(' -12 month')) {
