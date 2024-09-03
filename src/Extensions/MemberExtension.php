@@ -40,16 +40,18 @@ class MemberExtension extends DataExtension
         }
     }
 
-    public function OneSignalComms(?bool $write = false)
+    public function OneSignalComms(?bool $write = false, ?bool $alsoRunSubscribers = true)
     {
         $owner = $this->getOwner();
         $subscribers = $owner->ValidForOneSignalPushNotificationSubscribers();
         $defaultGroup = GroupExtension::get_all_subscribers_group();
         $memberGroups = $owner->Groups();
         if ($subscribers->exists()) {
-            /** @var Subscriber $subscriber */
-            foreach ($subscribers as $subscriber) {
-                $subscriber->OneSignalComms(true);
+            if ($alsoRunSubscribers) {
+                /** @var Subscriber $subscriber */
+                foreach ($subscribers as $subscriber) {
+                    $subscriber->OneSignalComms(true);
+                }
             }
 
             $memberGroups->add($defaultGroup);

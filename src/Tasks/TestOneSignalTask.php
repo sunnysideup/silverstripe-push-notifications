@@ -31,7 +31,6 @@ class TestOneSignalTask extends BuildTask
         $this->header('getCurrentApp');
         $this->outcome($this->api->getCurrentApp());
 
-
         $page = PushNotificationPage::get()->first();
         if ($page) {
             $member = Security::getCurrentUser();

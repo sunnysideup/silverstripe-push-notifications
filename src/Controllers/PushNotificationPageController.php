@@ -105,6 +105,7 @@ class PushNotificationPageController extends ContentController
             $subscriber->Subscribed = $subscribed;
             $subscriber->setNoOneSignalComms();
             $subscriber->write();
+            $member->OneSignalComms(true, false);
             return HTTPResponse::create(json_encode(['success' => true]))
                 ->addHeader('Content-Type', 'application/json')
                 ->setStatusCode(201);

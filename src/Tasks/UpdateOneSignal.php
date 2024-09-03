@@ -49,6 +49,7 @@ class UpdateOneSignal extends BuildTask
     protected function syncSubscribers()
     {
         $this->header('WRITING SUBSCRIPTIONS');
+        $membersDone = [];
         $subscribers = Subscriber::get()
             ->filter(['OneSignalUserID:not' => ['', null, 0]])
             ->sort(['ID' => 'DESC'])
@@ -56,6 +57,14 @@ class UpdateOneSignal extends BuildTask
         foreach ($subscribers as $subscriber) {
             $this->outcome('Writing: ' . $subscriber->getTitle(). ' - '. $subscriber->OneSignalUserID);
             $subscriber->OneSignalComms(true);
+            if ($subscriber->MemberID && !isset($membersDone[$subscriber->MemberID])) {
+                $membersDone[$subscriber->MemberID] = $subscriber->MemberID;
+                $member = $subscriber->Member();
+                if ($member && $member->exists()) {
+                    $member->OneSignalComms(true, false);
+                }
+
+            }
         }
     }
 
