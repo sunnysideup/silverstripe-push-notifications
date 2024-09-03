@@ -58,6 +58,7 @@ class Subscriber extends DataObject
     private static $summary_fields = [
         'Created' => 'Created',
         'Member.Title' => 'Who',
+        'Device' => 'Device',
         'Subscribed.Nice' => 'Subscribed',
         'IsOneSignalUser.Nice' => 'Is OneSignal User',
         'SubscriberMessages.Count' => 'Messages',
