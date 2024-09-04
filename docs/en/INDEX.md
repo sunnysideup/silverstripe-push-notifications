@@ -5,7 +5,9 @@ This module allows you to send push notifications to your users.
 You can either use OneSignal or you can use Vapid.
 It will require you to do some styling and testing!
 
-# Issues with Iphone
+# Sign-Up to Push Notifications - known issues
+
+## IPhone
 
 On an iPhone, you first need to add the site to the home screen before you can receive push notifications.
 
@@ -15,9 +17,13 @@ The share icon can usually a square with an arrow pointing up that allows you to
 
 You then need to open the site from the home screen to set up the push notifications.
 
-## iOS 16.4 and above only
+### iOS 16.4 and above only
 
 Only iOS 16.4 and above allows you to add push notifications.
+
+## Incognito Browser
+
+Incognito does not allow you to sign up for push notifications
 
 # Configuration
 
