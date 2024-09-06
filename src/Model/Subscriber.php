@@ -211,6 +211,10 @@ class Subscriber extends DataObject
         if ($this->exists()) {
             $this->OneSignalComms(false);
         }
+        trim($this->OneSignalUserID);
+        if (strlen($this->OneSignalUserID) < 10) {
+            $this->OneSignalUserID = null;
+        }
     }
 
     public function getTitle(): string

@@ -108,6 +108,10 @@ class GroupExtension extends DataExtension
         }
 
         if ($owner->hasOneSignalSegment()) {
+            $owner->OneSignalSegmentID = trim($owner->OneSignalSegmentID);
+            if (strlen($owner->OneSignalSegmentID) < 10) {
+                $owner->OneSignalSegmentID = null;
+            }
             if ($owner->hasUnsentOneSignalMessages() && $this->useOneSignalSegmentsForSending()) {
                 /** @var OneSignalSignupApi $api */
                 $api = Injector::inst()->get(OneSignalSignupApi::class);

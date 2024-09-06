@@ -36,18 +36,20 @@ class TestOneSignalTask extends BuildTask
             $member = Security::getCurrentUser();
             if ($member) {
                 $subscriptions = Subscriber::get()
-                    ->filter(['OneSignalUserID:not' => ['', null, 0], 'MemberID' => $member->ID])
+                    ->filter(['OneSignalUserID:not' => null, 'Subcribed' => true, 'MemberID' => $member->ID])
                     ->sort(['ID' => 'ASC']);
                 if ($subscriptions) {
                     foreach ($subscriptions as $subscription) {
-                        $this->header('addExternalUserIdToUser: '.$subscription->getTitle() . ' - ' .$subscription->OneSignalUserID);
-                        $this->outcome($this->api->addExternalUserIdToUser($subscription->OneSignalUserID, $member));
+                        if ($subscription->OneSignalUserID) {
+                            $this->header('addExternalUserIdToUser: '.$subscription->getTitle() . ' - ' .$subscription->OneSignalUserID);
+                            $this->outcome($this->api->addExternalUserIdToUser($subscription->OneSignalUserID, $member));
 
-                        $this->header('updateDevice: '.$subscription->getTitle() . ' - ' .$subscription->OneSignalUserID);
-                        $this->outcome($this->api->updateDevice($subscription->OneSignalUserID, ['amount_spent' => 999999.99]));
+                            $this->header('updateDevice: '.$subscription->getTitle() . ' - ' .$subscription->OneSignalUserID);
+                            $this->outcome($this->api->updateDevice($subscription->OneSignalUserID, ['amount_spent' => 999999.99]));
 
-                        $this->header('getOneDevice: '.$subscription->getTitle() . ' - ' .$subscription->OneSignalUserID);
-                        $this->outcome($this->api->getOneDevice($subscription->OneSignalUserID));
+                            $this->header('getOneDevice: '.$subscription->getTitle() . ' - ' .$subscription->OneSignalUserID);
+                            $this->outcome($this->api->getOneDevice($subscription->OneSignalUserID));
+                        }
                     }
 
                     $this->header('createSegment: test segment');

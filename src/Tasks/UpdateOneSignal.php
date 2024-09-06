@@ -42,7 +42,7 @@ class UpdateOneSignal extends BuildTask
     protected function syncGroups()
     {
         $this->header('WRITING GROUPS');
-        $groups = Group::get()->filter(['OneSignalSegmentID:not' => ['', null, 0]]);
+        $groups = Group::get()->filter(['OneSignalSegmentID:not' => null]);
         foreach ($groups as $group) {
             $this->outcome('Group: ' . $group->getBreadcrumbsSimpleWithCount());
             $groupUpdated = $group->OneSignalComms(true);
@@ -55,7 +55,7 @@ class UpdateOneSignal extends BuildTask
         $this->header('WRITING SUBSCRIPTIONS');
         $membersDone = [-1 => -1];
         $subscribers = Subscriber::get()
-            ->filter(['OneSignalUserID:not' => ['', null, 0]])
+            ->filter(['OneSignalUserID:not' => null])
             ->sort(['ID' => 'DESC'])
             ->limit(2000);
         foreach ($subscribers as $subscriber) {
@@ -127,7 +127,7 @@ class UpdateOneSignal extends BuildTask
         $this->header('WRITING NOTIFICATIONS FROM WEBSITE');
         /** @var OneSignalSignupApi $api */
         $notifications = PushNotification::get()
-            ->filter(['OneSignalNotificationID:not' => ['', null, 0]])
+            ->filter(['OneSignalNotificationID:not' => null])
             ->limit(200);
         /** @var PushNotification $notification */
         foreach ($notifications as $notification) {

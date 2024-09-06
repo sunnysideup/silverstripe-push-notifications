@@ -529,6 +529,10 @@ class PushNotification extends DataObject
     protected function onBeforeWrite()
     {
         parent::onBeforeWrite();
+        $this->OneSignalNotificationID = trim($this->OneSignalNotificationID);
+        if (strlen($this->OneSignalNotificationID) < 10) {
+            $this->OneSignalNotificationID = null;
+        }
         if ($this->Sent && ! $this->SentAt) {
             $this->SentAt = date('Y-m-d H:i:s');
         }

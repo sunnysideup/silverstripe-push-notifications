@@ -71,7 +71,7 @@ class MemberHelper
             ->filter(
                 [
                     'MemberID' => $members->columnUnique('ID') + [-1 => -1],
-                    'OneSignalUserID:not' => [null, '', 0],
+                    'OneSignalUserID:not' => null,
                     'Subscribed' => true,
                 ]
             )->limit(2000);

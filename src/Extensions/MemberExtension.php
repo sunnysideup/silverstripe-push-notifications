@@ -122,14 +122,14 @@ class MemberExtension extends DataExtension
     {
         $owner = $this->getOwner();
         return $owner->PushNotificationSubscribers()
-            ->filter(['OneSignalUserID:not' => [null, '', 0], 'Subscribed' => true]);
+            ->filter(['OneSignalUserID:not' => null, 'Subscribed' => true]);
     }
 
     public function ValidForVapidPushNotificationSubscribers(): DataList|ManyManyList
     {
         $owner = $this->getOwner();
         return $owner->PushNotificationSubscribers()
-            ->filter(['OneSignalUserID' => [null, '', 0], 'Subscribed' => true]);
+            ->filter(['OneSignalUserID' => null, 'Subscribed' => true]);
     }
 
     public function getCodeInOneSignal(): string
