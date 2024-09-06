@@ -230,6 +230,20 @@ class PushNotificationPage extends Page
                                     LinkHelper::singleton()->sentPushNotificationLink(),
                                     'Review sent messages'
                                 ).'
+                                <br />
+                                <hr />
+                                <h3>Advanced Tools (use with care)</h3>
+                                <br />'.
+                                LinkHelper::singleton()->createHtmlLink(
+                                    '/dev/tasks/update-one-signal',
+                                    'Update website content with lastest OneSignal information'
+                                ).'
+                                    <br />
+                                    <br />'.
+                                LinkHelper::singleton()->createHtmlLink(
+                                    '/dev/tasks/test-one-signal',
+                                    'Test OneSignal connection'
+                                ).'
                             </p>
                             '
                         ),

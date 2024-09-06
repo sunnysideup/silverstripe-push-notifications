@@ -91,10 +91,22 @@ class GroupExtension extends DataExtension
             $owner->OneSignalComms(false);
         }
     }
+    protected array $noOneSignalComms = [];
 
-    public function OneSignalComms(?bool $write = false)
+    public function setNoOneSignalComms(): static
     {
         $owner = $this->getOwner();
+        $this->noOneSignalComms[$owner->ID] = true;
+        return $this;
+    }
+
+    public function OneSignalComms(?bool $write = false): bool
+    {
+        $owner = $this->getOwner();
+        if (! empty($this->noOneSignalComms[$owner->ID])) {
+            return false;
+        }
+
         if ($owner->hasOneSignalSegment()) {
             if ($owner->hasUnsentOneSignalMessages() && $this->useOneSignalSegmentsForSending()) {
                 /** @var OneSignalSignupApi $api */
@@ -111,13 +123,14 @@ class GroupExtension extends DataExtension
             } elseif ($this->removeUnusedSegmentsFromOneSignal()) {
                 $this->removeOneSignalSegment();
                 $owner->OneSignalSegmentID = '';
-                $owner->OneSignalSegmentNote = '';
+                $owner->OneSignalSegmentNote = 'ID was '.$this->OneSignalSegmentID;
+            }
+            if ($write) {
+                $this->setNoOneSignalComms();
+                $owner->write();
             }
         }
-        if ($write) {
-            $owner->write();
-        }
-
+        return $owner->hasOneSignalSegment();
     }
 
 

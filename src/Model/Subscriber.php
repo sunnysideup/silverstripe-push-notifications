@@ -35,6 +35,7 @@ class Subscriber extends DataObject
     private static $db = [
         'Subscription' => 'Text',
         'Subscribed' => 'Boolean(1)',
+        'Device' => 'Varchar(64)',
         'OneSignalUserID' => 'Varchar(64)',
         'OneSignalUserNote' => 'Varchar(255)',
         'OneSignalUserTagsNote' => 'Varchar(255)',
@@ -57,6 +58,7 @@ class Subscriber extends DataObject
     private static $summary_fields = [
         'Created' => 'Created',
         'Member.Title' => 'Who',
+        'Device' => 'Device',
         'Subscribed.Nice' => 'Subscribed',
         'IsOneSignalUser.Nice' => 'Is OneSignal User',
         'SubscriberMessages.Count' => 'Messages',
@@ -213,7 +215,7 @@ class Subscriber extends DataObject
 
     public function getTitle(): string
     {
-        return $this->Member()->getTitle() . ' - ' . $this->Created . ' - ' . ($this->Subscribed ? '' : 'NOT SUBSCRIBED');
+        return $this->Member()->getTitle() . ' - ' . $this->Device . ' - ' . ($this->Subscribed ? '' : 'NOT SUBSCRIBED');
     }
 
     protected bool $noOneSignalComms = false;
@@ -224,15 +226,15 @@ class Subscriber extends DataObject
         return $this;
     }
 
-    public function OneSignalComms(?bool $write = false)
+    public function OneSignalComms(?bool $write = false): bool
     {
         if ($this->noOneSignalComms) {
-            return;
+            return false;
         }
         if ($this->OneSignalUserID) {
             // dont bother about things that are old!
-            if (strtotime($this->LastEdited) < strtotime(' -12 month')) {
-                return;
+            if (strtotime($this->LastEdited) < strtotime('-12 month')) {
+                return false;
             }
 
             /** @var OneSignalSignupApi $api */
@@ -240,24 +242,31 @@ class Subscriber extends DataObject
             $outcome =  $api->getOneDevice($this->OneSignalUserID);
             $error = false;
             if (OneSignalSignupApi::test_success($outcome)) {
+                // subscribed
                 $isInvalid = $outcome['invalid_identifier'] ?? false;
                 $this->Subscribed = $isInvalid ? false : true;
+                // device
+                $deviceMo = $outcome['device_model'] ?? 'unknown model';
+                $deviceTy = $outcome['device_type'] ?? 'unknown type';
+                $deviceOs = $outcome['device_os'] ?? 'unknown os';
+                $this->Device = $deviceMo . ' ('.$deviceTy . ') - ' . $deviceOs;
+
                 $this->OneSignalCommsError = 0;
             } else {
                 $error = true;
                 $this->OneSignalCommsError++;
                 if ($this->OneSignalCommsError > 10) {
                     $this->OneSignalUserID = '';
-                    $this->OneSignalUserNote = 'Subscription not found';
+                    $this->OneSignalUserNote = 'Subscription not found, id was: '.$this->OneSignalUserID;
                     $this->OneSignalUserTagsNote = 'Subscription not found';
                     $this->Subscribed = false;
                 }
             }
-            $externalUserId = (string) ($outcome['external_user_id'] ?? '');
-            if ($error === false && $this->Subcribed) {
+            if ($error === false && $this->Subscribed) {
                 // extra stuff for member
                 $member = $this->Member();
                 if ($member && $member->exists()) {
+                    $externalUserId = (string) ($outcome['external_user_id'] ?? '');
                     $expectedExternalUserId = (string) MemberHelper::singleton()->member2externalUserId($member);
                     if ($externalUserId !== $expectedExternalUserId) {
                         $outcome = $api->addExternalUserIdToUser($this->OneSignalUserID, $member);
@@ -266,8 +275,9 @@ class Subscriber extends DataObject
                             $externalUserId = $expectedExternalUserId;
                         } else {
                             $this->OneSignalUserNote = OneSignalSignupApi::get_error($outcome);
-                            $this->OneSignalUserTagsNote = 'Error: could not add external user id with id '.$externalUserId;
                         }
+                    } else {
+                        $this->OneSignalUserNote = 'Succesfully connected already to OneSignal with external user id '.$externalUserId;
                     }
                     if ($externalUserId === $expectedExternalUserId) {
                         $outcome = $api->addTagsToUserBasedOnGroups($member);
@@ -276,16 +286,23 @@ class Subscriber extends DataObject
                         } else {
                             $this->OneSignalUserTagsNote = OneSignalSignupApi::get_error($outcome);
                         }
+                    } else {
+                        $this->OneSignalUserTagsNote = 'Error: could not add tag groups because external user id does not match yet '.$externalUserId;
                     }
                 } else {
                     $this->OneSignalUserNote = 'Error: No member found';
                     $this->OneSignalUserTagsNote = 'Error: No member found';
                 }
+            } elseif ($error === false && !$this->Subscribed) {
+                $this->OneSignalUserNote = 'Error: not subscribed';
+                $this->OneSignalUserTagsNote = 'Error: not subscribed';
+            }
+            if ($write) {
+                $this->setNoOneSignalComms();
+                $this->write();
             }
         }
-        if ($write) {
-            $this->write();
-        }
+        return $this->OneSignalUserID ? true : false;
     }
 
     protected function onBeforeDelete()

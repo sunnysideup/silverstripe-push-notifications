@@ -17,7 +17,7 @@ class TestOneSignalTask extends BuildTask
 
     protected $description = 'This task is used to test the OneSignal connectivity';
 
-    private static $segment = 'test-one-signal-task';
+    private static $segment = 'test-one-signal';
 
     protected $api = null;
 

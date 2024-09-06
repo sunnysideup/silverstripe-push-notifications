@@ -40,25 +40,26 @@ class NotificationHelper
             "url" => $pushNotification->AbsoluteLink(),
         ];
         // $aliases = MemberHelper::singleton()->members2oneSignalAliases($pushNotification->RecipientMembers());
-        $subscribtionIds = MemberHelper::singleton()->members2oneSignalSubscriptionIds($pushNotification->RecipientMembers());
+        $subscribtionIds = MemberHelper::singleton()->members2oneSignalSubscriptionIds($pushNotification->getRecipients());
         if (! empty($subscribtionIds)) {
             $dataForNotification['include_subscription_ids'] = $subscribtionIds;
         } else {
-            if ($this->config()->use_segments_to_target_groups) {
-                $segments = GroupHelper::singleton()->groups2oneSignalSegmentFilter($pushNotification->RecipientGroups());
-                if (! empty($segments)) {
-                    $dataForNotification['included_segments'] = $segments;
-                } else {
-                    $dataForNotification['included_segments'] = ['do not send to anybody'];
-                }
-            } else {
-                $filters = GroupHelper::singleton()->groups2oneSignalFilter($pushNotification->RecipientGroups());
-                if (! empty($filters)) {
-                    $dataForNotification['filters'] = $filters;
-                } else {
-                    $dataForNotification['included_segments'] = ['do not send to anybody'];
-                }
-            }
+            $dataForNotification['include_subscription_ids'] = 'no-one';
+            // if ($this->config()->use_segments_to_target_groups) {
+            //     $segments = GroupHelper::singleton()->groups2oneSignalSegmentFilter($pushNotification->RecipientGroups());
+            //     if (! empty($segments)) {
+            //         $dataForNotification['included_segments'] = $segments;
+            //     } else {
+            //         $dataForNotification['included_segments'] = ['do not send to anybody'];
+            //     }
+            // } else {
+            //     $filters = GroupHelper::singleton()->groups2oneSignalFilter($pushNotification->RecipientGroups());
+            //     if (! empty($filters)) {
+            //         $dataForNotification['filters'] = $filters;
+            //     } else {
+            //         $dataForNotification['included_segments'] = ['do not send to anybody'];
+            //     }
+            // }
 
         }
         return $dataForNotification;

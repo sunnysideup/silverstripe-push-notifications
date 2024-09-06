@@ -11,6 +11,7 @@ use SilverStripe\Security\Member;
 use Sunnysideup\PushNotifications\Api\ConvertToOneSignal\NotificationHelper;
 use Sunnysideup\PushNotifications\Api\OneSignalSignupApi;
 use Sunnysideup\PushNotifications\Api\Providers\PushNotificationOneSignal;
+use Sunnysideup\PushNotifications\Extensions\GroupExtension;
 use Sunnysideup\PushNotifications\Model\PushNotification;
 use Sunnysideup\PushNotifications\Model\Subscriber;
 
@@ -21,6 +22,7 @@ class UpdateOneSignal extends BuildTask
     protected $description = 'Goes through all the Groups and all Members and updates their OneSignal data';
 
     private static $segment = 'update-one-signal';
+    private static bool $also_sync_notifications_back = false;
 
     protected $api = null;
 
@@ -30,10 +32,11 @@ class UpdateOneSignal extends BuildTask
         Environment::increaseMemoryLimitTo('512M');
         Config::modify()->set(DataObject::class, 'validation_enabled', false);
         $this->syncGroups();
-        $this->syncSubscribers();
+        $this->syncSubscribersAndMembers();
         $this->syncNotificationsFromOneSignal();
         $this->syncNotificationsFromWebsite();
-        $this->header('DONE WRITING NOTIFICATIONS FROM ONE SIGNAL');
+        $this->header('THE END!');
+
     }
 
     protected function syncGroups()
@@ -42,35 +45,49 @@ class UpdateOneSignal extends BuildTask
         $groups = Group::get()->filter(['OneSignalSegmentID:not' => ['', null, 0]]);
         foreach ($groups as $group) {
             $this->outcome('Group: ' . $group->getBreadcrumbsSimpleWithCount());
-            $group->OneSignalComms(true);
+            $groupUpdated = $group->OneSignalComms(true);
+            $this->outcome('... Group '.($groupUpdated ? '' : 'NOT').' updated.');
         }
     }
 
-    protected function syncSubscribers()
+    protected function syncSubscribersAndMembers()
     {
         $this->header('WRITING SUBSCRIPTIONS');
-        $membersDone = [];
+        $membersDone = [-1 => -1];
         $subscribers = Subscriber::get()
             ->filter(['OneSignalUserID:not' => ['', null, 0]])
             ->sort(['ID' => 'DESC'])
             ->limit(2000);
         foreach ($subscribers as $subscriber) {
             $this->outcome('Writing: ' . $subscriber->getTitle(). ' - '. $subscriber->OneSignalUserID);
-            $subscriber->OneSignalComms(true);
+            $subcriberUpdated = $subscriber->OneSignalComms(true);
+            $this->outcome('... Subscriber '.($subcriberUpdated ? '' : 'NOT').' updated.');
             if ($subscriber->MemberID && !isset($membersDone[$subscriber->MemberID])) {
                 $membersDone[$subscriber->MemberID] = $subscriber->MemberID;
                 $member = $subscriber->Member();
                 if ($member && $member->exists()) {
-                    $member->OneSignalComms(true, false);
+                    $this->outcome('Checking if : ' . $member->getTitle(). ' is part of the all subscribers group');
+                    $memberUpdated = $member->OneSignalComms(true, false);
+                    $this->outcome('... Member '.($memberUpdated ? '' : 'NOT').' updated: ');
                 }
 
             }
+        }
+        $allSubcribersGroup = GroupExtension::get_all_subscribers_group();
+        foreach ($allSubcribersGroup->Members()->exclude(['ID' => $membersDone]) as $member) {
+            $this->outcome('Checking if : ' . $member->getTitle(). ' still needs to be part of the all subscribers group');
+            $memberUpdated = $member->OneSignalComms(true, false);
+            $this->outcome('... Member '.($memberUpdated ? '' : 'NOT').' updated: ');
         }
     }
 
     protected function syncNotificationsFromOneSignal()
     {
         $this->header('WRITING NOTIFICATIONS FROM ONE SIGNAL');
+        if ($this->config()->also_sync_notifications_back !== true) {
+            $this->outcome('skip sync notifications back, this is set in the also_sync_notifications_back variable.');
+            return;
+        }
         /** @var OneSignalSignupApi $api */
         $api = Injector::inst()->get(OneSignalSignupApi::class);
         $allNotifications = $api->getAllNotifications();
@@ -100,9 +117,9 @@ class UpdateOneSignal extends BuildTask
             foreach ($valuesForNotificationDataOneObject as $key => $value) {
                 $notification->{$key} = $value;
             }
+            $notification->Sent = true;
             $notification->write();
         }
-
     }
 
     protected function syncNotificationsFromWebsite()
@@ -115,10 +132,13 @@ class UpdateOneSignal extends BuildTask
         /** @var PushNotification $notification */
         foreach ($notifications as $notification) {
             $this->outcome('Writing: ' . $notification->getTitle());
-            $notification->OneSignalComms(true);
+            $notificationUpdatd = $notification->OneSignalComms(true);
+            $this->outcome('... Notification '.($notificationUpdatd ? '' : 'NOT').' updated.');
         }
 
     }
+
+
 
 
     protected function header($message)

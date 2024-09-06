@@ -59,7 +59,7 @@ use Symbiote\QueuedJobs\Services\QueuedJobService;
  */
 class PushNotification extends DataObject
 {
-    private const MAX_UNSENT_MESSAGES = 3;
+    private static $max_unsent_messages = 50;
 
     private static $table_name = 'PushNotification';
 
@@ -248,9 +248,9 @@ class PushNotification extends DataObject
             );
         }
         if ($this->ID) {
-            $recipientCount = $this->getRecipients()->count();
+            $recipientMembers = $this->RecipientMembers()->count();
             $groupCount = $this->RecipientGroups()->count();
-            $allCount = $recipientCount + $groupCount;
+            $allCount = $recipientMembers + $groupCount;
             if ($groupCount === 0 || $allCount === 0) {
                 $possibleRecipientsIds = Subscriber::get()->filter(['Subscribed' => true])->columnUnique('MemberID') + [-1 => -1];
                 $fields->addFieldsToTab(
@@ -270,7 +270,7 @@ class PushNotification extends DataObject
                     ]
                 );
             }
-            if ($recipientCount === 0 || $allCount === 0) {
+            if ($recipientMembers === 0 || $allCount === 0) {
                 $fields->addFieldsToTab(
                     'Root.Recipients',
                     [
@@ -281,10 +281,8 @@ class PushNotification extends DataObject
                                 ->map('ID', 'BreadcrumbsSimpleWithCount'),
                         )->setDescription(_t(
                             'Push.RECIPIENTGROUPSDESCRIPTION',
-                            'If you select recipeitn groups, then individual recipient members will be ignored!'
+                            'If you select recipient groups, then individual recipient members will be ignored!'
                         )),
-
-                        ReadonlyField::create('RecipientsCount', _t('Push.RECIPIENTCOUNT', 'Recipient Count')),
                     ]
                 );
             }
@@ -292,6 +290,8 @@ class PushNotification extends DataObject
                 'Root.Recipients',
                 [
                     ReadonlyField::create('RecipientsCount', _t('Push.RECIPIENTCOUNT', 'Recipient Count')),
+                    ReadonlyField::create('RecipientsCountDevices', _t('Push.RECIPIENTSCOUNTDEVICES', 'Devices Count'), $this->getRecipientsCountDevices()),
+                    ReadonlyField::create('RecipientsDescription', _t('Push.RECIPIENTSDESCRIPTION', 'Message Description'), $this->getRecipientsDescription()),
                 ]
             );
         }
@@ -416,25 +416,35 @@ class PushNotification extends DataObject
 
     public function getRecipientsDescription(): string
     {
+        $recipientCount = $this->getRecipientsCountDevices();
         $members = $this->RecipientMembers();
         $membersCount = $members->count();
         if ($membersCount > 0) {
             if ($membersCount > 3) {
-                return 'Msg to '.$membersCount.' website members: '.implode(', ', $members->limit(3)->column('Email')).'...';
+                return 'Msg to '.$membersCount.' members (~'.$recipientCount.' devices): '.implode(', ', $members->limit(3)->column('Email')).'... ';
             } else {
-                return 'Msg to '.implode(', ', $members->column('Email'));
+                return 'Msg to members: '.implode(', ', $members->column('Email')).' (~'.$recipientCount.' devices)';
             }
         } else {
             $groupsCount = $this->RecipientGroups()->count();
             if ($groupsCount > 0) {
                 if ($groupsCount > 3) {
-                    return 'Msg to '.$groupsCount.' groups: '.implode(', ', $this->RecipientGroups()->limit(3)->column('Title')).'...';
+                    return 'Msg to '.$groupsCount.' groups  (~'.$recipientCount.' devices): '.implode(', ', $this->RecipientGroups()->limit(3)->column('Title')).'...';
                 } else {
-                    return 'Msg to '.implode(', ', $this->RecipientGroups()->column('Title'));
+                    return 'Msg to groups: '.implode(', ', $this->RecipientGroups()->column('Title')).' (~'.$recipientCount.' devices)';
                 }
             }
         }
-        return 'Msg to all website members';
+        return 'NO subscribers / devices';
+    }
+
+    public function getRecipientsCountDevices(): int
+    {
+        $members = $this->getRecipients();
+        if ($members->count() > 0) {
+            return Subscriber::get()->filter(['MemberID' => $members->column('ID'), 'Subscribed' => true])->count();
+        }
+        return 0;
     }
 
     public function getGroupsSummary(): int
@@ -554,13 +564,23 @@ class PushNotification extends DataObject
 
         }
     }
+    protected bool $noOneSignalComms = false;
 
-    public function OneSignalComms(?bool $write = false)
+    public function setNoOneSignalComms(): static
     {
+        $this->noOneSignalComms = true;
+        return $this;
+    }
+
+    public function OneSignalComms(?bool $write = false): bool
+    {
+        if ($this->noOneSignalComms) {
+            return false;
+        }
         if ($this->OneSignalNotificationID) {
             // dont bother about things that are old!
             if (strtotime($this->LastEdited) < strtotime(' -1 week')) {
-                return;
+                return false;
             }
             /** @var OneSignalSignupApi $api */
             $api = Injector::inst()->get(OneSignalSignupApi::class);
@@ -577,13 +597,15 @@ class PushNotification extends DataObject
                 $this->OneSignalCommsError++;
                 if ($this->OneSignalCommsError > 10) {
                     $this->OneSignalNotificationID = '';
-                    $this->OneSignalNotificationNote = 'There were more than 10 errors in a row. The notification ID has been removed.';
+                    $this->OneSignalNotificationNote = 'There were more than 10 errors in a row. ID was '.$this->OneSignalNotificationID  ;
                 }
             }
             if ($write) {
+                $this->setNoOneSignalComms();
                 $this->write();
             }
         }
+        return $this->OneSignalNotificationID ? true : false;
     }
 
     public function onAfterWrite()
@@ -601,7 +623,7 @@ class PushNotification extends DataObject
 
     protected function isOverMaxOfNumberOfUnsentNotifications(): bool
     {
-        return $this->numberOfUnsentNotifications() > self::MAX_UNSENT_MESSAGES;
+        return $this->numberOfUnsentNotifications() > $this->config()->max_unsent_messages;
     }
 
     protected function numberOfUnsentNotifications()

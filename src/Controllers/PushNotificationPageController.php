@@ -171,7 +171,7 @@ class PushNotificationPageController extends ContentController
         );
 
         $actions = FieldList::create(
-            FormAction::create('doSelectGroupsForm', 'Submit')
+            FormAction::create('doSelectGroupsForm', 'Save')
         );
 
         $validator = RequiredFields::create();
