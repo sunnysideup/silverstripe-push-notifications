@@ -171,7 +171,7 @@ class Test extends BuildTask
 
         // SQL based scenarios
         $sqlQueries = [
-            'SELECT COUNT(*) FROM "' . $tableName . '" WHERE "' . $fieldName . '" IS  NULL',
+            'SELECT COUNT(*) FROM "' . $tableName . '" WHERE "' . $fieldName . '" IS NULL',
             'SELECT COUNT(*) FROM "' . $tableName . '" WHERE "' . $fieldName . '" <> \'\'',
             'SELECT COUNT(*) FROM "' . $tableName . '" WHERE "' . $fieldName . '" IS NULL OR "' . $fieldName . '" = \'\'',
             // 'SELECT COUNT(*) FROM "' . $tableName . '" WHERE "' . $fieldName . '" <> 0',
