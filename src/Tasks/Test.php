@@ -36,34 +36,29 @@ class Test extends BuildTask
             $tableSafe = $this->replaceTableAndFieldName($tableName, $tableName, $fieldName);
             $fieldSafe = $this->replaceTableAndFieldName($fieldName, $tableName, $fieldName);
             $this->header(
-                'TESTING '.$tableSafe . '.'.$fieldSafe.'
-                FOR NOT FALSY VALUES, TOTAL COUNT '.$className::get()->count().',
-                EXPECTED ANSWER: '.$answer.'
-                DERIVED BY LOOPING THROUGH DATAOBJECTS'
+                'testing '.$tableSafe . '.'.$fieldSafe.'
+                ('.$className::get()->count().' records)
+                for not falsy values.
+                Expected answer: '.$answer.'
+                (derived by looping through dataobjects)'
             );
             $scenarios = $this->buildScenarioArray($tableName, $fieldName, $className);
             foreach ($scenarios as $i => $results) {
                 $count = $results['v'];
-                if ($count !== $answer) {
-                    foreach ($results as $key => $sql) {
-                        if ($key !== 'v') {
-                            $sql = $this->recursiveReplaceValues($sql, $tableName, $fieldName);
-                            $sql = print_r($sql, 1);
-                            $this->outcome('====='.PHP_EOL.'WRONG ANSWER: ' . $count.  ', PRODUCED BY: ');
-                            $this->outcome($key.' = '.$sql);
-                        }
-                    }
-                } else {
-                    foreach ($results as $key => $sql) {
-                        if ($key !== 'v') {
-                            $sql = $this->recursiveReplaceValues($sql, $tableName, $fieldName);
-                            $sql = print_r($sql, 1);
-                            $this->outcome('====='.PHP_EOL.'CORRECT ANSWER: ');
-                            $this->outcome($key.' = '.$sql);
-                        }
+                $isCorrect = ($count === $answer);
+                $isCorrectPhrase = $isCorrect ? 'CORRECT' : 'WRONG ANSWER';
+                foreach ($results as $key => $sql) {
+                    if ($key !== 'v' && $key !== 'sql') {
+                        $sql = $this->recursiveReplaceValues($sql, $tableName, $fieldName);
+                        $sql = $this->normalizeWhitespace(print_r($sql, 1));
+                        $this->outcome('====='.PHP_EOL.$isCorrectPhrase. '('. $count.  '), PRODUCED BY: ');
+                        $this->outcome($key.' = '.$sql);
                     }
                 }
-
+                if (!$isCorrect) {
+                    $whereOnlySQL = $cleanSQL = $this->whereOnlyPhrase($results['sql']);
+                    $this->outcome('SQL: '.$this->replaceTableAndFieldName($whereOnlySQL, $tableName, $fieldName));
+                }
             }
         }
     }
@@ -84,8 +79,9 @@ class Test extends BuildTask
 
         foreach ($sqlQueries as $key => $sql) {
             $scenario[] = [
+                'DB::query' => $sql,
+                'v' => (int) DB::query($sql)->value(),
                 'sql' => $sql,
-                'v' => (int) DB::query($sql)->value()
             ];
         }
 
@@ -106,7 +102,8 @@ class Test extends BuildTask
         foreach ($filters as $key => $filter) {
             $scenario[] = [
                 'filter' => $filter,
-                'v' => (int) $className::get()->filter($filter)->count()
+                'v' => (int) $className::get()->filter($filter)->count(),
+                'sql' => $className::get()->filter($filter)->sql(),
             ];
         }
 
@@ -127,7 +124,8 @@ class Test extends BuildTask
         foreach ($excludes as $key => $exclude) {
             $scenario[] = [
                 'exclude' => $exclude,
-                'v' => (int) $className::get()->exclude($exclude)->count()
+                'v' => (int) $className::get()->exclude($exclude)->count(),
+                'sql' => $className::get()->exclude($exclude)->sql(),
             ];
         }
 
@@ -179,10 +177,14 @@ class Test extends BuildTask
         }
         $input = str_replace($tableName, $replaceTable, $input);
         $input = str_replace($fieldName, 'MYFIELD', $input);
-
         return $input;
     }
 
+    protected function normalizeWhitespace(string $input): string
+    {
+        // Replace multiple spaces, tabs, newlines with a single space
+        return preg_replace('/\s+/', ' ', $input);
+    }
     protected function header($message)
     {
         if (Director::is_cli()) {
@@ -211,5 +213,21 @@ class Test extends BuildTask
             echo '</pre>';
         }
     }
+
+    protected function whereOnlyPhrase(string $sql): string
+    {
+        // Remove everything before WHERE
+        $pos = stripos($sql, ' WHERE ');
+        if ($pos !== false) {
+            // Return the part of the string starting from WHERE
+            $sql = substr($sql, $pos);
+        }
+
+        // Remove everything from ORDER BY onward
+        $sql = preg_replace('/\sORDER\sBY.*/i', '', $sql);
+
+        return $sql;
+    }
+
 
 }
