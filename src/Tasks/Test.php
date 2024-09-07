@@ -13,6 +13,11 @@ class Test extends BuildTask
 
     protected $description = 'Test';
 
+    protected $tablesToTest = [
+        'Subscriber' => ['ClassName' => Subscriber::class, 'Field' => 'OneSignalUserID'],
+        'PushNotification' => ['ClassName' => PushNotification::class, 'Field' => 'OneSignalNotificationID'],
+    ];
+
     private static $segment = 'test';
     protected $api = null;
 
@@ -41,12 +46,8 @@ class Test extends BuildTask
 
     public function runExcludeOrExclude(string $method, string $phrase, string $rightAnswer)
     {
-        $class = [
-            'Subscriber' => ['ClassName' => Subscriber::class, 'Field' => 'OneSignalUserID'],
-            'PushNotification' => ['ClassName' => PushNotification::class, 'Field' => 'OneSignalNotificationID'],
-        ];
         $testCount = 0;
-        foreach ($class as $tableName => $details) {
+        foreach ($this->tablesToTest as $tableName => $details) {
             $className = $details['ClassName'];
             $fieldName = $details['Field'];
             $answers = [
