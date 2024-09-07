@@ -20,6 +20,27 @@ class Test extends BuildTask
     {
         Environment::increaseTimeLimitTo(3600);
         Environment::increaseMemoryLimitTo('512M');
+
+        $this->header("====================================");
+        $this->header("====================================");
+        $this->header("HAS VALUE");
+        $this->header("====================================");
+        $this->header("====================================");
+
+        $this->runExcludeOrExclude('buildExcludeScenarioArray', 'not', 'HasValue');
+
+        $this->header("====================================");
+        $this->header("====================================");
+        $this->header("DOES NOT HAVE VALUE");
+        $this->header("====================================");
+        $this->header("====================================");
+
+        $this->runExcludeOrExclude('buildIncludeScenarioArray', '', 'DoesNotHaveValue');
+
+    }
+
+    public function runExcludeOrExclude(string $method, string $phrase, string $rightAnswer)
+    {
         $class = [
             'Subscriber' => ['ClassName' => Subscriber::class, 'Field' => 'OneSignalUserID'],
             'PushNotification' => ['ClassName' => PushNotification::class, 'Field' => 'OneSignalNotificationID'],
@@ -27,12 +48,19 @@ class Test extends BuildTask
         foreach ($class as $tableName => $details) {
             $className = $details['ClassName'];
             $fieldName = $details['Field'];
-            $answer = 0;
+            $answers = [
+                'HasValue' => 0,
+                'DoesNotHaveValue' => 0,
+            ];
             foreach ($className::get() as $record) {
                 if (trim((string) $record->$fieldName)) {
-                    $answer++;
+                    $answers['HasValue']++;
+
+                } else {
+                    $answers['DoesNotHaveValue']++;
                 }
             }
+            $answer = $answers[$rightAnswer];
             $tableSafe = $this->replaceTableAndFieldName($tableName, $tableName, $fieldName);
             $fieldSafe = $this->replaceTableAndFieldName($fieldName, $tableName, $fieldName);
             $this->header(
@@ -42,7 +70,7 @@ class Test extends BuildTask
                 Expected answer: '.$answer.'
                 (derived by looping through dataobjects)'
             );
-            $scenarios = $this->buildScenarioArray($tableName, $fieldName, $className);
+            $scenarios = $this->$method($tableName, $fieldName, $className);
             foreach ($scenarios as $i => $results) {
                 $count = $results['v'];
                 $isCorrect = ($count === $answer);
@@ -63,7 +91,9 @@ class Test extends BuildTask
         }
     }
 
-    protected function buildScenarioArray(string $tableName, string $fieldName, string $className): array
+
+
+    protected function buildExcludeScenarioArray(string $tableName, string $fieldName, string $className): array
     {
         $scenario = [];
 
@@ -119,6 +149,75 @@ class Test extends BuildTask
             // [$fieldName  => ['', 0]],
             // [$fieldName  => ['', null, 0]],
             // [$fieldName  => 0],
+        ];
+
+        foreach ($excludes as $key => $exclude) {
+            $scenario[] = [
+                'exclude' => $exclude,
+                'v' => (int) $className::get()->exclude($exclude)->count(),
+                'sql' => $className::get()->exclude($exclude)->sql(),
+            ];
+        }
+
+        return $scenario;
+    }
+
+    protected function buildIncludeScenarioArray(string $tableName, string $fieldName, string $className): array
+    {
+        $scenario = [];
+
+        // SQL based scenarios
+        $sqlQueries = [
+            'SELECT COUNT(*) FROM "' . $tableName . '" WHERE "' . $fieldName . '" IS  NULL',
+            'SELECT COUNT(*) FROM "' . $tableName . '" WHERE "' . $fieldName . '" <> \'\'',
+            'SELECT COUNT(*) FROM "' . $tableName . '" WHERE "' . $fieldName . '" IS NULL OR "' . $fieldName . '" = \'\'',
+            // 'SELECT COUNT(*) FROM "' . $tableName . '" WHERE "' . $fieldName . '" <> 0',
+            // 'SELECT COUNT(*) FROM "' . $tableName . '" WHERE "' . $fieldName . '" NOT IN (\'\', NULL, 0)',
+            // 'SELECT COUNT(*) FROM "' . $tableName . '" WHERE "' . $fieldName . '" IS NOT NULL AND "' . $fieldName . '" <> \'\' AND "' . $fieldName . '" <> 0'
+        ];
+
+        foreach ($sqlQueries as $key => $sql) {
+            $scenario[] = [
+                'DB::query' => $sql,
+                'v' => (int) DB::query($sql)->value(),
+                'sql' => $sql,
+            ];
+        }
+
+        // ORM based scenarios
+        $filters = [
+            [$fieldName  => ['']],
+            [$fieldName  => [null]],
+            [$fieldName  => ['', null]],
+            [$fieldName  => ''],
+            [$fieldName  => null],
+            // [$fieldName  => [0]],
+            // [$fieldName  => [0, null]],
+            // [$fieldName  => ['', 0]],
+            // [$fieldName  => ['', null, 0]],
+            // [$fieldName  => 0],
+        ];
+
+        foreach ($filters as $key => $filter) {
+            $scenario[] = [
+                'filter' => $filter,
+                'v' => (int) $className::get()->filter($filter)->count(),
+                'sql' => $className::get()->filter($filter)->sql(),
+            ];
+        }
+
+        // Exclude based scenarios
+        $excludes = [
+            [$fieldName . ':not' => ['']],
+            [$fieldName . ':not' => [null]],
+            [$fieldName . ':not' => ['', null]],
+            [$fieldName . ':not' => ''],
+            [$fieldName . ':not' => null],
+            // [$fieldName . ':not' => [0]],
+            // [$fieldName . ':not' => [0, null]],
+            // [$fieldName . ':not' => 0],
+            // [$fieldName . ':not' => ['', 0]],
+            // [$fieldName . ':not' => ['', null, 0]],
         ];
 
         foreach ($excludes as $key => $exclude) {
