@@ -45,6 +45,7 @@ class Test extends BuildTask
             'Subscriber' => ['ClassName' => Subscriber::class, 'Field' => 'OneSignalUserID'],
             'PushNotification' => ['ClassName' => PushNotification::class, 'Field' => 'OneSignalNotificationID'],
         ];
+        $testCount = 0;
         foreach ($class as $tableName => $details) {
             $className = $details['ClassName'];
             $fieldName = $details['Field'];
@@ -72,6 +73,7 @@ class Test extends BuildTask
             );
             $scenarios = $this->$method($tableName, $fieldName, $className);
             foreach ($scenarios as $i => $results) {
+                $testCount++;
                 $count = $results['v'];
                 $isCorrect = ($count === $answer);
                 $isCorrectPhrase = $isCorrect ? 'CORRECT' : 'WRONG ANSWER';
@@ -79,7 +81,7 @@ class Test extends BuildTask
                     if ($key !== 'v' && $key !== 'sql') {
                         $sql = $this->recursiveReplaceValues($sql, $tableName, $fieldName);
                         $sql = $this->normalizeWhitespace(print_r($sql, 1));
-                        $this->outcome('====='.PHP_EOL.$isCorrectPhrase. '('. $count.  '), PRODUCED BY: ');
+                        $this->outcome('===== TEST '.$testCount.'====='.PHP_EOL.$isCorrectPhrase. '('. $count.  '), PRODUCED BY: ');
                         $this->outcome($key.' = '.$sql);
                     }
                 }
