@@ -20,12 +20,14 @@ window.addEventListener('beforeinstallprompt', e => {
   console.log('App can be added to home screen')
 
   const installAppButton = document.getElementById('add-to-home-screen')
+  const installAppButtonWrap = document.getElementById('add-to-home-screen-wrap')
   const alternativeInfo = document.getElementById(
     'add-to-home-screen-alternative-info'
   )
 
   if (installAppButton && !isAppInstalled()) {
     installAppButton.removeAttribute('disabled')
+    installAppButtonWrap.style.display = 'block'
     alternativeInfo.style.display = 'none'
   }
 })
@@ -40,10 +42,12 @@ if (installAppButton) {
       if (outcome === 'accepted') {
         localStorage.setItem('appInstalled', 'yes')
         const installAppButton = document.getElementById('add-to-home-screen')
+        const installAppButtonWrap = document.getElementById('add-to-home-screen-wrap')
         const alternativeInfo = document.getElementById(
           'add-to-home-screen-alternative-info'
         )
         alternativeInfo.style.display = 'none'
+        installAppButtonWrap.style.display = 'none'
         installAppButton.style.display = 'none'
         deferredPrompt = null
       }
@@ -67,14 +71,17 @@ document.addEventListener('DOMContentLoaded', () => {
     'add-to-home-screen-alternative-info'
   )
   const appInstalledInfo = document.getElementById('added-to-home-screen-info')
+  //const subscribeNotifications = document.getElementByID('subscribe-notifications');
   // check if button is
   if (installAppButton) {
     if (isAppInstalled()) {
       alternativeInfo.style.display = 'none'
       installAppButton.style.display = 'none'
       appInstalledInfo.style.display = 'block'
+      //subscribeNotifications.style.display = 'block'
     } else {
       appInstalledInfo.style.display = 'none'
+      //subscribeNotifications.style.display = 'none'
     }
   } else {
     console.log('No install button found')
