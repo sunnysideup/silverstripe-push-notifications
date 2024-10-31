@@ -6,6 +6,7 @@ use DateTime;
 use DateTimeInterface;
 use Exception;
 use LeKoala\CmsActions\CustomAction;
+use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Forms\CheckboxSetField;
@@ -14,6 +15,7 @@ use SilverStripe\Forms\HeaderField;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\Forms\RequiredFields;
+use SilverStripe\Forms\TreeDropdownField;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
@@ -82,6 +84,7 @@ class PushNotification extends DataObject
 
     private static $has_one = [
         'SendJob' => QueuedJobDescriptor::class,
+        'LinkedPage' => SiteTree::class,
     ];
 
     private static $has_many = [
@@ -179,6 +182,16 @@ class PushNotification extends DataObject
                         </p>'
                     )
                 )
+            );
+            $fields->addFieldsToTab(
+                'Root.Main',
+                [
+                    TreeDropdownField::create(
+                        'LinkedPageID',
+                        'Linked Page',
+                        SiteTree::class
+                    ),
+                ]
             );
         }
         $fields->removeByName('Provider');
@@ -729,13 +742,18 @@ class PushNotification extends DataObject
         $this->write();
     }
 
-    public function Link()
+    public function Link(): string
     {
-        $link = PushNotificationPage::get_one()?->Link() ?: '/';
+        $page = $this->LinkedPage();
+        if ($page) {
+            $link = $page->LinkedPage();
+        } else {
+            $link = PushNotificationPage::get_one()?->Link() ?: '/';
+        }
         return Director::absoluteURL($link);
     }
 
-    public function AbsoluteLink()
+    public function AbsoluteLink(): string
     {
         return $this->Link();
     }
@@ -789,7 +807,8 @@ class PushNotification extends DataObject
         return $this->ProviderClass === PushNotificationOneSignal::class;
     }
     // Added by jeff@mrd.co.nz 12.09.2024
-    public function AutoLink($content) {
+    public function AutoLink($content)
+    {
         // Regular expression to find URLs
         $pattern = '/(http[s]?:\/\/[^\s]+)/';
         // Replace URLs with anchor tags

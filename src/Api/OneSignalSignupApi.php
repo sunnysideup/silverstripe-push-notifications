@@ -328,7 +328,6 @@ class OneSignalSignupApi
     public function doSendNotification(PushNotification $pushNotification, ?array $additionalData = []): array
     {
         $dataForNotification = NotificationHelper::singleton()->notification2oneSignal($pushNotification);
-        // add custom data...
         $dataForNotification = array_merge($dataForNotification, $additionalData);
 
         return $this->oneSignal->notifications()->add($dataForNotification);
