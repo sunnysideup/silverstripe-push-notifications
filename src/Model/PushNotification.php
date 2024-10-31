@@ -747,8 +747,8 @@ class PushNotification extends DataObject
     public function Link(): string
     {
         $page = $this->LinkedPage();
-        if ($page) {
-            $link = $page->LinkedPage();
+        if ($page && $page->exists()) {
+            $link = $page->Link();
         } else {
             $link = PushNotificationPage::get_one()?->Link() ?: '/';
         }
