@@ -20,6 +20,7 @@ use Sunnysideup\PushNotifications\Api\OneSignalSignupApi;
  *
  * @property string $Subscription
  * @property bool $Subscribed
+ * @property string $Device
  * @property string $OneSignalUserID
  * @property string $OneSignalUserNote
  * @property string $OneSignalUserTagsNote

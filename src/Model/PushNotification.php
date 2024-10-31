@@ -54,7 +54,9 @@ use Symbiote\QueuedJobs\Services\QueuedJobService;
  * @property int $OneSignalNumberOfDeliveries
  * @property int $OneSignalCommsError
  * @property int $SendJobID
+ * @property int $LinkedPageID
  * @method QueuedJobDescriptor SendJob()
+ * @method SiteTree LinkedPage()
  * @method DataList|SubscriberMessage[] SubscriberMessages()
  * @method ManyManyList|Member[] RecipientMembers()
  * @method ManyManyList|Group[] RecipientGroups()
@@ -806,8 +808,8 @@ class PushNotification extends DataObject
     {
         return $this->ProviderClass === PushNotificationOneSignal::class;
     }
-    // Added by jeff@mrd.co.nz 12.09.2024
-    public function AutoLink($content)
+
+    public function AutoLink(string $content): string
     {
         // Regular expression to find URLs
         $pattern = '/(http[s]?:\/\/[^\s]+)/';
