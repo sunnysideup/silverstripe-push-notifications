@@ -788,5 +788,14 @@ class PushNotification extends DataObject
     {
         return $this->ProviderClass === PushNotificationOneSignal::class;
     }
+    // Added by jeff@mrd.co.nz 12.09.2024
+    public function AutoLink($content) {
+        // Regular expression to find URLs
+        $pattern = '/(http[s]?:\/\/[^\s]+)/';
+        // Replace URLs with anchor tags
+        $replacement = '<a href="$1">$1</a>';
+        // Return content with URLs converted to links
+        return preg_replace($pattern, $replacement, $content);
+    }
 
 }
