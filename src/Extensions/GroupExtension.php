@@ -108,7 +108,7 @@ class GroupExtension extends DataExtension
         }
 
         if ($owner->hasOneSignalSegment()) {
-            $owner->OneSignalSegmentID = trim($owner->OneSignalSegmentID);
+            $owner->OneSignalSegmentID = trim((string) $owner->OneSignalSegmentID);
             if (strlen($owner->OneSignalSegmentID) < 10) {
                 $owner->OneSignalSegmentID = null;
             }

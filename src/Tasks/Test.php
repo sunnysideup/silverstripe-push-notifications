@@ -1,8 +1,10 @@
 <?php
 
 use SilverStripe\Control\Director;
+use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Environment;
 use SilverStripe\Dev\BuildTask;
+use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use Sunnysideup\PushNotifications\Model\PushNotification;
 use Sunnysideup\PushNotifications\Model\Subscriber;
@@ -13,6 +15,11 @@ class Test extends BuildTask
 
     protected $description = 'Test';
 
+    /**
+     * keys are the tables names
+     *
+     * @var array
+     */
     protected $tablesToTest = [
         'Subscriber' => ['ClassName' => Subscriber::class, 'Field' => 'OneSignalUserID'],
         'PushNotification' => ['ClassName' => PushNotification::class, 'Field' => 'OneSignalNotificationID'],
@@ -25,7 +32,6 @@ class Test extends BuildTask
     {
         Environment::increaseTimeLimitTo(3600);
         Environment::increaseMemoryLimitTo('512M');
-
         $this->header("====================================");
         $this->header("====================================");
         $this->header("HAS VALUE");
@@ -44,7 +50,20 @@ class Test extends BuildTask
 
     }
 
-    public function runExcludeOrExclude(string $method, string $phrase, string $rightAnswer)
+    /**
+     * optional method to reset all to empty string
+     */
+    protected function resetToEmptyString(string $className, string $fieldName)
+    {
+        Config::modify()->set(DataObject::class, 'validation_enabled', false);
+        foreach ($className::get() as $subscriber) {
+            $subscriber->$fieldName = '';
+            $subscriber->write();
+        }
+        echo $className::get()->count() .'='. $className::get()->filter([$fieldName => ''])->count();
+    }
+
+    protected function runExcludeOrExclude(string $method, string $phrase, string $rightAnswer)
     {
         $testCount = 0;
         foreach ($this->tablesToTest as $tableName => $details) {
@@ -272,11 +291,9 @@ class Test extends BuildTask
 
     protected function replaceTableAndFieldName($input, $tableName, $fieldName): string
     {
-        if ($tableName === 'Subscriber') {
-            $replaceTable = 'MYTABLE';
-        } else {
-            $replaceTable = 'MYOTHERTABLE';
-        }
+        $tableKeys = array_keys($this->tablesToTest);
+        $tablePos = (array_search($tableName, $tableKeys, true)) + 1;
+        $replaceTable = 'TABLE'.$tablePos;
         $input = str_replace($tableName, $replaceTable, $input);
         $input = str_replace($fieldName, 'MYFIELD', $input);
         return $input;

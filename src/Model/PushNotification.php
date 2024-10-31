@@ -529,7 +529,7 @@ class PushNotification extends DataObject
     protected function onBeforeWrite()
     {
         parent::onBeforeWrite();
-        $this->OneSignalNotificationID = trim($this->OneSignalNotificationID);
+        $this->OneSignalNotificationID = trim((string) $this->OneSignalNotificationID);
         if (strlen($this->OneSignalNotificationID) < 10) {
             $this->OneSignalNotificationID = null;
         }
