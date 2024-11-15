@@ -26,7 +26,7 @@ class GroupExtension extends DataExtension
 {
     protected static $subscriber_group = null;
 
-    public static function get_all_subscribers_group(): Group
+    public static function get_all_subscribers_group(): ?Group
     {
         if (! isset(self::$subscriber_group)) {
             $defaultSubscriberGroupDetails = Config::inst()->get(self::class, 'all_subscribers_group_details');
