@@ -70,7 +70,7 @@ class MemberExtension extends DataExtension
                 $this->setNoOneSignalComms();
                 $owner->write();
             }
-        } else {
+        } elseif ($defaultGroup) {
             $memberGroups->remove($defaultGroup);
         }
         return true;
