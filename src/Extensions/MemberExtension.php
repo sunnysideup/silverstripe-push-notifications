@@ -64,13 +64,14 @@ class MemberExtension extends DataExtension
                     $subscriber->OneSignalComms(true);
                 }
             }
-
-            $memberGroups->add($defaultGroup);
+            if ($defaultGroup) {
+                $memberGroups->add($defaultGroup);
+            }
             if ($write) {
                 $this->setNoOneSignalComms();
                 $owner->write();
             }
-        } else {
+        } elseif ($defaultGroup) {
             $memberGroups->remove($defaultGroup);
         }
         return true;

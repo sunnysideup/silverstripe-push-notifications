@@ -109,7 +109,6 @@ class PushNotificationPageController extends ContentController
             return HTTPResponse::create(json_encode(['success' => true]))
                 ->addHeader('Content-Type', 'application/json')
                 ->setStatusCode(201);
-
         } catch (Exception $e) {
             return HTTPResponse::create(json_encode(['success' => false, 'error' => $e->getMessage()]))
                 ->addHeader('Content-Type', 'application/json')
@@ -142,7 +141,7 @@ class PushNotificationPageController extends ContentController
         parent::init();
         $link = Director::absoluteURL($this->Link());
         $link = str_replace('?stage=Stage', '', $link);
-        Requirements::customScript('window.push_notification_url="'.$link.'";', "push_notification_url");
+        Requirements::customScript('window.push_notification_url="' . $link . '";', "push_notification_url");
         Requirements::javascript('sunnysideup/push-notifications: client/dist/javascript/add-to-home-screen.js');
         // Requirements::themedCSS('client/dist/css/push');
         if ($this->owner->UseOneSignal) {
@@ -152,7 +151,7 @@ class PushNotificationPageController extends ContentController
         $key = Environment::getEnv('SS_VAPID_PUBLIC_KEY');
         Requirements::javascript('sunnysideup/push-notifications: client/dist/javascript/service-worker-start.js');
         if ($key && ! $this->UseOneSignal) {
-            Requirements::customScript('let vapid_public_key="'.$key.'";', "VapidPublicKey");
+            Requirements::customScript('let vapid_public_key="' . $key . '";', "VapidPublicKey");
         }
     }
 
@@ -167,7 +166,7 @@ class PushNotificationPageController extends ContentController
             ->map('ID', 'BreadcrumbsSimple');
         $fields = FieldList::create(
             CheckboxSetField::create('Groups', 'Select Your Groups', $groupOptions)
-            ->setValue($memberGroups)
+                ->setValue($memberGroups)
         );
 
         $actions = FieldList::create(
@@ -198,10 +197,12 @@ class PushNotificationPageController extends ContentController
         // ....
         // deal with default group
         $defaultGroup = GroupExtension::get_all_subscribers_group();
-        if (isset($oldGroups[$defaultGroup->ID])) {
-            unset($oldGroups[$defaultGroup->ID]);
-        } else {
-            $memberGroups->add($defaultGroup);
+        if ($defaultGroup) {
+            if (isset($oldGroups[$defaultGroup->ID])) {
+                unset($oldGroups[$defaultGroup->ID]);
+            } else {
+                $memberGroups->add($defaultGroup);
+            }
         }
         // check the submitted data
         if (!isset($data['Groups']) || ! is_array($data['Groups'])) {
@@ -247,6 +248,4 @@ class PushNotificationPageController extends ContentController
         $member->write();
         $this->redirectBack();
     }
-
-
 }

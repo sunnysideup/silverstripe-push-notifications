@@ -36,7 +36,6 @@ class UpdateOneSignal extends BuildTask
         $this->syncNotificationsFromOneSignal();
         $this->syncNotificationsFromWebsite();
         $this->header('THE END!');
-
     }
 
     protected function syncGroups()
@@ -46,7 +45,7 @@ class UpdateOneSignal extends BuildTask
         foreach ($groups as $group) {
             $this->outcome('Group: ' . $group->getBreadcrumbsSimpleWithCount());
             $groupUpdated = $group->OneSignalComms(true);
-            $this->outcome('... Group '.($groupUpdated ? '' : 'NOT').' updated.');
+            $this->outcome('... Group ' . ($groupUpdated ? '' : 'NOT') . ' updated.');
         }
     }
 
@@ -59,25 +58,26 @@ class UpdateOneSignal extends BuildTask
             ->sort(['ID' => 'DESC'])
             ->limit(2000);
         foreach ($subscribers as $subscriber) {
-            $this->outcome('Writing: ' . $subscriber->getTitle(). ' - '. $subscriber->OneSignalUserID);
+            $this->outcome('Writing: ' . $subscriber->getTitle() . ' - ' . $subscriber->OneSignalUserID);
             $subcriberUpdated = $subscriber->OneSignalComms(true);
-            $this->outcome('... Subscriber '.($subcriberUpdated ? '' : 'NOT').' updated.');
+            $this->outcome('... Subscriber ' . ($subcriberUpdated ? '' : 'NOT') . ' updated.');
             if ($subscriber->MemberID && !isset($membersDone[$subscriber->MemberID])) {
                 $membersDone[$subscriber->MemberID] = $subscriber->MemberID;
                 $member = $subscriber->Member();
                 if ($member && $member->exists()) {
-                    $this->outcome('Checking if : ' . $member->getTitle(). ' is part of the all subscribers group');
+                    $this->outcome('Checking if : ' . $member->getTitle() . ' is part of the all subscribers group');
                     $memberUpdated = $member->OneSignalComms(true, false);
-                    $this->outcome('... Member '.($memberUpdated ? '' : 'NOT').' updated: ');
+                    $this->outcome('... Member ' . ($memberUpdated ? '' : 'NOT') . ' updated: ');
                 }
-
             }
         }
         $allSubcribersGroup = GroupExtension::get_all_subscribers_group();
-        foreach ($allSubcribersGroup->Members()->exclude(['ID' => $membersDone]) as $member) {
-            $this->outcome('Checking if : ' . $member->getTitle(). ' still needs to be part of the all subscribers group');
-            $memberUpdated = $member->OneSignalComms(true, false);
-            $this->outcome('... Member '.($memberUpdated ? '' : 'NOT').' updated: ');
+        if ($allSubcribersGroup) {
+            foreach ($allSubcribersGroup->Members()->exclude(['ID' => $membersDone]) as $member) {
+                $this->outcome('Checking if : ' . $member->getTitle() . ' still needs to be part of the all subscribers group');
+                $memberUpdated = $member->OneSignalComms(true, false);
+                $this->outcome('... Member ' . ($memberUpdated ? '' : 'NOT') . ' updated: ');
+            }
         }
     }
 
@@ -95,7 +95,7 @@ class UpdateOneSignal extends BuildTask
         foreach ($notificationList as $oneSignalNotification) {
             $id = $oneSignalNotification['id'] ?? '';
             if (! $id) {
-                $this->outcome('ERROR: ' . ' no id for '.print_r($oneSignalNotification, 1));
+                $this->outcome('ERROR: ' . ' no id for ' . print_r($oneSignalNotification, 1));
                 continue;
             }
             $this->outcome('Checking Notification: ' . $oneSignalNotification['id']);
@@ -133,9 +133,8 @@ class UpdateOneSignal extends BuildTask
         foreach ($notifications as $notification) {
             $this->outcome('Writing: ' . $notification->getTitle());
             $notificationUpdatd = $notification->OneSignalComms(true);
-            $this->outcome('... Notification '.($notificationUpdatd ? '' : 'NOT').' updated.');
+            $this->outcome('... Notification ' . ($notificationUpdatd ? '' : 'NOT') . ' updated.');
         }
-
     }
 
 
@@ -148,10 +147,9 @@ class UpdateOneSignal extends BuildTask
             echo PHP_EOL;
             echo PHP_EOL;
             echo PHP_EOL;
-            echo '========================='.PHP_EOL;
+            echo '=========================' . PHP_EOL;
             echo $message . PHP_EOL;
-            echo '========================='.PHP_EOL;
-            ;
+            echo '=========================' . PHP_EOL;;
         } else {
             echo '<h2>' . $message . '</h2>';
         }
@@ -169,5 +167,4 @@ class UpdateOneSignal extends BuildTask
             echo '</pre>';
         }
     }
-
 }

@@ -3,10 +3,10 @@
 namespace Sunnysideup\PushNotifications\Extensions;
 
 use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Extension;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\ReadonlyField;
-use SilverStripe\ORM\DataExtension;
 use SilverStripe\ORM\DB;
 use SilverStripe\Security\Group;
 use Sunnysideup\PushNotifications\Api\ConvertToOneSignal\GroupHelper;
@@ -22,11 +22,11 @@ use Sunnysideup\PushNotifications\Model\PushNotification;
  * @property string $OneSignalSegmentNote
  * @method ManyManyList|PushNotification[] PushNotifications()
  */
-class GroupExtension extends DataExtension
+class GroupExtension extends Extension
 {
     protected static $subscriber_group = null;
 
-    public static function get_all_subscribers_group(): Group
+    public static function get_all_subscribers_group(): ?Group
     {
         if (! isset(self::$subscriber_group)) {
             $defaultSubscriberGroupDetails = Config::inst()->get(self::class, 'all_subscribers_group_details');
@@ -127,7 +127,7 @@ class GroupExtension extends DataExtension
             } elseif ($this->removeUnusedSegmentsFromOneSignal()) {
                 $this->removeOneSignalSegment();
                 $owner->OneSignalSegmentID = '';
-                $owner->OneSignalSegmentNote = 'ID was '.$this->OneSignalSegmentID;
+                $owner->OneSignalSegmentNote = 'ID was ' . $this->OneSignalSegmentID;
             }
             if ($write) {
                 $this->setNoOneSignalComms();
@@ -141,7 +141,6 @@ class GroupExtension extends DataExtension
     public function onBeforeDelete()
     {
         $this->removeOneSignalSegment();
-
     }
 
     /**
@@ -231,6 +230,4 @@ class GroupExtension extends DataExtension
             }
         }
     }
-
-
 }

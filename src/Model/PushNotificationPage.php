@@ -74,7 +74,7 @@ class PushNotificationPage extends Page
                 [
                     'ID' => array_merge(
                         PushNotificationPage::get_one()->SignupGroups()->columnUnique(),
-                        [$allSubscribersGroup->ID]
+                        [(int) $allSubscribersGroup?->ID]
                     )
                 ]
             );
@@ -139,9 +139,9 @@ class PushNotificationPage extends Page
                     'PushNotificationsInfo',
                     '
                     <p class="message warning">
-                        Please make sure to review your <a href="/manifest.json?x='.rand(0, 999999999999).'" target="_blank">manifest.json</a> file and adjust as required.
+                        Please make sure to review your <a href="/manifest.json?x=' . rand(0, 999999999999) . '" target="_blank">manifest.json</a> file and adjust as required.
                         This page may write to this file (see options below about overwriting this file).
-                        The file currently is '.($this->canAccessOrCreateFile() ? '' : 'not').' writeable.
+                        The file currently is ' . ($this->canAccessOrCreateFile() ? '' : 'not') . ' writeable.
                         For proper functonality, please make sure that the file has the following features:
                         <ul>
                             <li>name</li>
@@ -198,7 +198,7 @@ class PushNotificationPage extends Page
                             <p>
                                 Please access OneSignal to manage your push notifications:
                                 <br />
-                                <a href="'.LinkHelper::singleton()->createNewAppLink().'" target="_blank">Create a new app</a>
+                                <a href="' . LinkHelper::singleton()->createNewAppLink() . '" target="_blank">Create a new app</a>
                                 </p>
                             '
                         ),
@@ -213,37 +213,37 @@ class PushNotificationPage extends Page
                             '<h2>OneSignal</h2>
                             <p>
                                 Please access OneSignal to manage your push notifications:
-                                <br />'.
+                                <br />' .
                                 LinkHelper::singleton()->createHtmlLink(
                                     LinkHelper::singleton()->configurePushNotificationsLink(),
                                     'Configure (with care!)'
-                                ).'<br />
-                                <br />'.
+                                ) . '<br />
+                                <br />' .
                                 LinkHelper::singleton()->createHtmlLink(
                                     LinkHelper::singleton()->sendNewPushNotificationLink(),
                                     'Send New Push Notification'
-                                ).'
+                                ) . '
                                 <strong>Do not forget also record your message here.</strong>
                                 <br />
-                                <br />'.
+                                <br />' .
                                 LinkHelper::singleton()->createHtmlLink(
                                     LinkHelper::singleton()->sentPushNotificationLink(),
                                     'Review sent messages'
-                                ).'
+                                ) . '
                                 <br />
                                 <hr />
                                 <h3>Advanced Tools (use with care)</h3>
-                                <br />'.
+                                <br />' .
                                 LinkHelper::singleton()->createHtmlLink(
                                     '/dev/tasks/update-one-signal',
                                     'Update website content with lastest OneSignal information'
-                                ).'
+                                ) . '
                                     <br />
-                                    <br />'.
+                                    <br />' .
                                 LinkHelper::singleton()->createHtmlLink(
                                     '/dev/tasks/test-one-signal',
                                     'Test OneSignal connection'
-                                ).'
+                                ) . '
                             </p>
                             '
                         ),
@@ -258,8 +258,8 @@ class PushNotificationPage extends Page
                         'OneSignalWorkerInfo',
                         '
                         <p class="message warning">
-                            Please make sure to review your <a href="/'.self::ONESIGNAL_INIT_FILE_NAME.'">'.self::ONESIGNAL_INIT_FILE_NAME.'</a> file and adjust as required.
-                            This page may write to this file. This file currently is '.($accessible ? '' : 'not').' writeable.
+                            Please make sure to review your <a href="/' . self::ONESIGNAL_INIT_FILE_NAME . '">' . self::ONESIGNAL_INIT_FILE_NAME . '</a> file and adjust as required.
+                            This page may write to this file. This file currently is ' . ($accessible ? '' : 'not') . ' writeable.
                         </p>'
                     )
                 ]
@@ -283,7 +283,7 @@ class PushNotificationPage extends Page
                 HTMLEditorField::create('SignupGroupsIntro', 'Intro for users to ask them to sign up to groups'),
                 CheckboxSetField::create(
                     'SignupGroups',
-                    'Joinable Groups'.PHP_EOL.'CAREFUL SEE BELOW',
+                    'Joinable Groups' . PHP_EOL . 'CAREFUL SEE BELOW',
                     self::get_list_as_subscribable_groups()
                         ->map('ID', 'BreadcrumbsSimpleWithCount'),
                 )
@@ -486,8 +486,5 @@ class PushNotificationPage extends Page
             throw $e;
             die('error writing file!');
         }
-
     }
-
-
 }
