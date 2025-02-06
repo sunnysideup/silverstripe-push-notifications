@@ -13,10 +13,6 @@
         "silverstripe/framework": "^4 || ^5",
         "silverstripe/admin": "^1 || ^2",
         "norkunas/onesignal-php-api": "^2",
-        "nyholm/psr7": "^1.8",
-        "symfony/http-client": "^7.1",
-        "minishlink/web-push": "^8",
-        "symbiote/silverstripe-queuedjobs": "^4 || ^5",
         "lekoala/silverstripe-cms-actions": "dev-master"
     },
     "require-dev": {
