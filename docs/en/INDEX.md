@@ -185,3 +185,42 @@ In Group, the method Members calls `DirectMembers()` which calls `getManyManyCom
 
 - <https://web-push-codelab.glitch.me/>
 - <https://pushover.net/>
+
+
+# setting up a push notification job
+
+THere is a variety of ways to run pushes, using the sample job below is one of them:
+
+```php
+<?php
+
+namespace Sunnysideup\PushNotifications\Jobs;
+
+use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
+
+/**
+ * @package silverstripe-push
+ */
+class SendPushNotificationsJob extends AbstractQueuedJob
+{
+    public function __construct($notification = null)
+    {
+        if ($notification) {
+            $this->setObject($notification);
+        }
+    }
+
+    public function getTitle()
+    {
+        $message = _t('Push.SENDNOTIFICATIONSFOR', 'Send notifications for "%s"');
+        return sprintf($message, $this->getObject()->Title);
+    }
+
+    public function process()
+    {
+        $this->getObject()->doSend();
+        $this->isComplete = true;
+    }
+}
+
+```
