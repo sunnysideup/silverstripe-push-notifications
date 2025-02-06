@@ -31,6 +31,10 @@ class GroupExtension extends Extension
         if (! isset(self::$subscriber_group)) {
             $defaultSubscriberGroupDetails = Config::inst()->get(self::class, 'all_subscribers_group_details');
             self::$subscriber_group = Group::get()->filter(['Code' => $defaultSubscriberGroupDetails['Code']])->first();
+            if (!self::$subscriber_group) {
+                self::$subscriber_group = Group::create($defaultSubscriberGroupDetails);
+                self::$subscriber_group->write();
+            }
         }
         return self::$subscriber_group;
     }
