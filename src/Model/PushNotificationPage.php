@@ -85,7 +85,11 @@ class PushNotificationPage extends Page
 
     private static $table_name = 'PushNotificationPage';
 
+    private static $description = 'Page to manage push notifications';
+
     private static $icon_class = 'font-icon-fast-forward';
+    private static $singular_name = 'Push Notification Page';
+    private static $plural_name = 'Push Notification Pages';
 
     private static $controller_name = PushNotificationPageController::class;
 
