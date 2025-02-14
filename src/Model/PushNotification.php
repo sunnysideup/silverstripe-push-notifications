@@ -149,7 +149,7 @@ class PushNotification extends DataObject
 
     public function populateDefaults()
     {
-        if (PushNotificationPage::get_one()->UseOneSignal) {
+        if (PushNotificationPage::get_one()?->UseOneSignal) {
             $this->ProviderClass = PushNotificationOneSignal::class;
         }
         return $this;
