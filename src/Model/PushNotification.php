@@ -85,7 +85,7 @@ class PushNotification extends DataObject
     ];
 
     private static $has_one = [
-        'SendJob' => 'Symbiote\\QueuedJobs\\DataObjects\\QueuedJobDescriptor',
+        'SendJob' => QueuedJobDescriptor::class,
         'LinkedPage' => SiteTree::class,
     ];
 
