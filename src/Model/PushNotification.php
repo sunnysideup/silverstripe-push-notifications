@@ -85,7 +85,7 @@ class PushNotification extends DataObject
     ];
 
     private static $has_one = [
-        'SendJob' => QueuedJobDescriptor::class,
+        'SendJob' => 'Symbiote\\QueuedJobs\\DataObjects\\QueuedJobDescriptor',
         'LinkedPage' => SiteTree::class,
     ];
 
@@ -291,7 +291,7 @@ class PushNotification extends DataObject
                     [
                         CheckboxSetField::create(
                             'RecipientGroups',
-                            'Recipients'.PHP_EOL.'SELECT WITH CARE!',
+                            'Recipients' . PHP_EOL . 'SELECT WITH CARE!',
                             PushNotificationPage::get_list_of_recipient_groups()
                                 ->map('ID', 'BreadcrumbsSimpleWithCount'),
                         )->setDescription(_t(
@@ -436,17 +436,17 @@ class PushNotification extends DataObject
         $membersCount = $members->count();
         if ($membersCount > 0) {
             if ($membersCount > 3) {
-                return 'Msg to '.$membersCount.' members (~'.$recipientCount.' devices): '.implode(', ', $members->limit(3)->column('Email')).'... ';
+                return 'Msg to ' . $membersCount . ' members (~' . $recipientCount . ' devices): ' . implode(', ', $members->limit(3)->column('Email')) . '... ';
             } else {
-                return 'Msg to members: '.implode(', ', $members->column('Email')).' (~'.$recipientCount.' devices)';
+                return 'Msg to members: ' . implode(', ', $members->column('Email')) . ' (~' . $recipientCount . ' devices)';
             }
         } else {
             $groupsCount = $this->RecipientGroups()->count();
             if ($groupsCount > 0) {
                 if ($groupsCount > 3) {
-                    return 'Msg to '.$groupsCount.' groups  (~'.$recipientCount.' devices): '.implode(', ', $this->RecipientGroups()->limit(3)->column('Title')).'...';
+                    return 'Msg to ' . $groupsCount . ' groups  (~' . $recipientCount . ' devices): ' . implode(', ', $this->RecipientGroups()->limit(3)->column('Title')) . '...';
                 } else {
-                    return 'Msg to groups: '.implode(', ', $this->RecipientGroups()->column('Title')).' (~'.$recipientCount.' devices)';
+                    return 'Msg to groups: ' . implode(', ', $this->RecipientGroups()->column('Title')) . ' (~' . $recipientCount . ' devices)';
                 }
             }
         }
@@ -470,7 +470,7 @@ class PushNotification extends DataObject
     public function getValidator()
     {
         if ($this->HasExternalProvider()) {
-            return RequiredFields::create(['Title','Content']);
+            return RequiredFields::create(['Title', 'Content']);
         } else {
             return RequiredFields::create(['Title', 'Content', 'ProviderClass']);
         }
@@ -580,7 +580,6 @@ class PushNotification extends DataObject
                     }
                 }
             }
-
         }
     }
     protected bool $noOneSignalComms = false;
@@ -612,11 +611,11 @@ class PushNotification extends DataObject
                 }
                 $this->OneSignalCommsError = 0;
             } else {
-                $this->OneSignalNotificationNote = 'Could not get OneSignal notification. This has happpened '.$this->OneSignalCommsError.' times.';
+                $this->OneSignalNotificationNote = 'Could not get OneSignal notification. This has happpened ' . $this->OneSignalCommsError . ' times.';
                 $this->OneSignalCommsError++;
                 if ($this->OneSignalCommsError > 10) {
                     $this->OneSignalNotificationID = '';
-                    $this->OneSignalNotificationNote = 'There were more than 10 errors in a row. ID was '.$this->OneSignalNotificationID  ;
+                    $this->OneSignalNotificationNote = 'There were more than 10 errors in a row. ID was ' . $this->OneSignalNotificationID;
                 }
             }
             if ($write) {
@@ -709,7 +708,6 @@ class PushNotification extends DataObject
             /** @var Group $group */
             foreach ($this->RecipientGroups() as $group) {
                 $array = array_merge($array, $group->Members()->columnUnique('ID'));
-
             }
         }
 
@@ -801,7 +799,6 @@ class PushNotification extends DataObject
             return null;
         }
         return new DateTime($timeAsString);
-
     }
 
     public function IsOneSignal(): bool
@@ -818,5 +815,4 @@ class PushNotification extends DataObject
         // Return content with URLs converted to links
         return preg_replace($pattern, $replacement, $content);
     }
-
 }

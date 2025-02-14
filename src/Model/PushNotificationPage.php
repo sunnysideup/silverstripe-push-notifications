@@ -33,11 +33,8 @@ use Sunnysideup\PushNotifications\Extensions\GroupExtension;
  * @property bool $UseOneSignal
  * @property string $ThemeColour
  * @property string $BackgroundColour
- * @property bool $OverwriteManifestFile
  * @property string $SignupGroupsIntro
- * @property int $ManifestIconID
- * @property int $StartPageForHomeScreenAppID
- * @method Image ManifestIcon()
+ * @property int $StartPageForHomeScreenApp
  * @method SiteTree StartPageForHomeScreenApp()
  * @method ManyManyList|Group[] SignupGroups()
  */
@@ -95,23 +92,15 @@ class PushNotificationPage extends Page
 
     private static $db = [
         'UseOneSignal' => 'Boolean',
-        'ThemeColour' => 'Varchar(6)',
-        'BackgroundColour' => 'Varchar(6)',
-        'OverwriteManifestFile' => 'Boolean',
         'SignupGroupsIntro' => 'HTMLText',
     ];
 
     private static $has_one = [
-        'ManifestIcon' => Image::class,
         'StartPageForHomeScreenApp' => SiteTree::class,
     ];
 
     private static $many_many = [
         'SignupGroups' => Group::class,
-    ];
-
-    private static $owns = [
-        'ManifestIcon',
     ];
 
     private static $defaults = [
@@ -122,14 +111,20 @@ class PushNotificationPage extends Page
     {
         parent::onBeforeWrite();
         $this->ensureStandardLocation();
-        $this->writeManifestAndIconFiles();
         $this->copyOneSignalFile();
         // Modify the JSON value
     }
 
+    private static $manifest_file_name = 'manifest.json';
+
     protected function getManifestPath(): string
     {
-        return Controller::join_links(BASE_PATH, 'public', 'manifest.json');
+        return Controller::join_links(PUBLIC_PATH, $this->Config()->get('manifest_file_name'));
+    }
+
+    protected function getManifestLink(): string
+    {
+        return Controller::join_links(Director::baseURL(),  $this->Config()->get('manifest_file_name'));
     }
 
     public function getCMSFields()
@@ -143,9 +138,9 @@ class PushNotificationPage extends Page
                     'PushNotificationsInfo',
                     '
                     <p class="message warning">
-                        Please make sure to review your <a href="/manifest.json?x=' . rand(0, 999999999999) . '" target="_blank">manifest.json</a> file and adjust as required.
-                        This page may write to this file (see options below about overwriting this file).
-                        The file currently is ' . ($this->canAccessOrCreateFile() ? '' : 'not') . ' writeable.
+                        Please make sure to review your
+                        <a href="' . $this->getManifestLink() . '?x=' . rand(0, 999999999999) . '" target="_blank">' . $this->Config()->get('manifest_file_name') . '</a>
+                        file and adjust as required.
                         For proper functonality, please make sure that the file has the following features:
                         <ul>
                             <li>name</li>
@@ -156,21 +151,9 @@ class PushNotificationPage extends Page
                             <li>theme_color</li>
                             <li>icons (512x512 / 192x192)</li>
                         </ul>
+                        You may want to set the start page for the home screen app to be ' . $this->StartPageForHomeScreenApp()->AbsoluteLink() . '
                     </p>'
                 ),
-                CheckboxField::create('OverwriteManifestFile', 'Overwrite manifest values (untick to edit manually). If you are not sure, then just overwrite it here to have correct values in your manifest.json'),
-                TextField::create('ThemeColour', 'Theme Colour')
-                    ->setDescription('Please enter a 6 digit hex colour code - e.g. a2a111 or ffffff'),
-                TextField::create('BackgroundColour', 'Background Colour')
-                    ->setDescription('Please enter a 6 digit hex colour code - e.g. f1a111 or ffffff'),
-                TreeDropdownField::create('StartPageForHomeScreenAppID', 'Start Page For Home Screen App', SiteTree::class),
-                UploadField::create('ManifestIcon', 'Manifest Icon')
-                    ->setFolderName('manifest-icons')
-                    ->setAllowedExtensions(['png'])
-                    ->setDescription('Please upload a 512x512 pixel PNG file exactly. Apple does not allow transparency in this image.')
-                    ->setAllowedFileCategories('image')
-                    ->setAllowedMaxFileNumber(1)
-
             ]
         );
         $fields->addFieldsToTab(
@@ -322,9 +305,6 @@ class PushNotificationPage extends Page
 
     public function canAccessOrCreateFile(?string $filePath = ''): bool
     {
-        if (! $filePath) {
-            $filePath = $this->getManifestPath();
-        }
         if (file_exists($filePath)) {
             return is_writable($filePath);
         } else {
@@ -380,51 +360,7 @@ class PushNotificationPage extends Page
         $this->ParentID = 0;
     }
 
-    protected function writeManifestAndIconFiles()
-    {
 
-        if ($this->canAccessOrCreateFile()) {
-            $icon = $this->ManifestIconID ? $this->ManifestIcon() : null;
-            $icons = [];
-            if ($icon && $icon->exists()) {
-                $icons = [
-                    [
-                        "src" => $this->ManifestIcon()->ScaleWidth(192)->getAbsoluteURL(),
-                        "sizes" => "192x192",
-                        "type" => "image/png"
-                    ],
-                    [
-                        "src" => $this->ManifestIcon()->ScaleWidth(512)->getAbsoluteURL(),
-                        "sizes" => "512x512",
-                        "type" => "image/png"
-                    ]
-                ];
-            } else {
-                $icons = [
-                    [
-                        "src" => Director::absoluteURL('/_resources/vendor/sunnysideup/push-notifications/client/dist/images/icon-192x192.png'),
-                        "sizes" => "192x192",
-                        "type" => "image/png"
-                    ],
-                    [
-                        "src" => Director::absoluteURL('/_resources/vendor/sunnysideup/push-notifications/client/dist/images/icon-512x512.png'),
-                        "sizes" => "512x512",
-                        "type" => "image/png"
-                    ]
-                ];
-            }
-            $link = $this->StartPageForHomeScreenAppID ? $this->StartPageForHomeScreenApp()->AbsoluteLink() : $this->AbsoluteLink();
-            $link = $this->removeGetVariables($link);
-            $this->modifyJsonValue($this->getManifestPath(), '$schema', "https://json.schemastore.org/web-manifest-combined.json", $this->OverwriteManifestFile);
-            $this->modifyJsonValue($this->getManifestPath(), 'name', SiteConfig::current_site_config()->Title, $this->OverwriteManifestFile);
-            $this->modifyJsonValue($this->getManifestPath(), 'short_name', SiteConfig::current_site_config()->Title, $this->OverwriteManifestFile);
-            $this->modifyJsonValue($this->getManifestPath(), 'start_url', $link, $this->OverwriteManifestFile);
-            $this->modifyJsonValue($this->getManifestPath(), 'display', 'standalone', $this->OverwriteManifestFile);
-            $this->modifyJsonValue($this->getManifestPath(), 'background_color', $this->BackgroundColour ? '#' . $this->BackgroundColour : '#ffffff', $this->OverwriteManifestFile);
-            $this->modifyJsonValue($this->getManifestPath(), 'theme_color', $this->ThemeColour ? '#' . $this->ThemeColour : '#000000', $this->OverwriteManifestFile);
-            $this->modifyJsonValue($this->getManifestPath(), 'icons', $icons, $this->OverwriteManifestFile);
-        }
-    }
 
     protected function copyOneSignalFile()
     {
@@ -444,51 +380,6 @@ class PushNotificationPage extends Page
             } catch (Exception $e) {
                 // do nothing
             }
-        }
-    }
-
-    protected function modifyJsonValue(string $filePath, string $key, $newValue, ?bool $overwrite = false): void
-    {
-        // Check if the file exists
-        if (! file_exists($filePath)) {
-            throw new Exception('File not found.');
-        }
-
-        // Read the file contents
-        $jsonContent = file_get_contents($filePath);
-        if ($jsonContent === false) {
-            throw new Exception('Failed to read the file.');
-        }
-
-        // Decode the JSON data into an associative array
-        $data = json_decode($jsonContent, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new Exception('Failed to decode JSON: ' . json_last_error_msg());
-        }
-
-        // Modify the value
-        if ($overwrite) {
-            $data[$key] = $newValue;
-        } else {
-            // Check if the key exists in the data
-            if (! array_key_exists($key, $data)) {
-                $data[$key] = $newValue;
-            }
-        }
-        // Update the value (if the key exists in the data
-
-        // Encode the data back to JSON
-        $newJsonContent = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-        if ($newJsonContent === false) {
-            throw new Exception('Failed to encode JSON: ' . json_last_error_msg());
-        }
-
-        // Save the modified JSON data back to the file
-        try {
-            file_put_contents($filePath, $newJsonContent);
-        } catch (Exception $e) {
-            throw $e;
-            die('error writing file!');
         }
     }
 }

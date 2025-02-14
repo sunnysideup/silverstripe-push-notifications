@@ -13,7 +13,8 @@
         "silverstripe/framework": "^4 || ^5",
         "silverstripe/admin": "^1 || ^2",
         "norkunas/onesignal-php-api": "^2",
-        "lekoala/silverstripe-cms-actions": "dev-master"
+        "lekoala/silverstripe-cms-actions": "dev-master",
+        "bimthebam/silverstripe-web-app-manifest": "^1"
     },
     "require-dev": {
         "sunnysideup/sswebpack_engine_only": "dev-master",
